@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<!-- 银行维护 -->
+<mapper namespace="com.sgm.dms.fol.bankTicket.repository.BankTicketLimitAmountDao">
+
+<!--  	保存银行银票额度信息 -->
+ 	<insert id="addBankTicketLimitAmount" parameterType="com.sgm.dms.fol.bankTicket.domain.BankTicketLimitAmountPo">
+ 		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_FOL_BANK_TI_AMT_LIMIT_ID.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+ 		INSERT INTO TT_FOL_BANK_TICKET_AMT_LIMIT(
+ 			ID,
+			DEALER_TYPE,
+			BRAND_ID,
+			AMOUNT_LIMIT,
+			EFFECT_DATE,
+			EXPIRE_DATE,
+			SAP_CODE,
+			DEALER_NAME,
+			TYPE,
+			AUDIT_STATUS,
+			STATUS,
+			REMARK,
+			CREATE_BY,
+			CREATE_DATE,
+			UPDATE_BY,
+			UPDATE_DATE
+			)
+        VALUES
+           (#{id}, 
+            #{dealerType,jdbcType=NUMERIC}, 
+            #{brandId,jdbcType=NUMERIC},
+            #{amountLimit}, 
+            #{effectDate}, 
+            #{expireDate,jdbcType=DATE}, 
+            #{sapCode,jdbcType=VARCHAR},
+            (SELECT DEALER_NAME FROM TM_FOL_DEALER_INFO WHERE SAP_CODE=#{sapCode,jdbcType=VARCHAR}),
+            #{type},
+            #{auditStatus},
+            1,
+            #{remark,jdbcType=VARCHAR}, 
+            #{createBy}, 
+            SYSDATE, 
+            #{updateBy}, 
+            SYSDATE
+           )
+ 	</insert>
+ 	
+ 	<select id="findBankTicketLimitAmountByWhere" resultType="com.sgm.dms.fol.bankTicket.dto.BankTicketLimitAmountDTO">
+		SELECT  N.*   FROM (
+	 			SELECT  T.*,ROWNUM AS RN  FROM 
+		 			(
+						SELECT FC2.CODE_CN_DESC AS dealerTypeName,FC.CODE_CN_DESC AS brandName,DI.DEALER_NAME AS dealerName,
+											TAT.SAP_CODE AS sapCode,TAT.AMOUNT_LIMIT AS amountLimit,TAT.EFFECT_DATE AS effectDate,
+											TAT.EXPIRE_DATE AS expireDate,FC3.CODE_CN_DESC AS auditStatusName,TAF.AUDIT_MSG AS auditMsg,
+											TAT.ID AS id,TO_CHAR(TAT.EFFECT_DATE,'SYYYY-MM-DD HH24:MI:SS') AS effectDateDisplay,TAT.AUDIT_STATUS AS auditStatus,
+											TO_CHAR(EXPIRE_DATE,'SYYYY-MM-DD HH24:MI:SS') AS expireDateDisplay,TAT.TYPE AS type,TAT.ID AS "id"
+							FROM TT_FOL_BANK_TICKET_AMT_LIMIT TAT
+							LEFT JOIN TM_FOL_DEALER_INFO DI ON TAT.SAP_CODE=DI.SAP_CODE
+																
+							<if test="dealerName!=null and dealerName!=''">
+								AND DI.DEALER_NAME like concat(concat('%',#{dealerName}),'%')
+							</if>
+							
+							JOIN TT_FOL_BANK_TICKET_AUDIT_FLOW TAF ON TAT."ID"=TAF.REFER_TABLE_ID
+							JOIN (SELECT MAX(TT_FOL_BANK_TICKET_AUDIT_FLOW.ID) AS ID 
+							FROM TT_FOL_BANK_TICKET_AUDIT_FLOW
+							JOIN TT_FOL_BUSINESS_TABLE ON TT_FOL_BANK_TICKET_AUDIT_FLOW.BUSINESS_CODE=TT_FOL_BUSINESS_TABLE.BUSINESS_CODE AND TT_FOL_BUSINESS_TABLE.BUSINESS_TABLE_NAME='TT_FOL_BANK_TICKET_AMT_LIMIT'
+							GROUP BY TT_FOL_BANK_TICKET_AUDIT_FLOW.REFER_TABLE_ID) TAF2 ON TAF.ID=TAF2.ID
+							LEFT JOIN TC_FOL_CODE FC ON TAT.BRAND_ID=FC.CODE AND FC.TYPE_NAME='品牌' AND FC.STATUS='10011001'
+							LEFT JOIN TC_FOL_CODE FC2 ON TAT.DEALER_TYPE=FC2.CODE AND FC2.TYPE_NAME='渠道类型' AND FC2.STATUS='10011001'
+							LEFT JOIN TC_FOL_CODE FC3 ON TAT.AUDIT_STATUS=FC3.CODE AND FC3.TYPE_NAME='银票审核状态' AND FC3.STATUS='10011001' 
+							WHERE TAT.STATUS=1 AND TAF.STATUS=1 
+			
+							<if test="type!=null and type!=''">
+								AND TAT.TYPE=#{type}
+							</if>
+									
+							<if test="sapCode!=null and sapCode !=''">
+								AND TAT.SAP_CODE=#{sapCode}
+							</if>
+									
+							<if test="dealerType!=null and dealerType>=0">
+								AND TAT.DEALER_TYPE=#{dealerType}
+							</if>
+									
+							<if test="brandId!=null and brandId>=0">
+								AND TAT.BRAND_ID=#{brandId}
+							</if>
+									
+							<if test="auditStatus!=null and auditStatus>=0">
+								AND TAT.AUDIT_STATUS=#{auditStatus}
+							</if>
+									
+							<if test="id!=null and id!=''">
+								AND TAT.ID=#{id}
+							</if>
+							<if test="auditStatusList != null">
+								AND TAT.AUDIT_STATUS IN 
+								<foreach item="item" index="index" collection="auditStatusList" open="(" separator="," close=")">
+										#{item}
+								</foreach>
+							</if>
+				) T 
+			     
+			     <![CDATA[ WHERE ROWNUM <=#{endNo} ]]>	
+		    ) N
+    	<![CDATA[ WHERE N.RN>=#{beginNo}]]>
+	</select>
+	
+	<select id="findBankTicketLimitAmountCountByWhere" resultType="java.lang.Integer">
+			SELECT count(1)
+			FROM TT_FOL_BANK_TICKET_AMT_LIMIT TAT
+			LEFT JOIN TM_FOL_DEALER_INFO DI ON TAT.SAP_CODE=DI.SAP_CODE
+			<if test="dealerName!=null and dealerName!=''">
+				AND DI.DEALER_NAME like concat(concat('%',#{dealerName}),'%')
+			</if>
+			WHERE TAT.STATUS=1
+			
+			<if test="type!=null and type!=''">
+				AND TAT.TYPE=#{type}
+			</if>
+									
+			<if test="sapCode!=null and sapCode !=''">
+				AND TAT.SAP_CODE=#{sapCode}
+			</if>
+									
+			<if test="dealerType!=null and dealerType>=0">
+				AND TAT.DEALER_TYPE=#{dealerType}
+			</if>
+									
+			<if test="brandId!=null and brandId>=0">
+				AND TAT.BRAND_ID=#{brandId}
+			</if>
+									
+			<if test="auditStatus!=null and auditStatus>=0">
+				AND TAT.AUDIT_STATUS=#{auditStatus}
+			</if>
+				
+			<if test="id!=null and id!=''">
+				AND TAT.ID=#{id}
+			</if>
+			
+			<if test="auditStatusList != null">
+				AND TAT.AUDIT_STATUS IN 
+				<foreach item="item" index="index" collection="auditStatusList" open="(" separator="," close=")">
+						#{item}
+				</foreach>
+			</if>
+	</select>
+	
+	
+	
+	<update id="updateBankTicketLimitAmountById" parameterType="com.sgm.dms.fol.bankTicket.domain.BankTicketLimitAmountPo">
+		UPDATE TT_FOL_BANK_TICKET_AMT_LIMIT 
+		SET UPDATE_BY=#{updateBy},UPDATE_DATE=SYSDATE
+		
+		<if test="amountLimit!=null and amountLimit>0">
+			,AMOUNT_LIMIT=#{amountLimit}
+		</if>
+		<if test="effectDate!=null">
+			,EFFECT_DATE=#{effectDate}
+		</if>
+		<if test="expireDate!=null">
+			,EXPIRE_DATE=#{expireDate}
+		</if>
+		<if test="auditStatus!=null and auditStatus>=0">
+			,AUDIT_STATUS=#{auditStatus}
+		</if>
+		WHERE ID=#{id}
+	</update>
+	
+	<update id="deleteBankTicketLimitAmountById" parameterType="com.sgm.dms.fol.bankTicket.domain.BankTicketLimitAmountPo">
+		UPDATE TT_FOL_BANK_TICKET_AMT_LIMIT 
+		SET UPDATE_BY=#{updateBy},UPDATE_DATE=SYSDATE,STATUS=2
+		WHERE ID=#{id}
+	</update>
+	
+</mapper>

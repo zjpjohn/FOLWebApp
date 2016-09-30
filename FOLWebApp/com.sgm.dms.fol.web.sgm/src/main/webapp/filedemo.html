@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>file service demo</title>
+</head>
+<body>
+	<script src="vendor/jquery/jquery-1.8.3.js"></script>
+	<script>
+	document.domain="saic-gm.com";
+	function getToken() {
+		$.ajaxSetup({ cache: false }); 
+		$.getJSON("services/tokens", function(result) {
+			$.each(result, function(i, field) {
+				if (i == "token") {
+					$("#div1").append(Date() + "---get token---" + field+"<br/>");
+					window.open('http://dapi.saic-gm.com/fileservice/html/upload.html?token='+field+'&resultId=result', '_blank',	'height=300,width=600,scrollbars=no,location=no');
+				}
+			});
+		});
+
+	}
+	function downFile(){
+		$.ajaxSetup({ cache: false }); 
+		$.getJSON("services/tokens", function(result) {
+			$.each(result, function(i, field) {
+				if (i == "token") {
+					$("#div1").append(Date() + "---get token---" + field+"<br/>");
+					window.open('http://dapi.saic-gm.com/fileservice/html/download.html?token='+field+'&fileId='+$('#result').val(), '_blank',	'height=300,width=600,scrollbars=no,location=no');
+				}
+			});
+		});
+
+	}
+	</script>
+	file service test
+	<br />
+	<a href="#" onclick="getToken()">upload a file</a>
+	<a href="#" onclick="downFile()">down a file</a>
+	<br />
+	
+1.需要host设置dapi.saic-gm.com=10.203.27.171（QA环境），否则无法获取服务<br/>
+2.由于跨域传值的问题，页面设置了document.domain=saic-gm.com;
+故本地调试该服务需要设置本地localhost为xx.saic-gm.com(修改host），并使用该名称访问浏览器
+	<br/>
+	result:
+	<div id="div1"></div>
+	file:
+	<input id="result"></input>
+</body>
+</html>

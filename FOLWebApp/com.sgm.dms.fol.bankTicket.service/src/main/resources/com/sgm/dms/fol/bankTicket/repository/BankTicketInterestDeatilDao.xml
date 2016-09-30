@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<!-- 银行维护 -->
+<mapper namespace="com.sgm.dms.fol.bankTicket.repository.BankTicketInterestDeatilDao">
+
+ 	<select id="findBankTicketInterestDeatilByWhere" resultType="com.sgm.dms.fol.bankTicket.dto.BankTicketInterestDeatilQueryDTO">
+ 		SELECT  N.*   FROM (
+	 			SELECT  T.*,ROWNUM AS RN  FROM 
+		 			(
+			 		SELECT TID.SAP_CODE AS sapCode,
+				 		DI.DEALER_NAME AS dealerName,
+				 		DI.DEALER_TYPE AS dealerType,
+				 		BTA.ACCEPTANCE_NUMBER AS acceptanceNumber,
+				 		BTA.DOCUMENT_NUMBER AS documentNumber,
+				 		BI.BANK_CH_NAME AS bankChName,
+				 		BTA.AMOUNT AS amount,
+						BTA.ISSUE_DATE AS issueDate,
+						BTA.EXPIRATION_DATE AS expirationDate,
+						BTD.DEADLINE_DAY AS deadLineDay,
+						BTD.FREE_PERIOD_DAY AS freePeriodDay,
+						TID.DISCOUNT_AMOUNT AS disCountAmount,
+						TID.COUNT_AMOUNT AS countAmount,
+						TID.ADD_TAX_AMOUNT AS addTaxAmount,
+						BTA.REMARK AS remark
+					FROM TT_FOL_BANK_TI_INTEREST_DEATIL TID
+					JOIN TT_FOL_PT_BANK_TI_AMOUNT BTA ON TID.EVENT_ID=BTA.EVENT_ID
+					JOIN TT_FOL_BANK_INFO BI ON UPPER(BTA.BANK_ID)=UPPER(BI.BANK_ABBR)
+					JOIN TM_FOL_DEALER_INFO DI ON BTA.SAP_CODE=DI.SAP_CODE
+<!-- 					LEFT JOIN (SELECT T2.* -->
+<!-- 					FROM TT_FOL_PT_BANK_TI_AMOUNT t1 -->
+<!-- 					JOIN TT_FOL_BANK_TICKET_DEADLINE t2 ON (t1.SAP_CODE=t2.SAP_CODE AND T2.TYPE=2) OR T2.TYPE=1 -->		
+<!-- 					WHERE t2.STATUS=1  -->
+<!-- 					<if test="sapCode!=null and sapCode!=''"> -->
+<!-- 						AND T2.SAP_CODE=#{sapCode} -->
+<!-- 					</if> -->
+<!-- 					) BTD ON BTA.SAP_CODE=BTD.SAP_CODE -->
+					LEFT JOIN TT_FOL_BANK_TICKET_DEADLINE BTD ON BTA.SAP_CODE=BTD.SAP_CODE AND BTD.STATUS=1 AND BTD.AUDIT_STATUS=7
+					
+					WHERE TID.STATUS=1
+					
+					<if test="sapCode!=null and sapCode!=''">
+			 			AND TID.SAP_CODE=#{sapCode}
+			 		</if>
+			 		
+					<if test="bankId!=null and bankId!='-1'">
+						AND BI.BANK_ABBR=#{bankId}
+					</if>
+					
+					<if test="year!=null and year>0">
+						AND TID.YEAR=#{year}
+					</if>
+					
+					<if test="month!=null and month>0">
+						AND TID.MONTH=#{month}
+					</if>
+					
+					<if test="acceptanceNumber!=null and acceptanceNumber!=''">
+						AND BTA.ACCEPTANCE_NUMBER=#{acceptanceNumber}
+					</if>
+					
+					<if test="documentNumber!=null and documentNumber!=''">
+						AND BTA.DOCUMENT_NUMBER=#{documentNumber}
+					</if>
+					
+					<if test="startIssueDate!=null and startIssueDate!=''">
+						<![CDATA[ AND TO_CHAR(TO_DATE(BTA.ISSUE_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')>=#{startIssueDate}]]>
+					</if>
+					
+					<if test="endIssueDate!=null and endIssueDate!=''">
+						<![CDATA[ AND TO_CHAR(TO_DATE(BTA.ISSUE_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')<=#{endIssueDate}]]>
+					</if>
+					
+					<if test="startExpirationDate!=null and startExpirationDate!=''">
+						<![CDATA[ AND TO_CHAR(TO_DATE(BTA.EXPIRATION_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')>=#{startExpirationDate}]]>
+					</if>
+					
+					<if test="endExpirationDate!=null and endExpirationDate!=''">
+						<![CDATA[ AND TO_CHAR(TO_DATE(BTA.EXPIRATION_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')<=#{endExpirationDate}]]>
+					</if>
+					
+					<if test="documentNumberExists!=null and documentNumberExists==0">
+						AND BTA.DOCUMENT_NUMBER IS NULL
+					</if>
+					<if test="documentNumberExists!=null and documentNumberExists==1">
+						AND BTA.DOCUMENT_NUMBER IS NOT NULL
+					</if>
+					) T 
+			     
+			     <![CDATA[ WHERE ROWNUM <=#{endNo} ]]>
+			    	
+		    	) N
+    	<![CDATA[ WHERE N.RN>=#{beginNo}]]>
+ 	</select>
+ 	
+ 	<select id="findBankTicketInterestDeatilCountByWhere" resultType="java.lang.Integer">
+		SELECT count(1)
+		FROM TT_FOL_BANK_TI_INTEREST_DEATIL TID
+		JOIN TT_FOL_PT_BANK_TI_AMOUNT BTA ON TID.EVENT_ID=BTA.EVENT_ID
+		JOIN TT_FOL_BANK_INFO BI ON UPPER(BTA.BANK_ID)=UPPER(BI.BANK_ABBR)
+		JOIN TM_FOL_DEALER_INFO DI ON BTA.SAP_CODE=DI.SAP_CODE
+<!-- 		LEFT JOIN (SELECT T2.* -->
+<!-- 		FROM TT_FOL_PT_BANK_TI_AMOUNT t1 -->
+<!-- 		JOIN TT_FOL_BANK_TICKET_DEADLINE t2 ON (t1.SAP_CODE=t2.SAP_CODE AND T2.TYPE=2) OR T2.TYPE=1 -->
+		
+<!-- 		WHERE t2.STATUS=1  -->
+<!-- 		<if test="sapCode!=null and sapCode!=''"> -->
+<!-- 			AND T2.SAP_CODE=#{sapCode} -->
+<!-- 		</if> -->
+<!-- 		) BTD ON BTA.SAP_CODE=BTD.SAP_CODE -->
+		LEFT JOIN TT_FOL_BANK_TICKET_DEADLINE BTD ON BTA.SAP_CODE=BTD.SAP_CODE AND BTD.STATUS=1 AND BTD.AUDIT_STATUS=7
+		WHERE TID.STATUS=1
+		
+		<if test="sapCode!=null and sapCode!=''">
+ 			AND TID.SAP_CODE=#{sapCode}
+ 		</if>
+ 		
+		<if test="bankId!=null and bankId!='-1'">
+			AND BI.BANK_ABBR=#{bankId}
+		</if>
+		
+		<if test="year!=null and year>0">
+			AND TID.YEAR=#{year}
+		</if>
+					
+		<if test="month!=null and month>0">
+			AND TID.MONTH=#{month}
+		</if>
+					
+		<if test="acceptanceNumber!=null and acceptanceNumber!=''">
+			AND BTA.ACCEPTANCE_NUMBER=#{acceptanceNumber}
+		</if>
+		
+		<if test="documentNumber!=null and documentNumber!=''">
+			AND BTA.DOCUMENT_NUMBER=#{documentNumber}
+		</if>
+		
+		<if test="startIssueDate!=null and startIssueDate!=''">
+			<![CDATA[ AND TO_CHAR(TO_DATE(BTA.ISSUE_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')>=#{startIssueDate}]]>
+		</if>
+		
+		<if test="endIssueDate!=null and endIssueDate!=''">
+			<![CDATA[ AND TO_CHAR(TO_DATE(BTA.ISSUE_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')<=#{endIssueDate}]]>
+		</if>
+		
+		<if test="startExpirationDate!=null and startExpirationDate!=''">
+			<![CDATA[ AND TO_CHAR(TO_DATE(BTA.EXPIRATION_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')>=#{startExpirationDate}]]>
+		</if>
+		
+		<if test="endExpirationDate!=null and endExpirationDate!=''">
+			<![CDATA[ AND TO_CHAR(TO_DATE(BTA.EXPIRATION_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')<=#{endExpirationDate}]]>
+		</if>
+		
+		<if test="documentNumberExists!=null and documentNumberExists==0">
+			AND BTA.DOCUMENT_NUMBER IS NULL
+		</if>
+		<if test="documentNumberExists!=null and documentNumberExists==1">
+			AND BTA.DOCUMENT_NUMBER IS NOT NULL
+		</if>			
+ 	</select>
+</mapper>

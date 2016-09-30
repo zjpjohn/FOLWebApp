@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sgm.dms.fol.invoice.repository.WrOrderDao" >
+  <resultMap id="BaseResultMap" type="com.sgm.dms.fol.invoice.dto.WrOrderDTO" >
+    <id column="WR_ID" property="wrId" jdbcType="DECIMAL" />
+    <result column="WR_NO" property="wrNo" jdbcType="VARCHAR" />
+    <result column="SAP_CODE" property="sapCode" jdbcType="VARCHAR" />
+    <result column="WR_DATE" property="wrDate" jdbcType="VARCHAR" />
+    <result column="WR_BATCH" property="wrBatch" jdbcType="VARCHAR" />
+    <result column="WR_TYPE" property="wrType" jdbcType="VARCHAR" />
+    <result column="CAR_ATTR" property="carAttr" jdbcType="VARCHAR" />
+    <result column="WORK_HOURS_CODE" property="workHoursCode" jdbcType="VARCHAR" />
+    <result column="LINE_NO" property="lineNo" jdbcType="DECIMAL" />
+    <result column="GWM_CLAIM_VERSION_NO" property="gwmClaimVersionNo" jdbcType="VARCHAR" />
+    <result column="GROSS" property="gross" jdbcType="DECIMAL" />
+    <result column="LINETOTAL" property="linetotal" jdbcType="DECIMAL" />
+    <result column="PART_COST" property="partCost" jdbcType="DECIMAL" />
+    <result column="LABOUR_COST" property="labourCost" jdbcType="DECIMAL" />
+    <result column="OTHER_COST" property="otherCost" jdbcType="DECIMAL" />
+    <result column="TAX" property="tax" jdbcType="DECIMAL" />
+    <result column="VIN" property="vin" jdbcType="VARCHAR" />
+    <result column="ADDITIONAL" property="additional" jdbcType="DECIMAL" />
+    <result column="DEDUCTION" property="deduction" jdbcType="DECIMAL" />
+    <result column="RO_NO" property="roNo" jdbcType="VARCHAR" />
+    <result column="CAR_SERIES" property="carSeries" jdbcType="VARCHAR" />
+    <result column="CAR_MODEL" property="carModel" jdbcType="VARCHAR" />
+    <result column="BUSINESS_USER" property="businessUser" jdbcType="VARCHAR" />
+    <result column="VAILD" property="vaild" jdbcType="DECIMAL" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="DATE" />
+    <result column="CREATE_BY" property="createBy" jdbcType="DECIMAL" />
+    <result column="UPDATE_DATE" property="updateDate" jdbcType="DATE" />
+    <result column="UPDATE_BY" property="updateBy" jdbcType="DECIMAL" />
+    <result column="WR_TYPE" property="wrType" jdbcType="VARCHAR" />
+    <result column="WARRANTY_CODE" property="warrantyCode" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    WR_ID, WR_NO, SAP_CODE, WR_DATE, WR_BATCH, WR_TYPE, CAR_ATTR, WORK_HOURS_CODE, LINE_NO, 
+    GWM_CLAIM_VERSION_NO, GROSS, LINETOTAL, PART_COST, LABOUR_COST, OTHER_COST, TAX, 
+    VIN, ADDITIONAL, DEDUCTION, RO_NO, CAR_SERIES, CAR_MODEL, BUSINESS_USER, VAILD, REMARK, 
+    CREATE_DATE, CREATE_BY, UPDATE_DATE, UPDATE_BY
+  </sql>
+
+  <insert id="insert" parameterType="com.sgm.dms.fol.invoice.domain.WrOrder" >
+     <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="wrId" >
+			SELECT SEQ_WR_ORDER_ID.NEXTVAL AS id FROM DUAL
+	 </selectKey>
+     insert into TT_FOL_WR_ORDER (WR_ID, WR_NO, SAP_CODE, 
+	      WR_DATE, WR_BATCH, WR_TYPE, 
+	      CAR_ATTR, WORK_HOURS_CODE, LINE_NO, 
+	      GWM_CLAIM_VERSION_NO, GROSS, LINETOTAL, 
+	      PART_COST, LABOUR_COST, OTHER_COST, 
+	      TAX, VIN, ADDITIONAL, 
+	      DEDUCTION, RO_NO, CAR_SERIES, 
+	      CAR_MODEL, BUSINESS_USER, VAILD, 
+	      REMARK, CREATE_DATE, CREATE_BY, 
+	      UPDATE_DATE, UPDATE_BY,WARRANTY_CODE)
+     values (#{wrId,jdbcType=DECIMAL}, #{wrNo,jdbcType=VARCHAR}, #{sapCode,jdbcType=VARCHAR}, 
+	      #{wrDate,jdbcType=VARCHAR}, #{wrBatch,jdbcType=VARCHAR}, #{wrType,jdbcType=VARCHAR}, 
+	      #{carAttr,jdbcType=VARCHAR}, #{workHoursCode,jdbcType=VARCHAR}, #{lineNo,jdbcType=DECIMAL}, 
+	      #{gwmClaimVersionNo,jdbcType=VARCHAR}, #{gross,jdbcType=DECIMAL}, #{linetotal,jdbcType=DECIMAL}, 
+	      #{partCost,jdbcType=DECIMAL}, #{labourCost,jdbcType=DECIMAL}, #{otherCost,jdbcType=DECIMAL}, 
+	      #{tax,jdbcType=DECIMAL}, #{vin,jdbcType=VARCHAR}, #{additional,jdbcType=DECIMAL}, 
+	      #{deduction,jdbcType=DECIMAL}, #{roNo,jdbcType=VARCHAR}, #{carSeries,jdbcType=VARCHAR}, 
+	      #{carModel,jdbcType=VARCHAR}, #{businessUser,jdbcType=VARCHAR}, 1, 
+	      #{remark,jdbcType=VARCHAR}, SYSDATE, #{createBy,jdbcType=DECIMAL}, 
+	      SYSDATE, #{updateBy,jdbcType=DECIMAL},#{warrantyCode,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertList" parameterType="java.util.List" >
+    insert into TT_FOL_WR_ORDER (WR_ID, VAILD,CREATE_DATE,UPDATE_DATE,WR_NO, SAP_CODE, 
+      WR_DATE, WR_BATCH, WR_TYPE, 
+      CAR_ATTR, WORK_HOURS_CODE, LINE_NO, 
+      GWM_CLAIM_VERSION_NO, GROSS, LINETOTAL, 
+      PART_COST, LABOUR_COST, OTHER_COST, 
+      TAX, VIN, ADDITIONAL, 
+      DEDUCTION, RO_NO, CAR_SERIES, 
+      CAR_MODEL, BUSINESS_USER,  
+      REMARK,  CREATE_BY, UPDATE_BY)
+    select SEQ_WR_ORDER_ID.NEXTVAL,1,SYSDATE,SYSDATE,temp.* 
+    from (
+    <foreach collection="wrOrderList" item="item" separator="UNION ALL" > 
+    select
+	      #{item.wrNo,jdbcType=VARCHAR}, #{item.sapCode,jdbcType=VARCHAR}, 
+	      #{item.wrDate,jdbcType=VARCHAR}, #{item.wrBatch,jdbcType=VARCHAR}, #{item.wrType,jdbcType=VARCHAR}, 
+	      #{item.carAttr,jdbcType=VARCHAR}, #{item.workHoursCode,jdbcType=VARCHAR}, #{item.lineNo,jdbcType=DECIMAL}, 
+	      #{item.gwmClaimVersionNo,jdbcType=VARCHAR}, #{item.gross,jdbcType=DECIMAL}, #{item.linetotal,jdbcType=DECIMAL}, 
+	      #{item.partCost,jdbcType=DECIMAL}, #{item.labourCost,jdbcType=DECIMAL}, #{item.otherCost,jdbcType=DECIMAL}, 
+	      #{item.tax,jdbcType=DECIMAL}, #{item.vin,jdbcType=VARCHAR}, #{item.additional,jdbcType=DECIMAL}, 
+	      #{item.deduction,jdbcType=DECIMAL}, #{item.roNo,jdbcType=VARCHAR}, #{item.carSeries,jdbcType=VARCHAR}, 
+	      #{item.carModel,jdbcType=VARCHAR}, #{item.businessUser,jdbcType=VARCHAR}, 
+	      #{item.remark,jdbcType=VARCHAR},#{item.createBy,jdbcType=DECIMAL}, 
+	      #{item.updateBy,jdbcType=DECIMAL}
+     from dual
+     </foreach>) temp
+  </insert>
+  <select id="findWrOrderListByTsId" resultMap="BaseResultMap">
+	SELECT
+		WC.TS_ID tsId,
+		Wo.PART_COST partCost,
+		Wo.LABOUR_COST labourCost,
+		Wo.OTHER_COST otherCost,
+		Wo.TAX tax,
+		Wo.LINETOTAL linetotal,
+		WO.GROSS gross,
+		WO.WR_TYPE wrType,
+		WO.LINE_NO lineNo,
+		WO.WARRANTY_CODE warrantyCode,
+		WO.WR_NO wrNO
+	FROM
+		TT_FOL_WR_COLLECT WC
+	JOIN TT_FOL_WR_ORDER WO ON WO.WR_ID = WC.WR_ID
+	WHERE
+		WC.VALID = 1
+	AND WO.VAILD = 1
+	AND WC.TS_ID = #{tsId}
+  </select>
+  <update id="delWrOrderByTsId" parameterType="java.lang.String">
+   UPDATE TT_FOL_WR_ORDER
+		SET VAILD = 0,
+		 UPDATE_DATE = SYSDATE
+		WHERE
+		   WR_ID IN (
+			SELECT
+				wc.WR_ID
+			FROM
+				TT_FOL_WR_ORDER wo,
+				TT_FOL_WR_COLLECT wc
+			WHERE
+				WO.WR_ID = WC.WR_ID
+			AND wc.valid = 1
+			AND wc.TS_ID = #{tsId}
+		)
+  </update>
+  <select id="findWrOrderListByPrimary" parameterType="java.util.List" resultMap="BaseResultMap">
+  SELECT 
+        *
+  FROM 
+       TT_FOL_WR_ORDER
+  WHERE 
+        VAILD=1 
+   AND
+   (
+   <foreach collection="wrOrderDtoList" item="item" separator="OR" >
+     (WR_NO = #{item.wrNo}
+     AND RO_NO = #{item.roNo}
+     AND LINE_NO = #{item.lineNo})
+   </foreach>)
+  </select>
+</mapper>

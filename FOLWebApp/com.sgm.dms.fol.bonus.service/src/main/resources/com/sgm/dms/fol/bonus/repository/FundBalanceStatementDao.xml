@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<mapper namespace="com.sgm.dms.fol.bonus.repository.FundBalanceStatementDao">
+	<!-- 资金余额报表 -->
+	<select id="findAmountByWhere" resultType="com.sgm.dms.fol.bonus.dto.FundBalanceStatementDTO">
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+			SELECT
+		    RE.SAP_CODE AS sapCode,
+			RE.DEALER_NAME AS dealerName,
+			(RE.TOTAL_AMOUNT-RE.FROZEN_AMOUNT) AS reserveAvailAmount,
+     		(BE.TOTAL_AMOUNT-BE.FROZEN_AMOUNT) AS bonusAvailAmount,
+      		(((BE.TOTAL_AMOUNT-BE.FROZEN_AMOUNT)/100*35)+(RE.TOTAL_AMOUNT-RE.FROZEN_AMOUNT) )AS maxOrderAmount
+			FROM TT_FOL_PT_RESERVE_AMOUNT RE
+			JOIN TM_FOL_DEALER_INFO DE ON RE.SAP_CODE = DE.SAP_CODE
+    		JOIN TT_FOL_PT_BONUS_AMOUNT BE ON BE.SAP_CODE=RE.SAP_CODE
+			<!-- 渠道类型 -->
+			<if test="dealerType!=null and dealerType>=0">
+				 AND DE.DEALER_TYPE=#{dealerType} 		
+	    	</if>
+			WHERE 1=1
+	    	<!-- 客户代码 -->
+			<if test="startSapCode!=null and ! startSapCode.trim().equals('')">
+			<![CDATA[ AND RE.SAP_CODE>=#{startSapCode} ]]>
+			</if>
+			<if test="endSapCode!=null and ! endSapCode.trim().equals('')">
+				<![CDATA[ AND RE.SAP_CODE<=#{endSapCode} ]]>
+			</if>
+	    	<!-- 客户名称 -->
+			<if test="dealerName!=null and ! dealerName.trim().equals('')">
+	      		<![CDATA[ AND RE.DEALER_NAME =#{dealerName} ]]>
+	     	</if>
+			<if test="endNo!=null and endNo>0"> 
+	    ) t1) t2
+				<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+			</if>
+	</select>
+
+</mapper>
+ 

@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sgm.dms.fol.bankTicket.repository.BankTicketDAO">
+	<!-- map -->
+	<resultMap id="bankTicketResult" 
+	type="com.sgm.dms.fol.bankTicket.dto.BankTicketInfoDTO">
+		<id property="eventId" column="EVENT_ID" />
+		<result property="acceptanceNumber" column="ACCEPTANCE_NUMBER" />
+		<result property="referenceCode" column="REFERENCE_CODE" />
+		<result property="corpCode" column="CORP_CODE" />
+		<result property="sapCode" column="SAP_CODE" />
+		<result property="amount" column="AMOUNT" />
+		<result property="bankId" column="BANK_ID" />
+		<result property="issueDate" column="ISSUE_DATE"  javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="expirationDate" column="EXPIRATION_DATE" javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="eventId" column="EVENT_ID"/>	
+		<result property="invoiceNumber" column="INVOICE_NUMBER" />
+		<result property="trackNumber" column="TRACK_NUMBER" />
+	</resultMap>
+	
+	<!-- 根据月份查询银票信息 -->
+	<select id="findBankTicketDataByYearMonth" resultMap="bankTicketResult" parameterType="java.lang.String">
+			SELECT  
+				EVENT_ID,
+				REFERENCE_CODE,
+				CORP_CODE,
+				DEALER_NAME,
+				SAP_CODE,
+				AMOUNT,
+				BANK_ID,
+				BANK_NAME,
+				ISSUE_DATE,
+				EXPIRATION_DATE,
+				BANK_MISMATCH,
+				STATUS,
+				FOL_RESULT,
+				SAIC_RESULT,
+				ERROR_MSG,
+				VALID,
+				REMARK,
+				CREATE_BY,
+				CREATE_DATE,
+				UPDATE_BY,
+				UPDATE_DATE,
+				SIGN_IN_DATE
+			FROM TT_FOL_PT_BANK_TI_AMOUNT 
+			WHERE SUBSTR(SIGN_IN_DATE,0,6)=#{param1} AND SIGN_IN_DATE IS NOT NULL
+	</select>
+	
+	<!--根据月份查询银票信息总记录数  -->
+	<select id="findBankTicketDataCountByYearMonth" resultType="java.lang.Integer">
+			SELECT  
+				COUNT(1)
+			FROM TT_FOL_PT_BANK_TI_AMOUNT 
+			WHERE SUBSTR(SIGN_IN_DATE,0,6)=#{param1} AND SIGN_IN_DATE IS NOT NULL
+	</select>
+	
+	<!-- 根绝月份统计dealer信息 -->
+	<select id="findBnakTicketDealerInfoByYearMonth" parameterType="com.sgm.dms.fol.bankTicket.dto.BankTicketDraftsOverdueInterestDTO"  resultType="com.sgm.dms.fol.bankTicket.dto.BankTicketDraftsOverdueInterestDTO">
+		SELECT  N.*   FROM (
+		 	SELECT  T.*,MON.INVOICE_NUMBER AS invoiceNumber,MON.TRACK_NUMBER AS trackNumber,ROWNUM AS RN  FROM 
+			 		(	
+						SELECT  
+							M.SAP_CODE AS sapCode,
+							(
+								SELECT 
+									T.DEALER_NAME  
+								FROM 
+								TM_FOL_DEALER_INFO T 
+								WHERE T.SAP_CODE=M.SAP_CODE
+							)  AS dealerName
+							,(
+							SELECT  T.CORP_CODE AS corpCode  
+								FROM 
+								(
+									SELECT CORP_CODE,ROWNUM AS RB   
+									FROM TT_FOL_PT_BANK_TI_AMOUNT
+								) T
+							where SAP_CODE=M.SAP_CODE AND CORP_CODE=M.CORP_CODE) 
+							
+							AS corpCode
+						FROM TT_FOL_PT_BANK_TI_AMOUNT M 
+						WHERE substr(M.SIGN_IN_DATE,0,6)=#{yearMonth} AND M.SIGN_IN_DATE IS NOT NULL
+						GROUP BY M.SAP_CODE,M.CORP_CODE
+					) T 
+				     <!-- ENDNO -->
+				     left join TT_FOL_BANK_TI_INTEREST_MONTH mon on mon.SAP_CODE=SAP_CODE
+				     <if test="endNo!=null and endNo>0 ">
+					 	<![CDATA[ WHERE ROWNUM <=#{endNo} ]]>		
+					</if>
+				    
+			    ) N
+			      <!-- BEGINNO -->
+			       <if test="endNo!=null and endNo>0 ">
+	    				<![CDATA[ WHERE N.RN>=#{beginNo}]]>
+	    			</if>
+	</select>
+	
+	<!-- 统计dealercount -->
+	<select id="findBnakTicketDealerInfoCountByYearMonth"  resultType="java.lang.Integer">
+		SELECT  
+			COUNT(1)
+		FROM 
+		(SELECT  
+			M.SAP_CODE
+		FROM TT_FOL_PT_BANK_TI_AMOUNT M 
+		WHERE SUBSTR(M.SIGN_IN_DATE,0,6)=#{param1} AND M.SIGN_IN_DATE IS NOT NULL
+		GROUP BY M.SAP_CODE)
+	</select>
+	<!-- 检测银票是否有已经生成银票号码 -->
+	<select  id="findBankTicketIsHasInvoiceNumberBySapCodeAndTime" resultType="java.lang.Integer">
+		SELECT 
+			COUNT(1)   
+		FROM TT_FOL_PT_BANK_TI_AMOUNT 
+		WHERE SAP_CODE=#{param1} AND SIGN_IN_DATE=#{param2} AND INVOICE_NUMBER IS NOT NULL
+	</select>
+	
+	<select id="findBankTicketInfoByWhere" resultType="com.sgm.dms.fol.bankTicket.dto.QueryBankTicketInfoDTO" parameterType="com.sgm.dms.fol.bankTicket.dto.QueryBankTicketInfoDTO">
+		SELECT  N.*   FROM (
+	 		SELECT  T.*,ROWNUM AS RN  FROM 
+		 		(
+					SELECT  
+						 TI.ACCEPTANCE_NUMBER AS acceptanceNumber,
+						 TI.SAP_CODE AS sapCode,
+						 DI.DEALER_NAME AS dealerName,
+						 TI.AMOUNT AS amount,
+						 TI.BANK_ID AS bankId,
+						  BI.BANK_CH_NAME AS bankName,
+						 TI.ISSUE_DATE AS issueDate,
+						 TI.EXPIRATION_DATE AS expirationDate,
+						 TI.DOCUMENT_NUMBER AS documentNumber,
+				<![CDATA[(CASE WHEN TO_CHAR(TO_DATE(EXPIRATION_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')<TO_CHAR(SYSDATE,'yyyy-MM-dd') THEN '银票已到期' WHEN TI.RELEASE_STATUS=2 THEN '银票已背书' WHEN TI.RELEASE_STATUS=3 THEN '银票已贴现' ELSE '银票未到期' END) AS bankTicketStatusName]]>
+					FROM TT_FOL_PT_BANK_TI_AMOUNT TI
+					JOIN TM_FOL_DEALER_INFO DI ON TI.SAP_CODE=DI.SAP_CODE
+					JOIN TT_FOL_BANK_INFO BI ON UPPER(BI.BANK_ABBR)=UPPER(TI.BANK_ID)
+					WHERE TI.VALID=1 AND SIGN_IN_DATE IS NOT NULL
+			
+					<if test="acceptanceNumber!=null and acceptanceNumber!=''">
+						AND TI.ACCEPTANCE_NUMBER=#{acceptanceNumber}
+					</if>
+					
+					<if test="sapCode!=null and sapCode!=''">
+						AND TI.SAP_CODE=#{sapCode}
+					</if>
+					
+					<if test="dealerName!=null and dealerName!=''">
+						AND DI.DEALER_NAME LIKE concat(concat('%',#{dealerName}),'%')
+					</if>
+					
+					<if test="amount!=null">
+						AND TI.AMOUNT=#{amount}
+					</if>
+					
+					<if test="bankId!=null and bankId!='-1'">
+						AND BI.BANK_ABBR=#{bankId}
+					</if>
+					
+					<if test="issueDate!=null and issueDate!=''">
+						<![CDATA[AND TO_CHAR(TO_DATE(TI.ISSUE_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')=#{issueDate}]]>	
+					</if>
+					
+					<if test="expirationDate!=null and expirationDate!=''">
+						<![CDATA[AND TO_CHAR(TO_DATE(TI.EXPIRATION_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')=#{expirationDate}]]>	
+					</if>
+		
+					
+					<if test="dealerType!=null and dealerType!=-1">
+						AND DI.DEALER_TYPE=#{dealerType}
+					</if>
+					
+					<if test="brandId!=null and brandId!=-1">
+						AND SUBSTR(TI.SAP_CODE,0,2)=#{brandId}
+					</if>
+					
+					<if test="documentNumber!=null and documentNumber!=''">
+						AND TI.DOCUMENT_NUMBER=#{documentNumber}
+					</if>
+					
+					<if test="bankTicketStatus!=null and bankTicketStatus==1">
+						<![CDATA[AND TO_CHAR(TO_DATE(TI.EXPIRATION_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')>=TO_CHAR(SYSDATE,'yyyy-MM-dd') AND TI.RELEASE_STATUS IS NULL]]>	
+					</if>
+					<if test="bankTicketStatus!=null and bankTicketStatus==0">
+						<![CDATA[AND TO_CHAR(TO_DATE(TI.EXPIRATION_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')<TO_CHAR(SYSDATE,'yyyy-MM-dd') AND TI.RELEASE_STATUS IS NULL]]>	
+					</if>
+					<if test="bankTicketStatus!=null and bankTicketStatus==2">
+						<![CDATA[AND TI.RELEASE_STATUS=2]]>	
+					</if>
+					<if test="bankTicketStatus!=null and bankTicketStatus==3">
+						<![CDATA[AND TI.RELEASE_STATUS=3]]>	
+					</if>
+					) T 
+			     
+			     <![CDATA[ WHERE ROWNUM <=#{endNo} ]]>	
+		    ) N
+    	<![CDATA[ WHERE N.RN>=#{beginNo}]]>
+	</select>
+	
+	<select id="findBankTicketInfoCountByWhere" resultType="java.lang.Integer">
+		SELECT count(1)
+		FROM TT_FOL_PT_BANK_TI_AMOUNT TI
+		JOIN TM_FOL_DEALER_INFO DI ON TI.SAP_CODE=DI.SAP_CODE
+		JOIN TT_FOL_BANK_INFO BI ON UPPER(BI.BANK_ABBR)=UPPER(TI.BANK_ID)
+		WHERE TI.VALID=1 AND SIGN_IN_DATE IS NOT NULL
+		
+		<if test="acceptanceNumber!=null and acceptanceNumber!=''">
+			AND TI.ACCEPTANCE_NUMBER=#{acceptanceNumber}
+		</if>
+		
+		<if test="sapCode!=null and sapCode!=''">
+			AND TI.SAP_CODE=#{sapCode}
+		</if>
+		
+		<if test="dealerName!=null and dealerName!=''">
+			AND DI.DEALER_NAME LIKE concat(concat('%',#{dealerName}),'%')
+		</if>
+		
+		<if test="amount!=null">
+			AND TI.AMOUNT=#{amount}
+		</if>
+		
+		<if test="bankId!=null and bankId!='-1'">
+			AND BI.BANK_ABBR=#{bankId}
+		</if>
+		
+		<if test="issueDate!=null and issueDate!=''">
+			<![CDATA[AND TO_CHAR(TO_DATE(TI.ISSUE_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')=#{issueDate}]]>	
+		</if>
+		
+		<if test="expirationDate!=null and expirationDate!=''">
+			<![CDATA[AND TO_CHAR(TO_DATE(TI.EXPIRATION_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')=#{expirationDate}]]>	
+		</if>
+		
+		<if test="dealerType!=null and dealerType!=-1">
+			AND DI.DEALER_TYPE=#{dealerType}
+		</if>
+		
+		<if test="brandId!=null and brandId!=-1">
+			AND SUBSTR(TI.SAP_CODE,0,2)=#{brandId}
+		</if>
+		
+		<if test="documentNumber!=null and documentNumber!=''">
+			AND TI.DOCUMENT_NUMBER=#{documentNumber}
+		</if>	
+		<if test="bankTicketStatus!=null and bankTicketStatus==1">
+			<![CDATA[AND TO_CHAR(TO_DATE(TI.EXPIRATION_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')>=TO_CHAR(SYSDATE,'yyyy-MM-dd')]]>	
+		</if>
+		<if test="bankTicketStatus!=null and bankTicketStatus==0">
+			<![CDATA[AND TO_CHAR(TO_DATE(TI.EXPIRATION_DATE,'yyyy-MM-dd'),'yyyy-MM-dd')<TO_CHAR(SYSDATE,'yyyy-MM-dd')]]>	
+		</if>		
+	</select>
+	
+	<select id="findBankTicketTotalAmount" resultType="com.sgm.dms.fol.bankTicket.dto.BankTicketCollectDTO" parameterType="com.sgm.dms.fol.bankTicket.dto.BankTicketCollectDTO">
+		SELECT BBT.AMOUNT AS totalAmount,BI.BANK_ABBR AS bankId,BI.BANK_CH_NAME AS bankName,BBT.DEALER_TYPE AS dealerType,TC.CODE_CN_DESC AS dealerName
+		FROM TT_FOL_BANK_INFO BI
+		JOIN  TT_FOL_BANK_BANK_TICKET BBT ON BI.ID=BBT.BANK_ID
+		LEFT JOIN TC_FOL_CODE TC ON TC.CODE=BBT.DEALER_TYPE AND TC.TYPE='1073'
+		WHERE BBT.STATUS=1
+		
+		<if test="bankId!=null and bankId!='-1'">
+			AND BI.BANK_ABBR=#{bankId}
+		</if>
+		<if test="dealerType!=null and dealerType>=0">
+			AND BBT.DEALER_TYPE=#{dealerType}
+		</if>
+		
+	</select>
+	
+	<select id="findBankTicketUsedAmount" resultType="com.sgm.dms.fol.bankTicket.dto.BankTicketCollectDTO" parameterType="com.sgm.dms.fol.bankTicket.dto.BankTicketCollectDTO">
+		SELECT SUM(BTA.AMOUNT) AS usedAmount,FDI.DEALER_TYPE AS dealerType,BI.BANK_ABBR AS bankId,BI.BANK_CH_NAME AS bankName,TC.CODE_CN_DESC AS dealerName
+		FROM TT_FOL_PT_BANK_TI_AMOUNT BTA
+		JOIN TM_FOL_DEALER_INFO FDI ON BTA.SAP_CODE=FDI.SAP_CODE
+		JOIN TT_FOL_BANK_INFO BI ON UPPER(BI.BANK_ABBR)=UPPER(BTA.BANK_ID)
+		LEFT JOIN TC_FOL_CODE TC ON TC.CODE=FDI.DEALER_TYPE AND TC.TYPE='1073'
+		WHERE BTA.VALID=1 AND EXPIRATION_DATE>TO_CHAR(SYSDATE,'yyyyMMdd') AND (BTA.RELEASE_STATUS IS NULL OR BTA.RELEASE_STATUS NOT IN (2, 3))
+		
+		<if test="dealerType!=null and dealerType>=0">
+			AND FDI.DEALER_TYPE=#{dealerType}
+		</if>
+		
+		<if test="bankId!=null and bankId!='-1'">
+			AND BTA.BANK_ID=#{bankId}
+		</if>
+		
+		<if test="folResult != null">
+			and (BTA.FOL_RESULT = #{folResult})
+		</if>
+		
+		and (BTA.SAP_EXECUTE_RESULT = #{sapExecuteResult} or BTA.SAP_EXECUTE_RESULT is NULL)
+		
+		and (BTA.SAIC_RESULT IN 
+			 <foreach item="item" index="index" collection="saicResultList" open="(" separator="," close=")">
+				 #{item}
+			 </foreach>
+		    or BTA.SAIC_RESULT is NULL)
+		
+		GROUP BY FDI.DEALER_TYPE,BI.BANK_ABBR,BI.BANK_CH_NAME,TC.CODE_CN_DESC
+	</select>
+	
+	<select id="findBankTicketFiveDayWithInAmount" resultType="com.sgm.dms.fol.bankTicket.dto.BankTicketCollectDTO" parameterType="com.sgm.dms.fol.bankTicket.dto.BankTicketCollectDTO">
+		SELECT SUM(BTA.AMOUNT) AS fiveDayWithInAmount,FDI.DEALER_TYPE AS dealerType,BI.BANK_ABBR AS bankId,BI.BANK_CH_NAME AS bankName,TC.CODE_CN_DESC AS dealerName
+		FROM TT_FOL_PT_BANK_TI_AMOUNT BTA
+		JOIN TM_FOL_DEALER_INFO FDI ON BTA.SAP_CODE=FDI.SAP_CODE
+		JOIN TT_FOL_BANK_INFO BI ON UPPER(BI.BANK_ABBR)=UPPER(BTA.BANK_ID)
+		LEFT JOIN TC_FOL_CODE TC ON TC.CODE=FDI.DEALER_TYPE AND TC.TYPE='1073'
+		<![CDATA[WHERE BTA.VALID=1 AND EXPIRATION_DATE>TO_CHAR(SYSDATE,'yyyyMMdd') AND EXPIRATION_DATE<=TO_CHAR(SYSDATE+5,'yyyyMMdd')]]>
+		
+		<if test="dealerType!=null and dealerType>=0">
+			AND FDI.DEALER_TYPE=#{dealerType}
+		</if>
+		
+		<if test="bankId!=null and bankId!='-1'">
+			AND BTA.BANK_ID=#{bankId}
+		</if>
+		
+		<if test="folResult != null">
+			and (BTA.FOL_RESULT = #{folResult})
+		</if>
+		
+		and (BTA.SAP_EXECUTE_RESULT = #{sapExecuteResult} or BTA.SAP_EXECUTE_RESULT is NULL)
+		
+		and (BTA.SAIC_RESULT IN 
+			 <foreach item="item" index="index" collection="saicResultList" open="(" separator="," close=")">
+				 #{item}
+			 </foreach>
+		    or BTA.SAIC_RESULT is NULL)
+		
+		GROUP BY FDI.DEALER_TYPE,BI.BANK_ABBR,BI.BANK_CH_NAME,TC.CODE_CN_DESC
+	</select>
+	
+	<!-- 查询可用额度(dealer) -->
+	<select  id="findBankTicketValidAmountByBankId" parameterType="com.sgm.dms.fol.bankTicket.dto.BankTicketValidAmountDTO"  resultType="com.sgm.dms.fol.bankTicket.dto.BankTicketValidAmountDTO" >
+			SELECT  N.*   FROM (
+		 		SELECT  T.*,ROWNUM AS RN  FROM 
+			 		(
+					SELECT  
+					
+						BANKINFO.ID AS bankId,BANKINFO.BANK_ABBR AS bankAbbr,BANKINFO.BANK_CH_NAME AS bankChName,
+						
+						<!-- 总额度 -->
+<!-- 						(BANKTICKET.AMOUNT-NVL((SELECT  SUM(UNEXPED.AMOUNT) FROM TT_FOL_PT_BANK_TI_AMOUNT UNEXPED WHERE UPPER(UNEXPED.BANK_ID)=UPPER(BANKINFO.BANK_ABBR) AND UNEXPED.EXPIRATION_DATE>TO_CHAR(SYSDATE,'YYYYMMDD') GROUP BY UNEXPED.BANK_ID),0))    -->
+<!-- 						AS availAmount -->
+						BANKTICKET.AMOUNT AS totalAmount
+						 ,
+						<!-- 今天到期额度 -->
+						NVL((SELECT SUM(EXPTD.AMOUNT) FROM TT_FOL_PT_BANK_TI_AMOUNT EXPTD WHERE UPPER(EXPTD.BANK_ID)=UPPER(BANKINFO.BANK_ABBR) AND EXPTD.EXPIRATION_DATE=TO_CHAR(SYSDATE,'YYYYMMDD') GROUP BY EXPTD.BANK_ID),0)
+						AS exptdAmount
+						,
+						<!-- 明天到期额度 -->
+						NVL((SELECT  SUM(EXPTMR.AMOUNT) FROM TT_FOL_PT_BANK_TI_AMOUNT EXPTMR WHERE UPPER(EXPTMR.BANK_ID)=UPPER(BANKINFO.BANK_ABBR) AND EXPTMR.EXPIRATION_DATE=TO_CHAR(SYSDATE+1,'YYYYMMDD') GROUP BY EXPTMR.BANK_ID),0)
+						AS exptmrAmount
+						,
+						<!-- 后天到期额度 -->
+						NVL((SELECT  SUM(EXPAFTERTMR.AMOUNT) FROM TT_FOL_PT_BANK_TI_AMOUNT EXPAFTERTMR WHERE UPPER(EXPAFTERTMR.BANK_ID)=UPPER(BANKINFO.BANK_ABBR) AND EXPAFTERTMR.EXPIRATION_DATE=TO_CHAR(SYSDATE+2,'YYYYMMDD') GROUP BY EXPAFTERTMR.BANK_ID),0)
+						AS expaftertmrAmount
+					
+					FROM TT_FOL_BANK_INFO BANKINFO
+					LEFT JOIN  TT_FOL_BANK_BANK_TICKET  BANKTICKET
+					ON BANKTICKET.BANK_ID=BANKINFO.ID
+					<if test="bankId!=null and bankId>-1">
+						WHERE BANKINFO.ID=#{bankId}
+					</if>
+			) T 
+				     
+				     <![CDATA[ WHERE ROWNUM <=#{endNo} ]]>	
+			    ) N
+	    	<![CDATA[ WHERE N.RN>=#{beginNo}]]>
+		
+	</select>
+	
+	<!-- 可用额度查询count(dealer) -->
+	<select id="findBankTicketValidAmountCountByBankId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT  
+		
+			COUNT(1)
+		FROM 
+		TT_FOL_BANK_INFO BANKINFO
+		LEFT JOIN  TT_FOL_BANK_BANK_TICKET  BANKTICKET
+		ON BANKTICKET.BANK_ID=BANKINFO.ID
+		<if test="_parameter!=null and _parameter>-1">
+			WHERE BANKINFO.ID=#{_parameter}
+		</if>
+	</select>
+	
+	<select id="findBankTicketExceptionInventoryList" resultType="com.sgm.dms.fol.bankTicket.dto.BankTicketExceptionInventoryDTO">
+		<if test="endNo!=null and endNo>0">
+			SELECT  N.*   FROM (
+		 		SELECT  T.*,ROWNUM AS RN  FROM 
+			 		(
+		</if>
+			 			SELECT 
+			 				TA.SAP_CODE AS sapCode,
+			 				DI.DEALER_NAME AS dealerName,
+			 				TA.ACCEPTANCE_NUMBER AS acceptanceNumber,
+			 				BI.BANK_CH_NAME AS bankName,
+			 				TA.AMOUNT AS amount,
+			 				TA.CORP_CODE AS corpCode,
+			 				TA.ISSUE_DATE AS issueDate,
+			 				TA.ERROR_MSG AS errorMsg
+					 	FROM TT_FOL_PT_BANK_TI_AMOUNT TA
+					 	LEFT JOIN TM_FOL_DEALER_INFO DI ON TA.SAP_CODE=DI.SAP_CODE
+					 	LEFT JOIN TT_FOL_BANK_INFO BI ON UPPER(BI.BANK_ABBR)=UPPER(TA.BANK_ID)
+					 	<where>
+					 		<if test="sapCode!=null and sapCode!=''">
+					 			TA.SAP_CODE=#{sapCode}
+					 		</if> 
+					 		
+					 		<if test="acceptanceNumber!=null and acceptanceNumber !=''">
+					 			AND TA.ACCEPTANCE_NUMBER=#{acceptanceNumber}
+					 		</if>
+					 		
+					 		<![CDATA[ AND TA.ERROR_MSG<>'无' AND TA.FOL_RESULT='SU01' ]]>
+					 	</where>
+					 	ORDER BY TA.SAP_CODE,TA.ISSUE_DATE
+		<if test="endNo!=null and endNo>0">			
+					) T 
+				     
+				    <![CDATA[ WHERE ROWNUM <=#{endNo} ]]>	
+			    ) N
+	    	<![CDATA[ WHERE N.RN>=#{beginNo}]]>
+	    </if>
+	</select>
+</mapper>

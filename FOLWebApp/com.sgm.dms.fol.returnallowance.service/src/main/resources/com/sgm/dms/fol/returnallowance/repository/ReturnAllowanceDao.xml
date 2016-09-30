@@ -1,0 +1,889 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<mapper namespace="com.sgm.dms.fol.returnallowance.repository.ReturnAllowanceDao">
+    <!-- ================================== 自动生成DAO start ==================================  -->
+  <resultMap id="BaseResultMap" type="com.sgm.dms.fol.returnallowance.domain.ReturnAllowancePO" >
+    <id column="ID" property="id" jdbcType="DECIMAL" />
+    <result column="ALLOWANCE_NO" property="allowanceNo" jdbcType="VARCHAR" />
+    <result column="CLAIM_RETURN_ORDER_ID" property="claimReturnOrderId" jdbcType="DECIMAL" />
+    <result column="FILED_ID" property="filedId" jdbcType="VARCHAR" />
+    <result column="SAP_CODE" property="sapCode" jdbcType="VARCHAR" />
+    <result column="LINETOTAL" property="linetotal" jdbcType="DECIMAL" />
+    <result column="TAX" property="tax" jdbcType="DECIMAL" />
+    <result column="REQ_BILL_NO" property="reqBillNo" jdbcType="VARCHAR" />
+    <result column="EXPRESS_NO" property="expressNo" jdbcType="VARCHAR" />
+    <result column="EXPRESS_SEND_TIME" property="expressSendTime" jdbcType="TIMESTAMP" />
+    <result column="PHONE" property="phone" jdbcType="VARCHAR" />
+    <result column="BANK_ACCOUNT" property="bankAccount" jdbcType="VARCHAR" />
+    <result column="COMPANY_NAME" property="companyName" jdbcType="VARCHAR" />
+    <result column="ADDRESS" property="address" jdbcType="VARCHAR" />
+    <result column="APPLY_DATE" property="applyDate" jdbcType="TIMESTAMP" />
+    <result column="APPLICANT" property="applicant" jdbcType="DECIMAL" />
+    <result column="CUSTOMER_REMARK" property="customerRemark" jdbcType="VARCHAR" />
+    <result column="REPORT_DATE" property="reportDate" jdbcType="TIMESTAMP" />
+    <result column="REPORTER" property="reporter" jdbcType="DECIMAL" />
+    <result column="STATUS" property="status" jdbcType="DECIMAL" />
+    <result column="APPROVE_DATE" property="approveDate" jdbcType="TIMESTAMP" />
+    <result column="APPROVE_MAN" property="approveMan" jdbcType="DECIMAL" />
+    <result column="APPROVE_MSG" property="approveMsg" jdbcType="VARCHAR" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+    <result column="VALID" property="valid" jdbcType="DECIMAL" />
+    <result column="CREATE_BY" property="createBy" jdbcType="DECIMAL" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="UPDATE_BY" property="updateBy" jdbcType="DECIMAL" />
+    <result column="UPDATE_DATE" property="updateDate" jdbcType="TIMESTAMP" />
+    <result column="RETURN_ORDER_NO" property="returnOrderNo" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    ID, ALLOWANCE_NO, CLAIM_RETURN_ORDER_ID, FILED_ID, SAP_CODE, LINETOTAL, TAX, REQ_BILL_NO, 
+    EXPRESS_NO, EXPRESS_SEND_TIME, PHONE, BANK_ACCOUNT, COMPANY_NAME, ADDRESS, APPLY_DATE, 
+    APPLICANT, CUSTOMER_REMARK, REPORT_DATE, REPORTER, STATUS, APPROVE_DATE, APPROVE_MAN, 
+    APPROVE_MSG, REMARK, VALID, CREATE_BY, CREATE_DATE, UPDATE_BY, UPDATE_DATE, RETURN_ORDER_NO
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.sgm.dms.fol.returnallowance.domain.ReturnAllowancePOExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from TT_FOL_CLAIM_ALLOWANCE
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from TT_FOL_CLAIM_ALLOWANCE
+    where ID = #{id,jdbcType=DECIMAL}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from TT_FOL_CLAIM_ALLOWANCE
+    where ID = #{id,jdbcType=DECIMAL}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.sgm.dms.fol.returnallowance.domain.ReturnAllowancePOExample" >
+    delete from TT_FOL_CLAIM_ALLOWANCE
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.sgm.dms.fol.returnallowance.domain.ReturnAllowancePO" >
+  <selectKey resultType="java.lang.Long" keyProperty="id" order="BEFORE" >
+      SELECT SEQ_CLAIM_ALLOWANCE.NEXTVAL AS id FROM DUAL
+    </selectKey>
+    insert into TT_FOL_CLAIM_ALLOWANCE (ID, ALLOWANCE_NO, CLAIM_RETURN_ORDER_ID, 
+      FILED_ID, SAP_CODE, LINETOTAL, 
+      TAX, REQ_BILL_NO, EXPRESS_NO, 
+      EXPRESS_SEND_TIME, PHONE, BANK_ACCOUNT, 
+      COMPANY_NAME, ADDRESS, APPLY_DATE, 
+      APPLICANT, CUSTOMER_REMARK, REPORT_DATE, 
+      REPORTER, STATUS, APPROVE_DATE, 
+      APPROVE_MAN, APPROVE_MSG, REMARK, 
+      VALID, CREATE_BY, CREATE_DATE, 
+      UPDATE_BY, UPDATE_DATE, RETURN_ORDER_NO
+      )
+    values (#{id,jdbcType=DECIMAL}, #{allowanceNo,jdbcType=VARCHAR}, #{claimReturnOrderId,jdbcType=DECIMAL}, 
+      #{filedId,jdbcType=VARCHAR}, #{sapCode,jdbcType=VARCHAR}, #{linetotal,jdbcType=DECIMAL}, 
+      #{tax,jdbcType=DECIMAL}, #{reqBillNo,jdbcType=VARCHAR}, #{expressNo,jdbcType=VARCHAR}, 
+      #{expressSendTime,jdbcType=DATE}, #{phone,jdbcType=VARCHAR}, #{bankAccount,jdbcType=VARCHAR}, 
+      #{companyName,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR}, SYSDATE, 
+      #{applicant,jdbcType=DECIMAL}, #{customerRemark,jdbcType=VARCHAR}, #{reportDate,jdbcType=DATE}, 
+      #{reporter,jdbcType=DECIMAL}, #{status,jdbcType=DECIMAL}, #{approveDate,jdbcType=DATE}, 
+      #{approveMan,jdbcType=DECIMAL}, #{approveMsg,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, 
+      #{valid,jdbcType=DECIMAL}, #{createBy,jdbcType=DECIMAL},SYSDATE, 
+      #{updateBy,jdbcType=DECIMAL}, SYSDATE, #{returnOrderNo,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.sgm.dms.fol.returnallowance.domain.ReturnAllowancePO" >
+    insert into TT_FOL_CLAIM_ALLOWANCE
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="allowanceNo != null" >
+        ALLOWANCE_NO,
+      </if>
+      <if test="claimReturnOrderId != null" >
+        CLAIM_RETURN_ORDER_ID,
+      </if>
+      <if test="filedId != null" >
+        FILED_ID,
+      </if>
+      <if test="sapCode != null" >
+        SAP_CODE,
+      </if>
+      <if test="linetotal != null" >
+        LINETOTAL,
+      </if>
+      <if test="tax != null" >
+        TAX,
+      </if>
+      <if test="reqBillNo != null" >
+        REQ_BILL_NO,
+      </if>
+      <if test="expressNo != null" >
+        EXPRESS_NO,
+      </if>
+      <if test="expressSendTime != null" >
+        EXPRESS_SEND_TIME,
+      </if>
+      <if test="phone != null" >
+        PHONE,
+      </if>
+      <if test="bankAccount != null" >
+        BANK_ACCOUNT,
+      </if>
+      <if test="companyName != null" >
+        COMPANY_NAME,
+      </if>
+      <if test="address != null" >
+        ADDRESS,
+      </if>
+      <if test="applyDate != null" >
+        APPLY_DATE,
+      </if>
+      <if test="applicant != null" >
+        APPLICANT,
+      </if>
+      <if test="customerRemark != null" >
+        CUSTOMER_REMARK,
+      </if>
+      <if test="reportDate != null" >
+        REPORT_DATE,
+      </if>
+      <if test="reporter != null" >
+        REPORTER,
+      </if>
+      <if test="status != null" >
+        STATUS,
+      </if>
+      <if test="approveDate != null" >
+        APPROVE_DATE,
+      </if>
+      <if test="approveMan != null" >
+        APPROVE_MAN,
+      </if>
+      <if test="approveMsg != null" >
+        APPROVE_MSG,
+      </if>
+      <if test="remark != null" >
+        REMARK,
+      </if>
+      <if test="valid != null" >
+        VALID,
+      </if>
+      <if test="createBy != null" >
+        CREATE_BY,
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE,
+      </if>
+      <if test="updateBy != null" >
+        UPDATE_BY,
+      </if>
+      <if test="updateDate != null" >
+        UPDATE_DATE,
+      </if>
+      <if test="returnOrderNo != null" >
+        RETURN_ORDER_NO,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      SEQ_CLAIM_ALLOWANCE.nextval,
+      <if test="allowanceNo != null" >
+        #{allowanceNo,jdbcType=VARCHAR},
+      </if>
+      <if test="claimReturnOrderId != null" >
+        #{claimReturnOrderId,jdbcType=DECIMAL},
+      </if>
+      <if test="filedId != null" >
+        #{filedId,jdbcType=VARCHAR},
+      </if>
+      <if test="sapCode != null" >
+        #{sapCode,jdbcType=VARCHAR},
+      </if>
+      <if test="linetotal != null" >
+        #{linetotal,jdbcType=DECIMAL},
+      </if>
+      <if test="tax != null" >
+        #{tax,jdbcType=DECIMAL},
+      </if>
+      <if test="reqBillNo != null" >
+        #{reqBillNo,jdbcType=VARCHAR},
+      </if>
+      <if test="expressNo != null" >
+        #{expressNo,jdbcType=VARCHAR},
+      </if>
+      <if test="expressSendTime != null" >
+        #{expressSendTime,jdbcType=DATE},
+      </if>
+      <if test="phone != null" >
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAccount != null" >
+        #{bankAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="companyName != null" >
+        #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null" >
+        #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="applyDate != null" >
+        #{applyDate,jdbcType=DATE},
+      </if>
+      <if test="applicant != null" >
+        #{applicant,jdbcType=DECIMAL},
+      </if>
+      <if test="customerRemark != null" >
+        #{customerRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="reportDate != null" >
+        #{reportDate,jdbcType=DATE},
+      </if>
+      <if test="reporter != null" >
+        #{reporter,jdbcType=DECIMAL},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=DECIMAL},
+      </if>
+      <if test="approveDate != null" >
+        #{approveDate,jdbcType=DATE},
+      </if>
+      <if test="approveMan != null" >
+        #{approveMan,jdbcType=DECIMAL},
+      </if>
+      <if test="approveMsg != null" >
+        #{approveMsg,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="valid != null" >
+        #{valid,jdbcType=DECIMAL},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=DECIMAL},
+      </if>
+      SYSDATE,
+      <if test="updateBy != null" >
+        #{updateBy,jdbcType=DECIMAL},
+      </if>
+      SYSDATE,
+      <if test="returnOrderNo != null" >
+        #{returnOrderNo,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.sgm.dms.fol.returnallowance.domain.ReturnAllowancePOExample" resultType="java.lang.Integer" >
+    select count(*) from TT_FOL_CLAIM_ALLOWANCE
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update TT_FOL_CLAIM_ALLOWANCE
+    <set >
+      <if test="record.id != null" >
+        ID = #{record.id,jdbcType=DECIMAL},
+      </if>
+      <if test="record.allowanceNo != null" >
+        ALLOWANCE_NO = #{record.allowanceNo,jdbcType=VARCHAR},
+      </if>
+      <if test="record.claimReturnOrderId != null" >
+        CLAIM_RETURN_ORDER_ID = #{record.claimReturnOrderId,jdbcType=DECIMAL},
+      </if>
+      <if test="record.filedId != null" >
+        FILED_ID = #{record.filedId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sapCode != null" >
+        SAP_CODE = #{record.sapCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.linetotal != null" >
+        LINETOTAL = #{record.linetotal,jdbcType=DECIMAL},
+      </if>
+      <if test="record.tax != null" >
+        TAX = #{record.tax,jdbcType=DECIMAL},
+      </if>
+      <if test="record.reqBillNo != null" >
+        REQ_BILL_NO = #{record.reqBillNo,jdbcType=VARCHAR},
+      </if>
+      <if test="record.expressNo != null" >
+        EXPRESS_NO = #{record.expressNo,jdbcType=VARCHAR},
+      </if>
+      <if test="record.expressSendTime != null" >
+        EXPRESS_SEND_TIME = #{record.expressSendTime,jdbcType=DATE},
+      </if>
+      <if test="record.phone != null" >
+        PHONE = #{record.phone,jdbcType=VARCHAR},
+      </if>
+      <if test="record.bankAccount != null" >
+        BANK_ACCOUNT = #{record.bankAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="record.companyName != null" >
+        COMPANY_NAME = #{record.companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.address != null" >
+        ADDRESS = #{record.address,jdbcType=VARCHAR},
+      </if>
+      <if test="record.applyDate != null" >
+        APPLY_DATE = #{record.applyDate,jdbcType=DATE},
+      </if>
+      <if test="record.applicant != null" >
+        APPLICANT = #{record.applicant,jdbcType=DECIMAL},
+      </if>
+      <if test="record.customerRemark != null" >
+        CUSTOMER_REMARK = #{record.customerRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="record.reportDate != null" >
+        REPORT_DATE = #{record.reportDate,jdbcType=DATE},
+      </if>
+      <if test="record.reporter != null" >
+        REPORTER = #{record.reporter,jdbcType=DECIMAL},
+      </if>
+      <if test="record.status != null" >
+        STATUS = #{record.status,jdbcType=DECIMAL},
+      </if>
+      <if test="record.approveDate != null" >
+        APPROVE_DATE = #{record.approveDate,jdbcType=DATE},
+      </if>
+      <if test="record.approveMan != null" >
+        APPROVE_MAN = #{record.approveMan,jdbcType=DECIMAL},
+      </if>
+      <if test="record.approveMsg != null" >
+        APPROVE_MSG = #{record.approveMsg,jdbcType=VARCHAR},
+      </if>
+      <if test="record.remark != null" >
+        REMARK = #{record.remark,jdbcType=VARCHAR},
+      </if>
+      <if test="record.valid != null" >
+        VALID = #{record.valid,jdbcType=DECIMAL},
+      </if>
+      <if test="record.createBy != null" >
+        CREATE_BY = #{record.createBy,jdbcType=DECIMAL},
+      </if>
+      <if test="record.createDate != null" >
+        CREATE_DATE = #{record.createDate,jdbcType=DATE},
+      </if>
+      <if test="record.updateBy != null" >
+        UPDATE_BY = #{record.updateBy,jdbcType=DECIMAL},
+      </if>
+      <if test="record.updateDate != null" >
+        UPDATE_DATE = SYSDATE,
+      </if>
+      <if test="record.returnOrderNo != null" >
+        RETURN_ORDER_NO = #{record.returnOrderNo,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update TT_FOL_CLAIM_ALLOWANCE
+    set ID = #{record.id,jdbcType=DECIMAL},
+      ALLOWANCE_NO = #{record.allowanceNo,jdbcType=VARCHAR},
+      CLAIM_RETURN_ORDER_ID = #{record.claimReturnOrderId,jdbcType=DECIMAL},
+      FILED_ID = #{record.filedId,jdbcType=VARCHAR},
+      SAP_CODE = #{record.sapCode,jdbcType=VARCHAR},
+      LINETOTAL = #{record.linetotal,jdbcType=DECIMAL},
+      TAX = #{record.tax,jdbcType=DECIMAL},
+      REQ_BILL_NO = #{record.reqBillNo,jdbcType=VARCHAR},
+      EXPRESS_NO = #{record.expressNo,jdbcType=VARCHAR},
+      EXPRESS_SEND_TIME = #{record.expressSendTime,jdbcType=DATE},
+      PHONE = #{record.phone,jdbcType=VARCHAR},
+      BANK_ACCOUNT = #{record.bankAccount,jdbcType=VARCHAR},
+      COMPANY_NAME = #{record.companyName,jdbcType=VARCHAR},
+      ADDRESS = #{record.address,jdbcType=VARCHAR},
+      APPLY_DATE = #{record.applyDate,jdbcType=DATE},
+      APPLICANT = #{record.applicant,jdbcType=DECIMAL},
+      CUSTOMER_REMARK = #{record.customerRemark,jdbcType=VARCHAR},
+      REPORT_DATE = #{record.reportDate,jdbcType=DATE},
+      REPORTER = #{record.reporter,jdbcType=DECIMAL},
+      STATUS = #{record.status,jdbcType=DECIMAL},
+      APPROVE_DATE = #{record.approveDate,jdbcType=DATE},
+      APPROVE_MAN = #{record.approveMan,jdbcType=DECIMAL},
+      APPROVE_MSG = #{record.approveMsg,jdbcType=VARCHAR},
+      REMARK = #{record.remark,jdbcType=VARCHAR},
+      VALID = #{record.valid,jdbcType=DECIMAL},
+      CREATE_BY = #{record.createBy,jdbcType=DECIMAL},
+      CREATE_DATE = #{record.createDate,jdbcType=DATE},
+      UPDATE_BY = #{record.updateBy,jdbcType=DECIMAL},
+      UPDATE_DATE = SYSDATE,
+      RETURN_ORDER_NO = #{record.returnOrderNo,jdbcType=VARCHAR}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.sgm.dms.fol.returnallowance.domain.ReturnAllowancePO" >
+    update TT_FOL_CLAIM_ALLOWANCE
+    <set >
+      <if test="allowanceNo != null" >
+        ALLOWANCE_NO = #{allowanceNo,jdbcType=VARCHAR},
+      </if>
+      <if test="claimReturnOrderId != null" >
+        CLAIM_RETURN_ORDER_ID = #{claimReturnOrderId,jdbcType=DECIMAL},
+      </if>
+      <if test="filedId != null" >
+        FILED_ID = #{filedId,jdbcType=VARCHAR},
+      </if>
+      <if test="sapCode != null" >
+        SAP_CODE = #{sapCode,jdbcType=VARCHAR},
+      </if>
+      <if test="linetotal != null" >
+        LINETOTAL = #{linetotal,jdbcType=DECIMAL},
+      </if>
+      <if test="tax != null" >
+        TAX = #{tax,jdbcType=DECIMAL},
+      </if>
+      <if test="reqBillNo != null" >
+        REQ_BILL_NO = #{reqBillNo,jdbcType=VARCHAR},
+      </if>
+      <if test="expressNo != null" >
+        EXPRESS_NO = #{expressNo,jdbcType=VARCHAR},
+      </if>
+      <if test="expressSendTime != null" >
+        EXPRESS_SEND_TIME = #{expressSendTime,jdbcType=DATE},
+      </if>
+      <if test="phone != null" >
+        PHONE = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAccount != null" >
+        BANK_ACCOUNT = #{bankAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="companyName != null" >
+        COMPANY_NAME = #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null" >
+        ADDRESS = #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="applyDate != null" >
+        APPLY_DATE = #{applyDate,jdbcType=DATE},
+      </if>
+      <if test="applicant != null" >
+        APPLICANT = #{applicant,jdbcType=DECIMAL},
+      </if>
+      <if test="customerRemark != null" >
+        CUSTOMER_REMARK = #{customerRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="reportDate != null" >
+        REPORT_DATE = #{reportDate,jdbcType=DATE},
+      </if>
+      <if test="reporter != null" >
+        REPORTER = #{reporter,jdbcType=DECIMAL},
+      </if>
+      <if test="status != null" >
+        STATUS = #{status,jdbcType=DECIMAL},
+      </if>
+      <if test="approveDate != null" >
+        APPROVE_DATE = #{approveDate,jdbcType=DATE},
+      </if>
+      <if test="approveMan != null" >
+        APPROVE_MAN = #{approveMan,jdbcType=DECIMAL},
+      </if>
+      <if test="approveMsg != null" >
+        APPROVE_MSG = #{approveMsg,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        REMARK = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="valid != null" >
+        VALID = #{valid,jdbcType=DECIMAL},
+      </if>
+      <if test="createBy != null" >
+        CREATE_BY = #{createBy,jdbcType=DECIMAL},
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE = #{createDate,jdbcType=DATE},
+      </if>
+      <if test="updateBy != null" >
+        UPDATE_BY = #{updateBy,jdbcType=DECIMAL},
+      </if>
+        UPDATE_DATE = SYSDATE,
+      <if test="returnOrderNo != null" >
+        RETURN_ORDER_NO = #{returnOrderNo,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.sgm.dms.fol.returnallowance.domain.ReturnAllowancePO" >
+    update TT_FOL_CLAIM_ALLOWANCE
+    set ALLOWANCE_NO = #{allowanceNo,jdbcType=VARCHAR},
+      CLAIM_RETURN_ORDER_ID = #{claimReturnOrderId,jdbcType=DECIMAL},
+      FILED_ID = #{filedId,jdbcType=VARCHAR},
+      SAP_CODE = #{sapCode,jdbcType=VARCHAR},
+      LINETOTAL = #{linetotal,jdbcType=DECIMAL},
+      TAX = #{tax,jdbcType=DECIMAL},
+      REQ_BILL_NO = #{reqBillNo,jdbcType=VARCHAR},
+      EXPRESS_NO = #{expressNo,jdbcType=VARCHAR},
+      EXPRESS_SEND_TIME = #{expressSendTime,jdbcType=DATE},
+      PHONE = #{phone,jdbcType=VARCHAR},
+      BANK_ACCOUNT = #{bankAccount,jdbcType=VARCHAR},
+      COMPANY_NAME = #{companyName,jdbcType=VARCHAR},
+      ADDRESS = #{address,jdbcType=VARCHAR},
+      APPLY_DATE = #{applyDate,jdbcType=DATE},
+      APPLICANT = #{applicant,jdbcType=DECIMAL},
+      CUSTOMER_REMARK = #{customerRemark,jdbcType=VARCHAR},
+      REPORT_DATE = #{reportDate,jdbcType=DATE},
+      REPORTER = #{reporter,jdbcType=DECIMAL},
+      STATUS = #{status,jdbcType=DECIMAL},
+      APPROVE_DATE = #{approveDate,jdbcType=DATE},
+      APPROVE_MAN = #{approveMan,jdbcType=DECIMAL},
+      APPROVE_MSG = #{approveMsg,jdbcType=VARCHAR},
+      REMARK = #{remark,jdbcType=VARCHAR},
+      VALID = #{valid,jdbcType=DECIMAL},
+      CREATE_BY = #{createBy,jdbcType=DECIMAL},
+      CREATE_DATE = #{createDate,jdbcType=DATE},
+      UPDATE_BY = #{updateBy,jdbcType=DECIMAL},
+      UPDATE_DATE = SYSDATE,
+      RETURN_ORDER_NO = #{returnOrderNo,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+    <!-- ================================== 自动生成DAO end ================================== -->
+
+	<!-- 查询ReturnAllowance折让单list(4Dealer) -->
+	<select  id="queryReturnAllowanceList4Dealer" resultType="com.sgm.dms.fol.returnallowance.dto.ReturnAllowanceDTO">
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+			SELECT distinct
+			CREATE_DATE createDate,
+				   ID as id,
+			       ALLOWANCE_NO as allowanceNo,
+			       CLAIM_RETURN_ORDER_ID as claimReturnOrderId,
+			       FILED_ID as filedId,
+			       SAP_CODE as sapCode,
+			       LINETOTAL as linetotal,
+			       TAX as tax,
+			       REQ_BILL_NO as reqBillNo,
+			       EXPRESS_NO as expressNo,
+			       EXPRESS_SEND_TIME as expressSendTime,
+			       PHONE as phone,
+			       BANK_ACCOUNT as bankAccount,
+			       COMPANY_NAME as companyName,
+			       ADDRESS as address,
+			       APPLY_DATE as applyDate,
+			       to_char(APPLY_DATE,'yyyy-mm-dd') as applyDateDisplay,
+			       APPLICANT as applicant,
+			       CUSTOMER_REMARK as customerRemark,
+			       REPORT_DATE as reportDate,
+			       to_char(REPORT_DATE,'yyyy-mm-dd') as reportDateDisplay,
+			       REPORTER as reporter,
+			       STATUS as status,
+			       (Case STATUS
+        			when 1 then 'Dealer待上报'
+        			when 2 then 'Dealer已上报'
+			        when 3 then 'Dealer已作废' 
+			        when 4 then 'SGM已同意' 
+			        when 5 then 'SGM已退回' 
+			        when 6 then 'SAP处理成功'  
+			        end) as statusDesc,
+			       APPROVE_DATE as approveDate,
+			       to_char(APPROVE_DATE,'yyyy-mm-dd') as approveDateDisplay,
+			       APPROVE_MAN as approveMan,
+			       APPROVE_MSG as approveMsg,
+			       REMARK as remark,
+			       VALID as valid,
+			       RETURN_ORDER_NO returnOrderNo,
+			       (SELECT USER_NAME FROM TS_COMMON_USER_LOGON WHERE LOGON_ID=TT_FOL_CLAIM_ALLOWANCE.APPLICANT) as applicantName,
+			       (SELECT USER_NAME FROM TS_COMMON_USER_LOGON WHERE LOGON_ID=TT_FOL_CLAIM_ALLOWANCE.REPORTER) as reporterName,
+			       (SELECT USER_NAME FROM TS_COMMON_USER_LOGON WHERE LOGON_ID=TT_FOL_CLAIM_ALLOWANCE.APPROVE_MAN) as approveManName
+			FROM TT_FOL_CLAIM_ALLOWANCE
+			WHERE 1=1
+			<if test="allowanceNo != null and allowanceNo != ''">
+				AND ALLOWANCE_NO like '%'||TRIM(#{allowanceNo})||'%'
+			</if>
+			<if test="sapCode != null and sapCode != ''">
+				AND SAP_CODE like '%'||TRIM(#{sapCode})||'%'
+			</if>
+			<if test="applyDateStart != null and applyDateStart != ''">
+				AND APPLY_DATE >= #{applyDateStart}
+			</if>
+			<if test="applyDateEnd != null and applyDateEnd != ''">
+				<![CDATA[ AND APPLY_DATE < #{applyDateEnd} ]]>
+			</if>
+			<if test="approveDateStart != null and approveDateStart != ''">
+				AND APPROVE_DATE >= #{approveDateStart}
+			</if>
+			<if test="approveDateEnd != null and approveDateEnd != ''">
+				<![CDATA[ AND APPROVE_DATE < #{approveDateEnd} ]]>
+			</if>
+			<if test="status != null and status != ''">
+				AND STATUS = TRIM(#{status})
+			</if>
+			<if test="expressNo != null and expressNo != ''">
+				AND EXPRESS_NO = TRIM(#{expressNo})
+			</if>
+			order by CREATE_DATE desc
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+	</select>
+
+	<!-- 作废ReturnAllowance折让单(4Dealer) -->
+	<!-- status: 1.dealer待上报 2.dealer已上报 3.dealer已作废 4.SGM已同意 5.SGM已退回 6.SAP处理成功 -->
+	<update id="deleteReturnAllowanceById">
+		UPDATE TT_FOL_CLAIM_ALLOWANCE
+		SET VALID = 0,
+    		STATUS = 3,
+    		UPDATE_BY = #{updateBy,jdbcType=NUMERIC},
+			UPDATE_DATE = sysdate
+		WHERE ID = #{id}
+	</update>
+	
+	<!-- 查询ReturnAllowance折让单list(4SGM) -->
+	<select  id="queryReturnAllowanceList4SGM" parameterType="com.sgm.dms.fol.returnallowance.dto.ReturnAllowanceDTO"
+		resultType="com.sgm.dms.fol.returnallowance.dto.ReturnAllowanceDTO">
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+			SELECT distinct 
+			       ca.CREATE_DATE createDate,
+				   ca.ID as id,
+			       ca.ALLOWANCE_NO as allowanceNo,
+			       ca.CLAIM_RETURN_ORDER_ID as claimReturnOrderId,
+			       ca.RETURN_ORDER_NO as returnOrderNo,
+			       ca.FILED_ID as filedId,
+			       ca.SAP_CODE as sapCode,
+			       di.DEALER_NAME dealerName,
+			       ca.LINETOTAL as linetotal,
+			       ca.TAX as tax,
+			       ca.REQ_BILL_NO as reqBillNo,
+			       ca.EXPRESS_NO as expressNo,
+			       ca.EXPRESS_SEND_TIME as expressSendTime,
+			       ca.PHONE as phone,
+			       ca.BANK_ACCOUNT as bankAccount,
+			       ca.COMPANY_NAME as companyName,
+			       ca.ADDRESS as address,
+			       ca.APPLY_DATE as applyDate,
+			       to_char(ca.APPLY_DATE,'yyyy-mm-dd HH24:mi:ss') as applyDateDisplay,
+			       ca.APPLICANT as applicant,
+			       ca.CUSTOMER_REMARK as customerRemark,
+			       ca.REPORT_DATE as reportDate,
+			       to_char(ca.REPORT_DATE,'yyyy-mm-dd HH24:mi:ss') as reportDateDisplay,
+			       ca.REPORTER as reporter,
+			       ca.STATUS as status,
+			       (Case STATUS
+        			when 1 then 'Dealer待上报'
+        			when 2 then 'Dealer已上报'
+			        when 3 then 'Dealer已作废' 
+			        when 4 then 'SGM已同意' 
+			        when 5 then 'SGM已退回' 
+			        when 6 then 'SAP处理成功'  
+			        end) as statusDesc,
+			       ca.APPROVE_DATE as approveDate,
+			       to_char(ca.APPROVE_DATE,'yyyy-mm-dd HH24:mi:ss') as approveDateDisplay,
+			       ca.APPROVE_MAN as approveMan,
+			       ca.APPROVE_MSG as approveMsg,
+			       ca.REMARK as remark,
+			       ca.VALID as valid,
+			       aii.BILLING_REVERSE_NO billingReverseNo,
+			       aii.BILLING_NO billingNo,
+			       stnm.SELLER_NAME sellerName,
+			       (SELECT USER_NAME FROM TS_COMMON_USER_LOGON WHERE LOGON_ID=ca.APPLICANT) as applicantName,
+			       (SELECT USER_NAME FROM TS_COMMON_USER_LOGON WHERE LOGON_ID=ca.REPORTER) as reporterName,
+			       (SELECT USER_NAME FROM TS_COMMON_USER_LOGON WHERE LOGON_ID=ca.APPROVE_MAN) as approveManName
+			FROM TT_FOL_CLAIM_ALLOWANCE ca
+                 LEFT JOIN TM_FOL_DEALER_INFO di ON ca.SAP_CODE = di.SAP_CODE
+				 LEFT JOIN TT_FOL_ALLOWANCE_INVOICE_INFO aii ON ca.CLAIM_RETURN_ORDER_ID = aii.RETURN_ORDER_ID
+				 LEFT JOIN TT_FOL_SELLER_TAX_NO_MAPPING stnm ON stnm.BILLING_ORIGIN = aii.BILLING_ORIGN AND stnm.VALID = 1
+			<where>
+			<if test="sapCodeList != null and sapCodeList != ''">
+				AND ca.SAP_CODE in 
+				<foreach item="item" collection="sapCodeList" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="companyCode != null and companyCode != '' and companyCode.size() != 0">
+				AND aii.BILLING_ORIGN in 
+				<foreach item="companyCodeTemp" collection="companyCode" open="(" separator="," close=")">
+					#{companyCodeTemp}
+				</foreach>
+			</if>
+			<if test="dealerName != null and dealerName != ''">
+				AND di.DEALER_NAME like '%'||TRIM(#{dealerName})||'%'
+			</if>
+			<if test="expressNo != null and expressNo != ''">
+				AND ca.EXPRESS_NO like '%'||TRIM(#{expressNo})||'%'
+			</if>
+			<if test="allowanceNo != null and allowanceNo != ''">
+				AND ca.ALLOWANCE_NO like '%'||TRIM(#{allowanceNo})||'%'
+			</if>
+			<if test="applyDateStart != null and applyDateStart != ''">
+				AND APPLY_DATE >= #{applyDateStart}
+			</if>
+			<if test="applyDateEnd != null and applyDateEnd != ''">
+				<![CDATA[ AND APPLY_DATE < #{applyDateEnd} ]]>
+			</if>
+			<if test="approveDateStart != null and approveDateStart != ''">
+				AND APPROVE_DATE >= #{approveDateStart}
+			</if>
+			<if test="approveDateEnd != null and approveDateEnd != ''">
+				<![CDATA[ AND APPROVE_DATE < #{approveDateEnd} ]]>
+			</if>
+			<if test="status != null and status != ''">
+				AND ca.STATUS = TRIM(#{status})
+			</if>
+			<if test="statusList != null and statusList.size != 0">
+				AND ca.STATUS in 
+				<foreach item="item" collection="statusList" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			</where>
+			order by ca.CREATE_DATE desc
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+	</select>
+	
+	<!-- count ReturnAllowance折让单list(4SGM) -->
+	<select  id="countReturnAllowance4SGM" resultType="java.lang.Integer">
+			SELECT count(distinct ca.id)
+			FROM TT_FOL_CLAIM_ALLOWANCE ca,TM_FOL_DEALER_INFO di,
+				 TT_FOL_ALLOWANCE_INVOICE_INFO aii
+			WHERE ca.SAP_CODE = di.SAP_CODE
+			AND ca.CLAIM_RETURN_ORDER_ID = aii.RETURN_ORDER_ID
+			<if test="sapCodeList != null and sapCodeList != ''">
+				AND ca.SAP_CODE in 
+				<foreach item="item" collection="sapCodeList" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="companyCode != null and companyCode != '' and companyCode.size() != 0">
+				AND aii.BILLING_ORIGN in 
+				<foreach item="companyCodeTemp" collection="companyCode" open="(" separator="," close=")">
+					#{companyCodeTemp}
+				</foreach>
+			</if>
+			<if test="dealerName != null and dealerName != ''">
+				AND di.DEALER_NAME like '%'||TRIM(#{dealerName})||'%'
+			</if>
+			<if test="expressNo != null and expressNo != ''">
+				AND ca.EXPRESS_NO like '%'||TRIM(#{expressNo})||'%'
+			</if>
+			<if test="allowanceNo != null and allowanceNo != ''">
+				AND ca.ALLOWANCE_NO like '%'||TRIM(#{allowanceNo})||'%'
+			</if>
+			<if test="applyDateStart != null and applyDateStart != ''">
+				AND APPLY_DATE >= #{applyDateStart}
+			</if>
+			<if test="applyDateEnd != null and applyDateEnd != ''">
+				<![CDATA[ AND APPLY_DATE < #{applyDateEnd} ]]>
+			</if>
+			<if test="approveDateStart != null and approveDateStart != ''">
+				AND APPROVE_DATE >= #{approveDateStart}
+			</if>
+			<if test="approveDateEnd != null and approveDateEnd != ''">
+				<![CDATA[ AND APPROVE_DATE < #{approveDateEnd} ]]>
+			</if>
+			<if test="status != null and status != ''">
+				AND ca.STATUS = TRIM(#{status})
+			</if>
+			<if test="statusList != null and statusList.size != 0">
+				AND ca.STATUS in 
+				<foreach item="item" collection="statusList" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+	</select>
+	
+	<!-- count ReturnAllowance折让单list(4Dealer) -->
+	<select  id="countReturnAllowance4Dealer" resultType="java.lang.Integer">
+			SELECT count(distinct id)
+			FROM TT_FOL_CLAIM_ALLOWANCE
+			WHERE 1=1
+			<if test="allowanceNo != null and allowanceNo != ''">
+				AND ALLOWANCE_NO like '%'||TRIM(#{allowanceNo})||'%'
+			</if>
+			<if test="sapCode != null and sapCode != ''">
+				AND SAP_CODE like '%'||TRIM(#{sapCode})||'%'
+			</if>
+			<if test="applyDateStart != null and applyDateStart != ''">
+				AND APPLY_DATE >= #{applyDateStart}
+			</if>
+			<if test="applyDateEnd != null and applyDateEnd != ''">
+				<![CDATA[ AND APPLY_DATE < #{applyDateEnd} ]]>
+			</if>
+			<if test="approveDateStart != null and approveDateStart != ''">
+				AND APPROVE_DATE >= #{approveDateStart}
+			</if>
+			<if test="approveDateEnd != null and approveDateEnd != ''">
+				<![CDATA[ AND APPROVE_DATE < #{approveDateEnd} ]]>
+			</if>
+			<if test="status != null and status != ''">
+				AND STATUS = TRIM(#{status})
+			</if>
+			<if test="expressNo != null and expressNo != ''">
+				AND EXPRESS_NO = TRIM(#{expressNo})
+			</if>
+	</select>
+	
+</mapper>

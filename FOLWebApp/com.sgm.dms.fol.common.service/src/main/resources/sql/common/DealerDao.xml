@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sgm.dms.fol.common.service.repository.DealerDao">
+    <!-- ==================================自动生成Dao===================start======================================== -->
+    <resultMap id="BaseResultMap" type="com.sgm.dms.fol.common.service.domains.DealerInfo" >
+    <result column="SAP_CODE" property="sapCode" jdbcType="VARCHAR" />
+    <result column="OFFICAL_DEALER_ID" property="officalDealerId" jdbcType="DECIMAL" />
+    <result column="DEALER_CODE" property="dealerCode" jdbcType="VARCHAR" />
+    <result column="DEALER_FULLNAME" property="dealerFullname" jdbcType="VARCHAR" />
+    <result column="DEALER_NAME" property="dealerName" jdbcType="VARCHAR" />
+    <result column="EMAIL" property="email" jdbcType="VARCHAR" />
+    <result column="DEALER_TYPE" property="dealerType" jdbcType="VARCHAR" />
+    <result column="DEALER_TYPE_NAME" property="dealerTypeName" jdbcType="VARCHAR" />
+    <result column="SAP_DEALER_TYPE" property="sapDealerType" jdbcType="VARCHAR" />
+    <result column="SAP_DEALER_TYPE_NAME" property="sapDealerTypeName" jdbcType="VARCHAR" />
+    <result column="STATUS_CODE" property="statusCode" jdbcType="DECIMAL" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="CREATE_BY" property="createBy" jdbcType="DECIMAL" />
+    <result column="UPDATE_DATE" property="updateDate" jdbcType="TIMESTAMP" />
+    <result column="UPDATE_BY" property="updateBy" jdbcType="DECIMAL" />
+    <result column="WARRANTY_CODE" property="warrantyCode" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    SAP_CODE, OFFICAL_DEALER_ID, DEALER_CODE, DEALER_FULLNAME, DEALER_NAME, EMAIL, DEALER_TYPE, 
+    DEALER_TYPE_NAME, SAP_DEALER_TYPE, SAP_DEALER_TYPE_NAME, STATUS_CODE, CREATE_DATE, 
+    CREATE_BY, UPDATE_DATE, UPDATE_BY, WARRANTY_CODE
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.sgm.dms.fol.common.service.domains.DealerInfoExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from TM_FOL_DEALER_INFO
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <delete id="deleteByExample" parameterType="com.sgm.dms.fol.common.service.domains.DealerInfoExample" >
+    delete from TM_FOL_DEALER_INFO
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.sgm.dms.fol.common.service.domains.DealerInfo" >
+    insert into TM_FOL_DEALER_INFO (SAP_CODE, OFFICAL_DEALER_ID, DEALER_CODE, 
+      DEALER_FULLNAME, DEALER_NAME, EMAIL, 
+      DEALER_TYPE, DEALER_TYPE_NAME, SAP_DEALER_TYPE, 
+      SAP_DEALER_TYPE_NAME, STATUS_CODE, CREATE_DATE, 
+      CREATE_BY, UPDATE_DATE, UPDATE_BY, 
+      WARRANTY_CODE)
+    values (#{sapCode,jdbcType=VARCHAR}, #{officalDealerId,jdbcType=DECIMAL}, #{dealerCode,jdbcType=VARCHAR}, 
+      #{dealerFullname,jdbcType=VARCHAR}, #{dealerName,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, 
+      #{dealerType,jdbcType=VARCHAR}, #{dealerTypeName,jdbcType=VARCHAR}, #{sapDealerType,jdbcType=VARCHAR}, 
+      #{sapDealerTypeName,jdbcType=VARCHAR}, #{statusCode,jdbcType=DECIMAL}, SYSDATE, 
+      #{createBy,jdbcType=DECIMAL}, SYSDATE, #{updateBy,jdbcType=DECIMAL}, 
+      #{warrantyCode,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.sgm.dms.fol.common.service.domains.DealerInfo" >
+    insert into TM_FOL_DEALER_INFO
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="sapCode != null" >
+        SAP_CODE,
+      </if>
+      <if test="officalDealerId != null" >
+        OFFICAL_DEALER_ID,
+      </if>
+      <if test="dealerCode != null" >
+        DEALER_CODE,
+      </if>
+      <if test="dealerFullname != null" >
+        DEALER_FULLNAME,
+      </if>
+      <if test="dealerName != null" >
+        DEALER_NAME,
+      </if>
+      <if test="email != null" >
+        EMAIL,
+      </if>
+      <if test="dealerType != null" >
+        DEALER_TYPE,
+      </if>
+      <if test="dealerTypeName != null" >
+        DEALER_TYPE_NAME,
+      </if>
+      <if test="sapDealerType != null" >
+        SAP_DEALER_TYPE,
+      </if>
+      <if test="sapDealerTypeName != null" >
+        SAP_DEALER_TYPE_NAME,
+      </if>
+      <if test="statusCode != null" >
+        STATUS_CODE,
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE,
+      </if>
+      <if test="createBy != null" >
+        CREATE_BY,
+      </if>
+      <if test="updateDate != null" >
+        UPDATE_DATE,
+      </if>
+      <if test="updateBy != null" >
+        UPDATE_BY,
+      </if>
+      <if test="warrantyCode != null" >
+        WARRANTY_CODE,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="sapCode != null" >
+        #{sapCode,jdbcType=VARCHAR},
+      </if>
+      <if test="officalDealerId != null" >
+        #{officalDealerId,jdbcType=DECIMAL},
+      </if>
+      <if test="dealerCode != null" >
+        #{dealerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="dealerFullname != null" >
+        #{dealerFullname,jdbcType=VARCHAR},
+      </if>
+      <if test="dealerName != null" >
+        #{dealerName,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null" >
+        #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="dealerType != null" >
+        #{dealerType,jdbcType=VARCHAR},
+      </if>
+      <if test="dealerTypeName != null" >
+        #{dealerTypeName,jdbcType=VARCHAR},
+      </if>
+      <if test="sapDealerType != null" >
+        #{sapDealerType,jdbcType=VARCHAR},
+      </if>
+      <if test="sapDealerTypeName != null" >
+        #{sapDealerTypeName,jdbcType=VARCHAR},
+      </if>
+      <if test="statusCode != null" >
+        #{statusCode,jdbcType=DECIMAL},
+      </if>
+        SYSDATE,
+      <if test="createBy != null" >
+        #{createBy,jdbcType=DECIMAL},
+      </if>
+        SYSDATE,
+      <if test="updateBy != null" >
+        #{updateBy,jdbcType=DECIMAL},
+      </if>
+      <if test="warrantyCode != null" >
+        #{warrantyCode,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.sgm.dms.fol.common.service.domains.DealerInfoExample" resultType="java.lang.Integer" >
+    select count(*) from TM_FOL_DEALER_INFO
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update TM_FOL_DEALER_INFO
+    <set >
+      <if test="record.sapCode != null" >
+        SAP_CODE = #{record.sapCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.officalDealerId != null" >
+        OFFICAL_DEALER_ID = #{record.officalDealerId,jdbcType=DECIMAL},
+      </if>
+      <if test="record.dealerCode != null" >
+        DEALER_CODE = #{record.dealerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.dealerFullname != null" >
+        DEALER_FULLNAME = #{record.dealerFullname,jdbcType=VARCHAR},
+      </if>
+      <if test="record.dealerName != null" >
+        DEALER_NAME = #{record.dealerName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.email != null" >
+        EMAIL = #{record.email,jdbcType=VARCHAR},
+      </if>
+      <if test="record.dealerType != null" >
+        DEALER_TYPE = #{record.dealerType,jdbcType=VARCHAR},
+      </if>
+      <if test="record.dealerTypeName != null" >
+        DEALER_TYPE_NAME = #{record.dealerTypeName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sapDealerType != null" >
+        SAP_DEALER_TYPE = #{record.sapDealerType,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sapDealerTypeName != null" >
+        SAP_DEALER_TYPE_NAME = #{record.sapDealerTypeName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.statusCode != null" >
+        STATUS_CODE = #{record.statusCode,jdbcType=DECIMAL},
+      </if>
+      <if test="record.createDate != null" >
+        CREATE_DATE = #{record.createDate,jdbcType=DATE},
+      </if>
+      <if test="record.createBy != null" >
+        CREATE_BY = #{record.createBy,jdbcType=DECIMAL},
+      </if>
+        UPDATE_DATE = SYSDATE,
+      <if test="record.updateBy != null" >
+        UPDATE_BY = #{record.updateBy,jdbcType=DECIMAL},
+      </if>
+      <if test="record.warrantyCode != null" >
+        WARRANTY_CODE = #{record.warrantyCode,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update TM_FOL_DEALER_INFO
+    set SAP_CODE = #{record.sapCode,jdbcType=VARCHAR},
+      OFFICAL_DEALER_ID = #{record.officalDealerId,jdbcType=DECIMAL},
+      DEALER_CODE = #{record.dealerCode,jdbcType=VARCHAR},
+      DEALER_FULLNAME = #{record.dealerFullname,jdbcType=VARCHAR},
+      DEALER_NAME = #{record.dealerName,jdbcType=VARCHAR},
+      EMAIL = #{record.email,jdbcType=VARCHAR},
+      DEALER_TYPE = #{record.dealerType,jdbcType=VARCHAR},
+      DEALER_TYPE_NAME = #{record.dealerTypeName,jdbcType=VARCHAR},
+      SAP_DEALER_TYPE = #{record.sapDealerType,jdbcType=VARCHAR},
+      SAP_DEALER_TYPE_NAME = #{record.sapDealerTypeName,jdbcType=VARCHAR},
+      STATUS_CODE = #{record.statusCode,jdbcType=DECIMAL},
+      CREATE_DATE = #{record.createDate,jdbcType=DATE},
+      CREATE_BY = #{record.createBy,jdbcType=DECIMAL},
+      UPDATE_DATE = SYSDATE,
+      UPDATE_BY = #{record.updateBy,jdbcType=DECIMAL},
+      WARRANTY_CODE = #{record.warrantyCode,jdbcType=VARCHAR}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+    <!-- ==================================自动生成Dao===================end======================================== -->
+
+	<select id="getDealerInfoBySapCodeInterval" resultType="com.sgm.dms.fol.common.service.domains.DealerInfoPo">
+		SELECT *
+		FROM TM_FOL_DEALER_INFO
+		WHERE 1=1
+		<if test="startSapCode!=null and ! startSapCode.trim().equals('')">
+			<![CDATA[ AND SAP_CODE>=#{startSapCode} ]]>
+		</if>
+		
+		<if test="endSapCode!=null and ! endSapCode.trim().equals('')">
+			<![CDATA[ AND SAP_CODE<=#{endSapCode} ]]>
+		</if>
+    </select>
+    
+    <select id="getDealerInfoBySapCode" resultType="com.sgm.dms.fol.common.service.domains.DealerInfoPo">
+		SELECT DEALER_CODE dealerCode,
+		DEALER_FULLNAME dealerFullName,
+		DEALER_NAME dealerName,
+		SAP_CODE sapCode,
+		DEALER_TYPE dealerType
+		FROM TM_FOL_DEALER_INFO
+		WHERE 1=1
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			<![CDATA[ AND SAP_CODE=#{sapCode} ]]>
+		</if>
+    </select>
+    
+    <select id="getDealerInfoByDealerId" resultType="com.sgm.dms.fol.common.service.domains.DealerInfoPo">
+		SELECT DEALER_CODE dealerCode,
+			DEALER_FULLNAME dealerFullName,
+			DEALER_NAME dealerName,
+			SAP_CODE sapCode
+		FROM TM_FOL_DEALER_INFO
+		WHERE STATUS_CODE = 1001
+		<if test="dealerId!=null and ! dealerId.trim().equals('')">
+			<![CDATA[ AND OFFICAL_DEALER_ID=#{dealerId} ]]>
+		</if>
+    </select>
+    
+    <select id="selectPageListByExample" resultMap="BaseResultMap" parameterType="com.sgm.dms.fol.common.service.domains.DealerInfoExample" >
+    <if test="beginNo != null and endNo != null and endNo > beginNo">
+    select T2.* from (select T1.*,ROWNUM row_num from (
+    </if>
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from TM_FOL_DEALER_INFO
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+    <if test="beginNo != null and endNo != null and endNo > beginNo">
+    ) T1
+     where ROWNUM &lt;= #{endNo}) T2
+      where T2.row_num &gt;= #{beginNo}
+    </if>
+  </select>
+</mapper>

@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sgm.dms.fol.invoice.repository.ClaimInvoiceDao">
+  	<!-- 获取索赔发票信息 -->
+    <select id="getInvoiceInfo" resultType="com.sgm.dms.fol.invoice.dto.InvoiceNoInfoDTO">
+	SELECT DISTINCT
+  		  (CASE WHEN WC.TAX_AMOUNT IS NOT NULL THEN WC.TAX_AMOUNT ELSE FI.TAX END) AS tax,
+		  FI.INVOICE_NO AS invoiceNo,
+		  FI.EXPRESS_NO AS expressNo,
+		  FI.FLOW_NO AS flowNo,
+		  FI.INVOICE_TITLE AS invoiceTitle,
+<!-- 		  FI.GROSS AS gross, -->
+		 (CASE WHEN WC.TAX_AMOUNT IS NOT NULL THEN WC.TAX_AMOUNT+FI.LINETOTAL ELSE FI.GROSS END) AS gross,
+		  FI.LINETOTAL AS linetotal,
+		  FI.PART_COST AS partCost,
+		  FI.LABOUR_COST AS labourCost,
+		  FI.SAP_CODE AS sapCode,
+		  FI.PROPOSER AS proposer,
+		  FI.APPLY_DATE AS applyDate,
+		  FI.REPORTER AS reporter,
+		  to_char(FI.REPORT_DATE,'SYYYY-MM-DD HH24:MI:SS') AS reportDate ,
+		  FI.YEAR AS year,
+		  FI.MONTH AS month,
+		  FI.INVOICE_CERTIFICATE AS invoiceCertificate,
+		  FI.STATUS AS processStatus,
+		  TC.CODE_CN_DESC AS statusName,	
+		  to_char(FI.POST_SAP_DATE,'SYYYY-MM-DD HH24:MI:SS') AS postSapDate,
+		  FI.OTHER_COST AS otherCost,
+		  FI.APPROVE_MAN AS approveMan,
+		  FI.OLD_INVOICE_NUM AS oldInvoiceNum,
+		  FI.VALID AS valid,
+		  FI.REMARK AS remark,
+		  FI.CREATE_BY AS createBy,
+		  FI.CREATE_DATE AS createDate,
+		  FI.UPDATE_BY AS updateBy,
+		  FI.UPDATE_DATE AS updateDate,
+      (SELECT CODE_CN_DESC from TC_FOL_CODE WHERE TYPE_NAME='凭证借贷类型' AND TC.STATUS=10011001) AS certificateType 
+	FROM TT_FOL_INVOICE FI
+    LEFT JOIN TC_FOL_CODE TC ON TC.CODE=FI.STATUS AND TC.TYPE_NAME='SGM受理状态' AND TC.STATUS=10011001 
+    JOIN TT_FOL_WR_COLLECT wc on FI.INVOICE_NO = wc.INVOICE_NO AND FI.VALID = wc.VALID
+	WHERE FI.VALID=1 AND FI.STATUS=6
+  </select>
+    <select id="getInvoiceNoStatus" resultType="com.sgm.dms.fol.invoice.dto.InvoiceNoInfoDTO">
+		SELECT DISTINCT
+  		  (CASE WHEN WC.TAX_AMOUNT IS NOT NULL THEN WC.TAX_AMOUNT ELSE FI.TAX END) AS tax,
+		  FI.INVOICE_NO AS invoiceNo,
+		  FI.EXPRESS_NO AS expressNo,
+		  FI.FLOW_NO AS flowNo,
+		  FI.INVOICE_TITLE AS invoiceTitle,
+<!-- 		  FI.GROSS AS gross, -->
+		 (CASE WHEN WC.TAX_AMOUNT IS NOT NULL THEN WC.TAX_AMOUNT+FI.LINETOTAL ELSE FI.GROSS END) AS gross,
+		  FI.LINETOTAL AS linetotal,
+		  FI.PART_COST AS partCost,
+		  FI.LABOUR_COST AS labourCost,
+		  FI.SAP_CODE AS sapCode,
+		  FI.PROPOSER AS proposer,
+		  FI.APPLY_DATE AS applyDate,
+		  FI.REPORTER AS reporter,
+		  to_char(FI.REPORT_DATE,'SYYYY-MM-DD HH24:MI:SS') AS reportDate ,
+		  FI.YEAR AS year,
+		  FI.MONTH AS month,
+		  FI.INVOICE_CERTIFICATE AS invoiceCertificate,
+		  FI.STATUS AS status,
+		  TC.CODE_CN_DESC AS statusName,	
+		  to_char(FI.POST_SAP_DATE,'SYYYY-MM-DD HH24:MI:SS') AS postSapDate,
+		  FI.OTHER_COST AS otherCost,
+		  FI.APPROVE_MAN AS approveMan,
+		  FI.OLD_INVOICE_NUM AS oldInvoiceNum,
+		  FI.VALID AS valid,
+		  FI.REMARK AS remark,
+		  FI.CREATE_BY AS createBy,
+		  FI.CREATE_DATE AS createDate,
+		  FI.UPDATE_BY AS updateBy,
+		  FI.UPDATE_DATE AS updateDate,
+      (SELECT CODE_CN_DESC from TC_FOL_CODE WHERE TYPE_NAME='凭证借贷类型' AND TC.STATUS=10011001) AS certificateType 
+	FROM TT_FOL_INVOICE FI
+    LEFT JOIN TC_FOL_CODE TC ON TC.CODE=FI.STATUS AND TC.TYPE_NAME='SGM受理状态' AND TC.STATUS=10011001 
+    JOIN TT_FOL_WR_COLLECT wc on FI.INVOICE_NO = wc.INVOICE_NO AND FI.VALID = wc.VALID
+<!-- 	WHERE FI.VALID=1 AND FI.INVOICE_NO=#{param1} -->
+	WHERE FI.VALID=1 AND FI.INVOICE_NO||FI.SAP_CODE=#{param1} AND ROWNUM=1
+  </select>
+  <select id="getSubjectItem" resultType="com.sgm.dms.fol.invoice.dto.InvoiceSubjectDTO">
+		  SELECT 
+			  sub.ID,
+			  sub.INVOICE_ID AS invoice_id,
+			  sub.SUBJECT_CODE AS subjectCode,
+			  sub.POSITION_KEY AS positionKey,
+			  sub.SPECIAL_G AS specialG,
+			  sub.AMOUNT AS amount,
+			  sub.TAX_CODE AS taxCode,
+			  sub.COST_CENTER AS costCenter,
+			  sub.ASSIGNMENT AS assignment,
+			  sub.SAP_TEXT AS sapText,
+			  sub.SUBJECT_NAME AS subjectName,
+			  sub.LINETOTAL AS linetotal,
+			  sub.GROSS AS gross,
+			  sub.CO_CODE AS coCode,
+			  sub.VALID AS valid,
+			  sub.REMARK AS remark
+			FROM TI_OUTPUTCLAIM_SUBJECT sub 
+			JOIN TI_OUTPUTCLAIM_INVOICE invoice ON sub.INVOICE_ID=invoice.id
+			WHERE invoice.INVOICE_NO=#{invoiceNo} AND invoice.ASC_CODE=#{sapCode}
+<!-- 			and sub.TAX_CODE = 'Y0' -->
+  </select>
+  <select id="getSubByInvoiceNo" resultType="com.sgm.dms.fol.invoice.dto.InvoiceSubjectDTO">
+		SELECT
+		  INVOICE.INVOICE_NO AS assignment,
+		  WST.SUBJECT_CODE AS subjectCode,
+		  MAX(WST.SUBJECT_NAME) AS subjectName,
+		  SUM(WO.GROSS) AS gross,
+		  SUM(WO.LINETOTAL) AS linetotal
+		FROM TT_FOL_INVOICE invoice,TT_FOL_WR_COLLECT  WC,TT_FOL_WR_ORDER WO,TT_FOL_WR_SUBJECT_TYPE WST
+		WHERE
+		 INVOICE.VALID = 1 AND WC.VALID = 1 AND WO.VAILD = 1 AND WC.VALID = 1 AND WST.VALID = 1 AND WO.SAP_CODE=INVOICE.SAP_CODE AND
+		 INVOICE.INVOICE_NO=wc.INVOICE_NO  AND WC.WR_ID = WO.WR_ID AND WO.WR_TYPE = WST.WR_TYPE_DESC AND INVOICE.STATUS IN (
+			 <foreach collection="statusList" item="item" separator="," > 
+			 	#{item}
+			 </foreach>
+		 )
+		 
+		 <if test="InvoiceNoInfoDTO.invoiceNo!=null and InvoiceNoInfoDTO.invoiceNo!=''">
+		 	AND INVOICE.INVOICE_NO=#{InvoiceNoInfoDTO.invoiceNo}
+		 </if>
+		 <if test="InvoiceNoInfoDTO.sapCode!=null and InvoiceNoInfoDTO.sapCode!=''">
+		 	AND INVOICE.SAP_CODE=#{InvoiceNoInfoDTO.sapCode}
+		 </if>
+		 GROUP BY
+		 INVOICE.INVOICE_NO, WST.SUBJECT_CODE
+  </select>
+  <insert id="saveInvoiceCertificate" parameterType="com.sgm.dms.fol.invoice.dto.SapReturnItemsDTO">
+   		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_TI_INPUTCLAIM_INVOICE.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+  			INSERT
+				INTO TI_INPUTCLAIM_INVOICE
+				  (
+				    ID,
+				    FINANCE_WARRANTY,
+				    INVOICE_NO,
+				    ASC_CODE,
+				    CO_CODE,
+				    PROCESS_STATUS,
+				    CREATE_DATE,
+				    UPDATE_DATE,
+				    SGM_RESOLVE_DATE,
+				    SAP_RESOLVE_DATE,
+				    REMARK,
+				    VALID
+				  )
+				  VALUES
+				  (
+				    #{id},
+				    #{financeWarranty,jdbcType=VARCHAR},
+				    #{invoiceNo},
+				    #{ascCode},
+				    #{co_code,jdbcType=VARCHAR},
+				    #{process_status},
+				    SYSDATE,
+				    SYSDATE,
+				    SYSDATE,
+				    SYSDATE,
+				    #{remark,jdbcType=VARCHAR},
+				    1
+				  )
+  </insert>
+  <insert id="saveReturnItem" parameterType="com.sgm.dms.fol.invoice.dto.SapReturnItemsDTO">
+   		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_TI_INPUTCLAIM_INVOICE.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+  			INSERT
+				INTO TI_INPUTCLAIM_INVOICE
+				  (
+				    ID,
+				    FINANCE_WARRANTY,
+				    INVOICE_NO,
+				    ASC_CODE,
+				    CO_CODE,
+				    PROCESS_STATUS,
+				    CREATE_DATE,
+				    UPDATE_DATE,
+				    SGM_RESOLVE_DATE,
+				    SAP_RESOLVE_DATE,
+				    REMARK,
+				    VALID
+				  )
+				  VALUES
+				  (
+				    #{id},
+				    #{result.financeWarranty,jdbcType=VARCHAR},
+				    #{result.invoiceNo},
+				    #{result.ascCode,jdbcType=VARCHAR},
+				    #{result.co_code},
+				    #{process_status},
+				    SYSDATE,
+				    SYSDATE,
+				    SYSDATE,
+				    SYSDATE,
+				    #{result.remark,jdbcType=VARCHAR},
+				    1
+				  )
+  </insert>
+  <update id="saveCertificate" parameterType="com.sgm.dms.fol.invoice.dto.InvoiceFollowDTO">
+  		 	UPDATE TT_FOL_INVOICE
+			SET INVOICE_CERTIFICATE=#{invoiceCertificate,jdbcType=VARCHAR}
+		WHERE INVOICE_NO=#{invoiceNo} AND VALID = 1
+  </update>
+  
+	  <update id="updateSapRetrunStatus" parameterType="com.sgm.dms.fol.invoice.dto.SapReturnItemsDTO">
+	  		UPDATE TI_INPUTCLAIM_INVOICE
+			SET PROCESS_STATUS = #{status},
+				REMARK = #{remark,jdbcType=VARCHAR}
+			WHERE INVOICE_NO=#{invoiceNo} AND VALID = 1
+	  </update>
+	  <update id="updateSapDealStatus" parameterType="com.sgm.dms.fol.invoice.dto.InvoiceFollowDTO">
+	  		UPDATE TT_FOL_INVOICE
+			SET STATUS = #{status}
+			WHERE INVOICE_NO=#{invoiceNo} AND SAP_CODE=#{sapCode} AND VALID = 1
+	  </update>
+	<update id="updateInoviceStatus" parameterType="com.sgm.dms.fol.invoice.dto.InvoiceFollowDTO">
+	  		UPDATE TT_FOL_INVOICE
+			SET STATUS = #{status}
+			WHERE INVOICE_NO||SAP_CODE=#{invoiceNo} AND VALID = 1
+	</update>
+	  
+	  
+	  
+  <insert id="saveRequestSAP" parameterType="com.sgm.dms.fol.invoice.dto.InvoiceSubjectDTO">
+    	<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_TI_OUTPUTCLAIM_INVOICE.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+		  INSERT
+		INTO TI_OUTPUTCLAIM_INVOICE
+		  (
+		    ID,
+		    INVOICE_NO,
+		    INVOICE_TITLE,
+		    DOCUMENT_TYPE,
+		    DOCUMENT_DATE,
+		    POST_DATE,
+		    POST_PERIOD,
+		    CURRENCY,
+		    DOCUMENT_HEADTEXT,
+		    GROSS,
+		    LINETOTAL,
+		    PART_COST,
+		    LABOUR_COST,
+		    OTHER_COST,
+		    TAX,
+		    EMS_NO,
+		    ASC_CODE,
+		    VALID,
+		    REMARK,
+		    UPDATE_DATE,
+		    CREATE_DATE
+		  )
+		  VALUES
+		  (
+		    #{id},
+		    #{invoiceNo},
+		    #{invoiceTitle,jdbcType=VARCHAR},
+		    #{docunmentType,jdbcType=VARCHAR},
+		    TO_CHAR(sysdate,'yyyyMMdd'),
+		    TO_CHAR(sysdate,'yyyyMMdd'),
+		    SUBSTR(TO_CHAR(sysdate,'yyyyMMdd'),5,2),
+		    #{currency},
+		    #{documentHeadtext},
+		    #{gross},
+		    #{linetotal},
+		    #{partCost},
+		    #{labourCost},
+		    #{otherCost},
+		    #{tax},
+		    #{expressNo},
+		    #{ascCode},
+		    1,
+		    #{remark,jdbcType=VARCHAR},
+		    SYSDATE,
+		    SYSDATE    
+		  )
+  </insert>
+  
+  <insert id="saveRequestSubject" parameterType="com.sgm.dms.fol.invoice.dto.InvoiceInterfaceDTO">
+ 		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_TI_OUTPUTCLAIM_SUBJECT.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+ 		
+		  	INSERT
+			INTO TI_OUTPUTCLAIM_SUBJECT
+			  (
+			    ID,
+			    INVOICE_ID,
+			    SUBJECT_CODE,
+			    POSITION_KEY,
+			    SPECIAL_G,
+			    AMOUNT,
+			    TAX_CODE,
+			    COST_CENTER,
+			    ASSIGNMENT,
+			    SUBJECT_NAME,
+			    SAP_TEXT,
+			    LINETOTAL,
+			    GROSS,
+			    CO_CODE,
+			    VALID,
+			    REMARK,
+			    UPDATE_DATE,
+			    CREATE_DATE
+			  )
+			  VALUES
+			  (
+				#{id},
+				#{invoiceId},
+				#{subjectCode,jdbcType=VARCHAR},
+				#{positionKey},
+				#{specialG,jdbcType=VARCHAR},
+				#{amount},
+				#{taxCode,jdbcType=VARCHAR},
+				#{costCenter},
+				#{assignment},
+				#{subjectName,jdbcType=VARCHAR},
+				#{sapText},
+				#{linetotal},
+				#{gross},
+				#{coCode},
+				1,
+				#{remark,jdbcType=VARCHAR},
+				SYSDATE,
+				SYSDATE
+			  )
+  </insert>
+  <insert id="saveSubject" parameterType="com.sgm.dms.fol.invoice.dto.InvoiceInterfaceDTO">
+ 		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_TI_OUTPUTCLAIM_SUBJECT.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+ 		
+		  	INSERT
+			INTO TI_OUTPUTCLAIM_SUBJECT
+			  (
+			    ID,
+			    INVOICE_ID,
+			    SUBJECT_CODE,
+			    POSITION_KEY,
+			    AMOUNT,
+			    TAX_CODE,
+			    COST_CENTER,
+			    ASSIGNMENT,
+			    SUBJECT_NAME,
+			    SAP_TEXT,
+			    LINETOTAL,
+			    GROSS,
+			    CO_CODE,
+			    VALID,
+			    REMARK,
+			    UPDATE_DATE,
+			    CREATE_DATE
+			  )
+			  VALUES
+			  (
+				#{id},
+				#{invoiceId},
+				#{subjectCode,jdbcType=VARCHAR},
+				#{positionKey},
+				#{amount},
+				#{taxCode,jdbcType=VARCHAR},
+				#{costCenter},
+				#{assignment},
+				#{subjectName,jdbcType=VARCHAR},
+				#{sapText},
+				#{linetotal},
+				#{gross},
+				#{coCode},
+				1,
+				#{remark,jdbcType=VARCHAR},
+				SYSDATE,
+				SYSDATE
+			  )
+  </insert>
+  
+  <select id="findInvoiceInfoByInvoiceNo" resultType="com.sgm.dms.fol.invoice.dto.InvoiceNoInfoDTO">
+		SELECT 
+			  INVOICE_NO AS invoiceNo,
+			  SAP_CODE AS sapCode 
+		FROM TT_FOL_INVOICE
+		WHERE INVOICE_NO||SAP_CODE=#{invoiceNo} 
+  </select>
+</mapper>

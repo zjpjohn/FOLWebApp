@@ -1,0 +1,20 @@
+<div ae-panel title="票据贴息年化利率维审核" style="padding-bottom:20px" ng-controller="TicketInterestRateAuditController">
+	<div class="row-fluid">
+			<table id="datagrid" style="width:100%" ae-Datagrid title="票据贴息年化利率维审核列表" data-options="rownumbers:true,pagination:true,pageSize:10,autoRowHeight:false,toolbar:'#updateToolBar'">
+				<thead>
+					<tr>
+					    <th data-options="field:'num',align:'left',checkbox:'true'" width="4%">序号</th>
+						<th data-options="field:'annualInterestRate',align:'center'" width="18%"><strong>当前待审核年利率(%)</strong></th>
+						<th data-options="field:'auditDate',align:'center'" width="20%"><strong>修改时间</strong></th>
+						<th data-options="field:'auditStatusName',align:'center'" width="18%"><strong>审核状态</strong></th>
+						<th data-options="field:'auditMsg',align:'center',editor:'text'" width="40%"><strong>审核意见</strong></th>
+					</tr>
+				</thead>
+			</table>
+ 			<div id="updateToolBar">
+				<a ae-Linkbutton href="#" on-click-function="auditSuccess" data-options="iconCls:'icon-edit',plain:true">审批通过</a>
+				<a ae-Linkbutton href="#" on-click-function="reject" data-options="iconCls:'icon-cancel',plain:true">驳回</a>
+			</div> 
+	</div>
+</div>
+

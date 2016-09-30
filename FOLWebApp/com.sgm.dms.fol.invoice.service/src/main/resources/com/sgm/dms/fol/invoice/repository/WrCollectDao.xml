@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sgm.dms.fol.invoice.repository.WrCollectDao" >
+  <resultMap id="BaseResultMap" type="com.sgm.dms.fol.invoice.domain.WrCollect" >
+    <id column="ID" property="id" jdbcType="DECIMAL" />
+    <id column="INVOICE_NO" property="invoiceNo" jdbcType="VARCHAR" />
+    <id column="WR_ID" property="wrId" jdbcType="DECIMAL" />
+    <result column="TS_ID" property="tsId" jdbcType="VARCHAR" />
+    <result column="VALID" property="valid" jdbcType="DECIMAL" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+    <result column="CREATE_BY" property="createBy" jdbcType="DECIMAL" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="DATE" />
+    <result column="UPDATE_BY" property="updateBy" jdbcType="DECIMAL" />
+    <result column="UPDATE_DATE" property="updateDate" jdbcType="DATE" />
+    <result column="EXPRESS_NO" property="expressNo" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    INVOICE_NO, WR_ID, TS_ID, VALID, REMARK, CREATE_BY, CREATE_DATE, UPDATE_BY, UPDATE_DATE, 
+    EXPRESS_NO
+  </sql>
+
+  <insert id="insert" parameterType="com.sgm.dms.fol.invoice.domain.WrCollect" >
+    <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="wrId" >
+			SELECT SEQ_WR_COLLECT.NEXTVAL AS id FROM DUAL
+	 </selectKey>
+    insert into TT_FOL_WR_COLLECT (ID, INVOICE_NO, WR_ID, TS_ID, 
+      VALID, REMARK, CREATE_BY, 
+      CREATE_DATE, UPDATE_BY, UPDATE_DATE, 
+      EXPRESS_NO)
+    values (#{id ,jdbcType=DECIMAL}, #{invoiceNo,jdbcType=VARCHAR}, #{wrId,jdbcType=DECIMAL}, #{tsId,jdbcType=VARCHAR}, 
+      #{valid,jdbcType=DECIMAL}, #{remark,jdbcType=VARCHAR}, #{createBy,jdbcType=DECIMAL}, 
+      #{createDate,jdbcType=DATE}, #{updateBy,jdbcType=DECIMAL}, #{updateDate,jdbcType=DATE}, 
+      #{expressNo,jdbcType=VARCHAR})
+  </insert>
+  
+  <!-- 发票(汇总)状态置于无效 -->
+     <update id="deleteInvoice" parameterType="com.sgm.dms.fol.invoice.dto.WrCollectDTO">
+	  UPDATE TT_FOL_WR_COLLECT SET VALID = 0,
+	  UPDATE_DATE=SYSDATE
+	  WHERE INVOICE_NO = #{param1}
+  </update>
+     <select id="getWrCollectRecord" resultType="com.sgm.dms.fol.invoice.dto.WrCollectDTO">
+       SELECT ID,
+			  INVOICE_NO AS invoiceNo,
+			  WR_ID AS wrId,
+			  TS_ID AS tsId,
+			  VALID AS valid,
+			  REMARK AS remark,
+			  CREATE_BY AS createBy,
+			  CREATE_DATE AS createDate,
+			  UPDATE_BY AS updateBy,
+			  UPDATE_DATE AS updateDate,
+			  EXPRESS_NO AS express
+		FROM TT_FOL_WR_COLLECT
+		WHERE INVOICE_NO = #{invoiceNo,jdbcType=VARCHAR}
+  </select>
+     <select id="getWrCollectByTsId" resultType="com.sgm.dms.fol.invoice.dto.WrCollectDTO">
+       SELECT ID,
+			  INVOICE_NO AS invoiceNo,
+			  WR_ID AS wrId,
+			  TS_ID AS tsId,
+			  VALID AS valid,
+			  REMARK AS remark,
+			  CREATE_BY AS createBy,
+			  CREATE_DATE AS createDate,
+			  UPDATE_BY AS updateBy,
+			  UPDATE_DATE AS updateDate,
+			  EXPRESS_NO AS expressNo
+		FROM TT_FOL_WR_COLLECT
+		WHERE TS_ID = #{tsId,jdbcType=VARCHAR} and valid=1
+  </select>
+  
+       <select id="getOldInvoiceRecord" resultType="com.sgm.dms.fol.invoice.dto.WrCollectDTO">
+       SELECT WC.ID,
+			  WC.INVOICE_NO AS invoiceNo,
+			  WC.WR_ID AS wrId,
+			  WC.TS_ID AS tsId,
+			  WC.VALID AS valid,
+			  WC.REMARK AS remark,
+			  WC.CREATE_BY AS createBy,
+			  WC.CREATE_DATE AS createDate,
+			  WC.UPDATE_BY AS updateBy,
+			  WC.UPDATE_DATE AS updateDate,
+			  WC.EXPRESS_NO AS express
+		FROM TT_FOL_WR_COLLECT WC JOIN TT_FOL_WR_ORDER WO
+		ON WC.WR_ID=WO.WR_ID AND WO.SAP_CODE = #{param2}
+		WHERE WC.VALID = 0 AND WC.INVOICE_NO = #{param1}
+  </select>
+  
+  <!-- 添加重做记录 -->
+    <insert id="addDelRecord" parameterType="com.sgm.dms.fol.invoice.dto.WrCollectDTO" >
+   		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_WR_COLLECT.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+    insert into TT_FOL_WR_COLLECT (ID,INVOICE_NO, WR_ID, TS_ID, 
+      VALID, REMARK, CREATE_BY, 
+      CREATE_DATE, UPDATE_BY, UPDATE_DATE, 
+      EXPRESS_NO)
+    values (#{id},null, #{wrId,jdbcType=DECIMAL}, #{tsId,jdbcType=VARCHAR}, 
+      #{valid,jdbcType=DECIMAL}, #{remark,jdbcType=VARCHAR}, #{createBy,jdbcType=DECIMAL}, 
+      SYSDATE, #{updateBy,jdbcType=DECIMAL}, SYSDATE, 
+      null)
+  </insert>
+  
+  <insert id="insertList" parameterType="java.util.List" >
+    insert into TT_FOL_WR_COLLECT (ID, VALID, CREATE_DATE, UPDATE_DATE,INVOICE_NO, WR_ID, TS_ID, 
+	       REMARK, CREATE_BY, UPDATE_BY, EXPRESS_NO)
+    select SEQ_WR_COLLECT.NEXTVAL, 1, SYSDATE, SYSDATE, temp.* from (
+          <foreach collection="wrCollectList" item="item" separator="UNION ALL" > 
+          select 
+			     #{item.invoiceNo,jdbcType=VARCHAR},#{item.wrId,jdbcType=DECIMAL}, #{item.tsId,jdbcType=VARCHAR}, 
+			     #{item.remark,jdbcType=VARCHAR}, #{item.createBy,jdbcType=DECIMAL}, 
+			     #{item.updateBy,jdbcType=DECIMAL}, #{item.expressNo,jdbcType=VARCHAR}
+		 from dual
+		 </foreach>) temp
+   </insert>
+   <select id="findStayInvoiceTotalNum" resultType="java.lang.Integer">
+   SELECT
+		COUNT (1)
+	FROM
+		(
+			SELECT
+				1
+			FROM
+				TT_FOL_WR_COLLECT WC
+			JOIN TT_FOL_WR_ORDER WO ON WO.WR_ID = WC.WR_ID
+			WHERE
+				WC.VALID = 1
+			AND WO.VAILD = 1
+			AND WO.SAP_CODE = #{sapCode}
+			AND 
+			(
+									SELECT
+										INVOICE_NO
+									FROM
+										TT_FOL_INVOICE
+									WHERE
+										VALID = 1
+									AND INVOICE_NO = WC.INVOICE_NO AND SAP_CODE = #{sapCode}
+								) IS NULL
+			GROUP BY
+				WC.TS_ID
+		)
+   </select>
+   
+   
+   <select id="findStayInvoicePageList" resultType="com.sgm.dms.fol.invoice.dto.StayInvoiceDTO">
+        SELECT
+			*
+		FROM
+			(
+				SELECT
+					T1.*, ROWNUM row_num
+				FROM
+					(
+						SELECT
+							TEMP.*, CUL.USER_NAME userName,
+							temp2.invoice oldInvoiceNo
+						FROM
+							(
+								SELECT
+									WC.TS_ID tsId,
+									MAX (WC.EXPRESS_NO) expressNo,
+									MAX (WC.INVOICE_NO) invoiceNo,
+									MAX (Wo.WR_DATE) wrDate,
+									SUM (Wo.PART_COST) partCost,
+									SUM (Wo.LABOUR_COST) labourCost,
+									SUM (Wo.OTHER_COST) otherCost,
+									SUM (Wo.LINETOTAL) linetotal,
+									SUM (Wo.TAX) tax,
+									MAX (Wc.TAX_AMOUNT) taxAmount,
+									SUM (WO.GROSS) gross,
+									MAX (WC.CREATE_BY) createBy,
+									MAX (WC.CREATE_DATE) createDate
+								FROM
+									TT_FOL_WR_COLLECT WC
+								JOIN TT_FOL_WR_ORDER WO ON WO.WR_ID = WC.WR_ID
+								WHERE
+									WC.VALID = 1
+								AND WO.VAILD = 1
+								AND WO.SAP_CODE = #{sapCode}
+								AND (
+									SELECT
+										INVOICE_NO
+									FROM
+										TT_FOL_INVOICE
+									WHERE
+										VALID = 1
+									AND INVOICE_NO = WC.INVOICE_NO AND SAP_CODE = #{sapCode}
+								) IS NULL
+								GROUP BY
+									WC.TS_ID
+							) TEMP
+						LEFT JOIN (
+							SELECT
+								wc.ts_id tsId,
+								MAX (wc.INVOICE_NO) invoice
+							FROM
+								TT_FOL_WR_COLLECT wc
+							JOIN (
+								SELECT
+									ts_id tsId,
+									MAX (create_date) createDate
+								FROM
+									TT_FOL_WR_COLLECT
+								WHERE
+									valid = 0
+								GROUP BY
+									ts_id
+							) temp ON temp.tsId = WC.ts_id
+							AND TEMP.createDate = WC.create_date
+							WHERE
+								WC.VALID = 0
+							GROUP BY
+								wc.ts_id
+						) temp2 ON temp.tsId = temp2.tsId
+						LEFT JOIN TS_COMMON_USER_LOGON CUL ON CUL.LOGON_ID = TEMP.createBy
+						ORDER BY
+							TEMP.createDate DESC
+					) T1
+				WHERE
+					<![CDATA[ROWNUM <= #{endNo}]]>
+			) T2
+		WHERE
+			T2.row_num >= #{beginNo}
+   </select>
+   <update id="updateWrCollectByTsId" parameterType="com.sgm.dms.fol.invoice.dto.WrCollectDTO">
+           update TT_FOL_WR_COLLECT
+           <set >
+			      <if test="id != null and id != 0" >
+			        ID = #{id,jdbcType=DECIMAL},
+			      </if>
+			      <if test="invoiceNo != null" >
+			        INVOICE_NO = #{invoiceNo,jdbcType=VARCHAR},
+			      </if>
+			      <if test="wrId != null and wrId != 0" >
+			        WR_ID = #{wrId,jdbcType=DECIMAL},
+			      </if>
+			      <if test="taxAmount != null" >
+			        TAX_AMOUNT = #{taxAmount,jdbcType=DECIMAL},
+			      </if>
+			      <if test="valid != null and valid != 0" >
+			        VALID = #{valid,jdbcType=DECIMAL},
+			      </if>
+			      <if test="validStr != null" >
+			        VALID = #{validStr,jdbcType=VARCHAR},
+			      </if>
+			      <if test="remark != null" >
+			        REMARK = #{remark,jdbcType=VARCHAR},
+			      </if>
+			      <if test="createBy != null and createBy != 0" >
+			        CREATE_BY = #{createBy,jdbcType=DECIMAL},
+			      </if>
+			      <if test="createDate != null" >
+			        CREATE_DATE = #{createDate,jdbcType=DATE},
+			      </if>
+			      <if test="updateBy != null and updateBy != 0" >
+			        UPDATE_BY = #{updateBy,jdbcType=DECIMAL},
+			      </if>
+			        UPDATE_DATE = SYSDATE,
+			      <if test="expressNo != null" >
+			        EXPRESS_NO = #{expressNo,jdbcType=VARCHAR},
+			      </if>
+		  </set>
+		  <where>
+			        TS_ID = #{tsId,jdbcType=VARCHAR} and valid = 1
+		  </where>
+   </update>
+</mapper>

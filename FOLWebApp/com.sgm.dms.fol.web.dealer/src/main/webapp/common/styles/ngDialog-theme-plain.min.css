@@ -1,0 +1,45 @@
+.ngdialog.ngdialog-theme-plain {
+	padding-bottom: 160px;
+	padding-top: 20px
+}
+
+.ngdialog.ngdialog-theme-plain .ngdialog-content {
+	background: transparent;
+	color: #444;
+	font-family: 'Helvetica Neue', sans-serif;
+	font-size: 1.1em;
+	line-height: 1.5em;
+	margin: 0 auto;
+	max-width: 100%;
+	padding: 0px;
+	position: relative;
+	width: 600px;
+	height: 20px;
+}
+
+.ngdialog.ngdialog-theme-plain .ngdialog-content h1,.ngdialog.ngdialog-theme-plain .ngdialog-content h2,.ngdialog.ngdialog-theme-plain .ngdialog-content h3,.ngdialog.ngdialog-theme-plain .ngdialog-content h4,.ngdialog.ngdialog-theme-plain .ngdialog-content h5,.ngdialog.ngdialog-theme-plain .ngdialog-content h6,.ngdialog.ngdialog-theme-plain .ngdialog-content li,.ngdialog.ngdialog-theme-plain .ngdialog-content p,.ngdialog.ngdialog-theme-plain .ngdialog-content ul
+	{
+	color: inherit
+}
+
+.ngdialog.ngdialog-theme-plain .ngdialog-close {
+	cursor: pointer;
+	position: absolute;
+	right: 0px;
+	top: 0px;
+}
+
+.ngdialog.ngdialog-theme-plain .ngdialog-close:before {
+	background: transparent;
+	color: #bbb;
+	content: "\00D7";
+	font-size: 26px;
+	font-weight: 400;
+	height: 30px;
+	line-height: 26px;
+  	position: absolute;
+  	right: 0px;
+	width: 30px;
+ 	text-align: center;
+	top: 0px;
+}

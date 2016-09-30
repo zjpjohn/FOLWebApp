@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/data/jpa 
+						http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+						http://www.springframework.org/schema/tx
+						http://www.springframework.org/schema/tx/spring-tx.xsd
+						http://www.springframework.org/schema/context 
+						http://www.springframework.org/schema/context/spring-context.xsd
+						http://www.springframework.org/schema/aop
+						http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- import the dataSource definition -->
+    <context:component-scan base-package="com.sgm.dms.fol.common.**"/>
+    <!-- 储备金 -->
+    <context:component-scan base-package="com.sgm.dms.fol.reserve.**"/>
+    <!-- 奖金 -->
+    <context:component-scan base-package="com.sgm.dms.fol.bonus.**"/>
+    <!-- 对账单 -->
+    <context:component-scan base-package="com.sgm.dms.fol.reconciliation.**"/>
+    <!-- 银票 -->
+    <context:component-scan base-package="com.sgm.dms.fol.bankTicket.**"/>
+    <!-- 退貨折讓單 -->
+    <context:component-scan base-package="com.sgm.dms.fol.returnallowance.**"/>
+    <!-- 索赔发票 -->
+    <context:component-scan base-package="com.sgm.dms.fol.invoice.**"/>
+    <!-- 防篡改组件 -->
+    <context:component-scan base-package="com.dealer.controller.**"/>
+    <context:component-scan base-package="com.sgm.solution.framework.**"/>
+    <import resource="spring-datasource-config.xml"/>
+  	
+  	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="locations">
+			<list>
+				<value>classpath:config/url.properties</value>
+				<value>${mail.properties.location}</value>
+				<value>${test.properties.location}</value>
+				<value>${token.properties.location}</value>			
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="exportMessageConfigurer" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="locations">
+			<list>
+				<value>${message.properties.location}</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+    <!-- enables scanning for @Transactional annotations -->
+    <tx:annotation-driven transaction-manager="transactionManager" />
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.sgm.dms.fol.common.service.repository,
+											com.sgm.dms.fol.reserve.repository,
+											com.sgm.dms.fol.bonus.repository,
+											com.sgm.dms.fol.reconciliation.repository,
+											com.sgm.dms.fol.bankTicket.repository,
+											com.sgm.dms.fol.invoice.repository,
+											com.sgm.dms.fol.returnallowance.repository
+											" />
+	</bean>
+	 
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory" />
+	</bean>
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="mapperLocations" value="classpath*:/sql/**/*.xml"/>
+		<property name="typeAliasesPackage" value="com.sgm.dms.fol.reserve.dto,
+												   com.sgm.dms.fol.reserve.domain,
+												   com.sgm.dms.fol.common.api.domain,
+												   com.sgm.dms.fol.common.service.domains,
+												   com.sgm.dms.fol.bonus.dto,
+												   com.sgm.dms.fol.bonus.domain,
+												   com.sgm.dms.fol.reconciliation.dto,
+												   com.sgm.dms.fol.reconciliation.domain,
+												   com.sgm.dms.fol.bankTicket.dto,
+												   com.sgm.dms.fol.bankTicket.domain,
+												   com.sgm.dms.fol.invoice.dto,
+												   com.sgm.dms.fol.invoice.domain,
+												   com.sgm.dms.fol.returnallowance.dto,
+												   com.sgm.dms.fol.returnallowance.domain
+												   "/>
+	</bean>
+
+	<bean id="applicationContextUtils" class="com.sgm.dms.fol.common.service.utils.ApplicationContextUtils"></bean>
+	<!-- 数据防篡改 -->
+	<aop:aspectj-autoproxy/>
+	<bean id="dataDistortAspect" class="com.sgm.solution.framework.dataAuthority.annotations.AnnotationProcessor"/>
+</beans>

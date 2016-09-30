@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<mapper namespace="com.sgm.dms.fol.bonus.repository.BonusIssueFileRcTsDao">
+	<!-- 添加记录 -->
+	<insert id="saveBonusIssueFileRcTs"  parameterType="com.sgm.dms.fol.bonus.dto.BonusIssueFileRcTsDTO">
+		 <selectKey resultType="int" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_FOL_PT_BONUS_F_RC_TS_ID.NEXTVAL AS id FROM DUAL
+	    </selectKey> 
+			INSERT INTO TT_FOL_PT_BONUS_ISSUE_F_RC_TS
+				(
+				ID,
+				FLOW_NO,
+				BATCH_NO,
+				TS_ID,
+				AMOUNT,
+				REMARK,
+				CREATE_BY ,
+				CREATE_DATE,
+				UPDATE_BY ,
+				UPDATE_DATE 
+				)
+			VALUES
+				(
+				#{id},
+				#{flowNo},
+				#{batchNo},
+				#{tsId}||#{id,jdbcType=VARCHAR},
+				#{amount},
+				#{remark,jdbcType=VARCHAR},
+				#{createBy},
+				#{createDate},
+				#{updateBy},
+				#{updateDate}
+				)
+	</insert>
+</mapper>
+ 

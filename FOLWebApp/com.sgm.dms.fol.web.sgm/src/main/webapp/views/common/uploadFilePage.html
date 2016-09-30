@@ -1,0 +1,64 @@
+<script>
+	document.domain="saic-gm.com";
+</script>
+<div ae-panel title="文件上传" style="padding-bottom:20px" ng-controller="uploadFileController">
+	<div class="row-fluid">
+		<div class="span12">
+			<div control-group padding-top="20px" padding-left="20px" padding-right="20px" padding-bottom="5px">
+				<ae-label name="文件名称"></ae-label>
+				<input id="resultName" type="text" class="form-control input-sm"  readonly="true" style="height:10px;width:195px;margin-top:10px" />
+				<input id="result" type="hidden" />
+				<a ae-Linkbutton href="javascript:;" on-click-function="openUploadFile">请选择</a>
+			</div>
+		</div>
+	</div>
+	<div class="row-fluid" ng-if="pageName==='bill'">
+		<div class="span6">
+			<div control-group padding-top="20px" padding-left="20px" padding-right="20px" padding-bottom="5px">
+				<ae-label name="生效时间"></ae-label>
+				<ae-datebox datebox-value="effectDate" id="effectDate"/>
+			</div>
+		</div>
+		<div class="span6">
+			<div control-group padding-top="20px" padding-left="20px" padding-right="20px" padding-bottom="5px">
+				<ae-label name="账单时间"></ae-label>
+				<ae-datebox datebox-value="billDate" id="billDate"/>
+			</div>
+		</div>
+	</div>
+	<div class="row-fluid" ng-if="pageName==='bonusIssueVersion'">
+		<div class="span6">
+			<div control-group padding-top="20px" padding-left="20px" padding-right="20px" padding-bottom="5px">
+				<ae-label name="渠道类型"></ae-label>
+				<input id="dealerType" ae-combobox editable="false" data-options="valueField:'code',textField:'codeCnDesc'"/>
+			</div>
+		</div>
+		<div class="span6">
+			<div control-group padding-top="20px" padding-left="20px" padding-right="20px" padding-bottom="5px">
+				<ae-label name="奖金类型"></ae-label>
+				<input id="bonusType" ae-combobox editable="false" data-options="valueField:'code',textField:'codeCnDesc'"/>
+			</div>
+		</div>
+	</div>
+	<div class="row-fluid" ng-if="pageName==='bankTicketInterest'">
+		<div class="span6">
+			<div control-group padding-top="20px" padding-left="20px" padding-right="20px" padding-bottom="5px">
+				<ae-label name="年"></ae-label>
+				<input ae-combobox id="year"  editable="false" data-options="valueField:'value',textField:'display'"/>
+			</div>
+		</div>
+		<div class="span6">
+			<div control-group padding-top="20px" padding-left="20px" padding-right="20px" padding-bottom="5px">
+				<ae-label name="月"></ae-label>
+				<input ae-combobox id="month" ae-combobox editable="false" data-options="valueField:'value',textField:'display'"/>
+			</div>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<div align="center">
+			<a class="c6" ae-Linkbutton href="javascript:;" on-click-function="saveFile">确定</a>
+<!-- 			<a ae-Linkbutton href="javascript:;" on-click-function="openDownloadFile">下载</a> -->
+			<a ae-Linkbutton href="javascript:;" on-click-function="cancel">取消</a>
+		</div>
+	</div>
+</div>

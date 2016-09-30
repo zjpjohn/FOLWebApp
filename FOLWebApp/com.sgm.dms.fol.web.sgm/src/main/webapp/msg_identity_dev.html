@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html ng-app="msgIdentityCtrlModule">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport"
+	content="width=device-width, initial-scale=1, user-scalable=no" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css"
+	href="vendor/jquery-easyui/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css"
+	href="vendor/jquery-easyui/themes/icon.css">
+<link rel="stylesheet" type="text/css"
+	href="vendor/jquery-easyui/themes/color.css">
+<link rel="stylesheet" type="text/css"
+	href="common/styles/framework.css">
+<link rel="stylesheet" type="text/css"
+	href="common/styles/ngDialog-theme-default.css">
+	<link rel="stylesheet" type="text/css"
+	href="common/styles/ngDialog-theme-plain.min.css">
+		<link rel="stylesheet" type="text/css"
+	href="common/styles/ngDialog.min.css">
+	<link rel="stylesheet" type="text/css"
+	href="common/styles/loginIdentity.css">
+		<title>身份切换页面</title>
+	</head>
+	<body ng-controller="msgIdentityCtrl" >
+     <div class="page" >
+			<section>
+				<div class="content">
+					<div class="loginstyle" align="center">
+							<div class="login_midtopbox">
+								<div class="sgm_dp_login_content" align="center">
+								<form name="loginform" action="" method="post" >
+								<div class="navigation">您可以使用以下身份登录系统，请选择</div>
+								<table class="table_list2">
+								   <tr class="table_list2_th">
+										<td colspan="3"><img class="nav" src="common/images/subNav.gif" />&nbsp;可选岗位列表：
+										&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+										&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+										&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+										<input value='登出系统' type='button' class="long_btn" name='logout'  ng-click="doLogout();"/></td>
+									</tr>
+								     <tr>
+								       <th>公司名称</th><th>岗位名称</th><th>选择</th>
+								     </tr>
+								     <tr ng-repeat="a in accounts">
+								       <td>上海通用</td><td>{{a.positionName}}</td>
+								       <td>
+								         <input type="button" name="btnPs" value="岗位选择" class="normal_btn" ng-click="doLogin(a.positionId,a.loginId);">
+								       </td>
+								     </tr>
+								</table>
+								</form>
+								</div>
+							</div>
+				   <div class="login_midbottombox"></div>
+				   </div>
+				</div>
+			</section>
+		</div>
+	<script src="js/config.js"></script>
+	<script src="vendor/jquery/jquery.min.js"></script>
+	<script src="vendor/jquery-easyui/jquery.easyui.min.js"></script>
+	<script src="vendor/jquery-easyui/easyloader.js"></script>
+	<script src="vendor/jquery-easyui/locale/easyui-lang-zh_CN.js"></script>
+	<script src="common/scripts/FolUtil.js"></script>
+	<!-- AngularJS -->
+	<script src="vendor/angularjs/angular.js"></script>
+	<script src="vendor/angularjs/angular-touch.min.js"></script>
+	<script src="vendor/angular-ui-router/angular-ui-router.min.js"></script>
+	<script src="vendor/angularjs/angular-resource.min.js"></script>
+	<script src="vendor/angularjs/angular-cookies.min.js"></script>	
+	<script src="vendor/angularjs/angular-promise-tracker.js"></script>
+	
+	
+	<!-- Common Angular & EasyUI JS -->
+	<script src="js/msg_identity.js"></script>
+	<script src="common/scripts/framework.js"></script>
+	<script src="common/scripts/angularjs-esayui.js"></script>
+	<script src="common/scripts/easyui-extend-validate.js"></script>
+    <script src="common/scripts/ng-file-upload.min.js"></script>
+	<script src="common/scripts/ng-file-upload-shim.min.js"></script>
+	<script src="common/scripts/FileAPI.js"></script>
+	<script src="common/scripts/ngDialog.min.js"></script>
+	
+	<!-- AugularJS Service -->
+	<script src="js/service/CommonService.js"></script>
+	<script src="js/service/msgIdentityService.js"></script>
+	</body> 
+</html>

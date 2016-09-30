@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sgm.dms.fol.common.service.repository.CodeDao">
+
+	<resultMap id="CodeResult" type="com.sgm.dms.fol.common.service.domains.CodePo">
+		<id 	property="codeId" 		column="CODE_ID" 		javaType="java.lang.Long" 		jdbcType="NUMERIC"/>
+		<result property="type" 		column="TYPE" 			javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+		<result property="typeName" 	column="TYPE_NAME" 		javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="codeEnDesc" 	column="CODE_EN_DESC" 	javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+		<result property="codeCnDesc" 	column="CODE_CN_DESC" 	javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+		<result property="num" 			column="NUM" 			javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+		<result property="status" 		column="STATUS" 		javaType="java.lang.Long" 		jdbcType="NUMERIC"/>
+		<result property="code" 		column="CODE" 			javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+		<result property="enCode" 		column="EN_CODE" 			javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+ 	</resultMap>
+ 	<resultMap id="CodeDtoResult" type="com.sgm.dms.fol.common.api.domain.CodeDTO">
+		<id 	property="codeId" 		column="CODE_ID" 		javaType="java.lang.Long" 		jdbcType="NUMERIC"/>
+		<result property="type" 		column="TYPE" 			javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+		<result property="typeName" 	column="TYPE_NAME" 		javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="codeEnDesc" 	column="CODE_EN_DESC" 	javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+		<result property="codeCnDesc" 	column="CODE_CN_DESC" 	javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+		<result property="num" 			column="NUM" 			javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+		<result property="status" 		column="STATUS" 		javaType="java.lang.Long" 		jdbcType="NUMERIC"/>
+		<result property="code" 		column="CODE" 			javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+		<result property="createDate" 	column="CREATE_DATE" 	javaType="java.util.Date" 	    jdbcType="DATE"/>
+ 		<result property="updateDate" 	column="UPDATE_DATE" 	javaType="java.util.Date" 	    jdbcType="DATE"/>
+ 		<result property="remark" 	    column="REMARK" 	    javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+ 	</resultMap>
+	<select id="findCodeByTypeName" parameterType="java.lang.String"  resultMap="CodeResult">
+		SELECT *
+		FROM TC_FOL_CODE
+		WHERE TYPE_NAME=#{typeName}
+    </select>
+    <select id="findCodeByType" parameterType="java.lang.Long"  resultMap="CodeResult">
+		SELECT *
+		FROM TC_FOL_CODE
+		WHERE TYPE=#{type}
+    </select>
+    
+    <select id="findCodeByCodeId" parameterType="java.lang.Long"  resultMap="CodeResult">
+		SELECT *
+		FROM TC_FOL_CODE
+		WHERE CODE_ID=#{_parameter} AND STATUS=10011001
+    </select>
+    
+    <!-- add codetype -->
+    <insert id="saveCodeType" parameterType="com.sgm.dms.fol.common.api.domain.CodeDTO">
+    	INSERT INTO TC_FOL_CODE 
+    			(CODE_ID,
+    			CODE,
+    			TYPE,
+    			TYPE_NAME,
+    			CODE_EN_DESC,
+    			CODE_CN_DESC,
+    			NUM,
+    			STATUS,
+    			CREATE_BY,
+    			CREATE_DATE,
+    			UPDATE_BY,
+    			UPDATE_DATE,
+    			REMARK
+    			) 
+    	VALUES 
+    			(#{codeId},
+    			#{code},
+    			#{type},
+    			#{typeName},
+    			#{codeEnDesc,jdbcType=VARCHAR},
+    			#{codeCnDesc},
+    			(select nvl(max(num),0)+1 from TC_FOL_CODE where TYPE='1079'),
+    			#{status},
+    			#{createBy},
+    			#{createDate},
+    			#{updateBy},
+    			#{updateDate},
+    			#{remark,jdbcType=VARCHAR}
+    			)
+    	
+    </insert>
+    
+<!--     select max code type  -->
+	 <select id="findMaxCodeTypeByTypeName" resultType="java.lang.Integer">
+    	SELECT MAX(TYPE) FROM TC_FOL_CODE WHERE TYPE_NAME=#{param1}
+    </select>
+    <select id="findMaxCodeType" resultType="java.lang.Integer">
+    	SELECT MAX(TYPE) FROM TC_FOL_CODE
+    </select>
+    
+<!--     update code by codeId -->
+    <update id="updateCodeTypeByCodeId" parameterType="com.sgm.dms.fol.common.api.domain.CodeDTO">
+    	UPDATE  TC_FOL_CODE 
+    			SET UPDATE_DATE=SYSDATE
+    			<if test="code!=null and code!='-1'">
+				 	,CODE=#{code}
+				</if>
+    			<if test="codeCnDesc!=null and ! codeCnDesc.trim().equals('')">
+					,CODE_CN_DESC=#{codeCnDesc}
+				</if>
+    			<if test="updateBy!=null">
+				 	,UPDATE_BY=#{updateBy}
+				</if>
+				<if test="remark!=null and ! remark.trim().equals('')">
+				 	,REMARK=#{remark}
+				</if>
+    			
+    	WHERE CODE_ID=#{codeId} AND TYPE=#{type}
+    </update>
+    
+<!--     根据code和codecn查询 -->
+    <select id="findCodeDataByCodeCnAndCode" parameterType="com.sgm.dms.fol.common.api.domain.CodeDTO" resultMap="CodeDtoResult">
+    	SELECT  N.*   FROM 
+    	(
+			SELECT  T.*,ROWNUM AS RN  FROM 
+			(
+				SELECT C.*,RANK()OVER(PARTITION BY C.TYPE ORDER BY C.CODE DESC) 
+				FROM TC_FOL_CODE C 
+				WHERE 1=1
+				<if test="code!=null and code!='-1' and code!=''">
+					 AND C.CODE=#{code}
+				</if> 	 
+				<if test="codeCnDesc!=null and ! codeCnDesc.trim().equals('')">
+					AND C.CODE_CN_DESC=#{codeCnDesc}
+				</if>
+				<if test="type!=null and type!='-1'">
+					AND C.TYPE=#{type}
+				</if> 
+				 
+				
+	    	) T 
+	    	WHERE 1=1
+	    	<![CDATA[ AND ROWNUM <=#{endNo} ]]>
+	    ) N
+	    
+    	WHERE 1=1 
+    	<![CDATA[ AND N.RN>#{beginNo}]]>
+		ORDER BY N.CODE ASC
+		
+    </select>
+    
+    <!-- select count  by where -->
+    <select id="getTotalTypeByWhs" parameterType="com.sgm.dms.fol.common.api.domain.CodeDTO" resultType="java.lang.Integer">
+    	SELECT 	COUNT(1) 
+				FROM TC_FOL_CODE C 
+				WHERE 1=1
+				<if test="code!=null and code!='-1' and code!=''">
+					 AND C.CODE=#{code}
+				</if> 	 
+				<if test="codeCnDesc!=null and ! codeCnDesc.trim().equals('')">
+					AND C.CODE_CN_DESC=#{codeCnDesc}
+				</if>
+				<if test="type!=null and type!='-1'">
+					AND C.TYPE=#{type}
+				</if>  
+    </select>
+   
+    <!-- 根据code和typeNMAE查询 别的表code转name调用 -->
+    <select id="getcodeCnDescByCodeAndTypeName" resultMap="CodeDtoResult"  parameterType="com.sgm.dms.fol.common.api.domain.CodeDTO" >
+    	SELECT 	C.*
+			FROM TC_FOL_CODE C 
+			WHERE 1=1
+			<if test="code!=null and code!='-1'">
+				AND C.CODE=#{code}
+			</if> 	 
+			<if test="type!=null and type!='-1'">
+				AND C.TYPE=#{type}
+			</if>  
+    </select>
+</mapper>

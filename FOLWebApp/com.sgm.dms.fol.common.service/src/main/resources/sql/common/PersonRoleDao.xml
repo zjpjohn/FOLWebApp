@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 岗位Mapper -->
+<mapper namespace="com.sgm.dms.fol.common.service.repository.PersonRoleDao">
+	
+	<!-- 查询人员角色 -->
+	<select id="findA" resultType="com.sgm.dms.fol.common.api.domain.PersonRoleDTO">
+		SELECT A.USER_NAME AS userName,
+			   D.ROLE_NAME AS roleName,
+			    D.ROLE_ID AS roleId,
+			    A.USER_ID AS userId
+		FROM TS_FOL_USER  A,TR_USER_POSITION B,TR_POSITION_ROLE C,TS_FOL_ROLE D
+		WHERE
+		A.USER_ID=B.USER_ID AND B.POSITION_ID=C.POSITION_ID AND C.ROLE_ID=D.ROLE_ID 
+ 			<!-- 查询条件 -->  
+		<if test="roleType!=null and  roleType!=''">
+			AND D.ROLE_TYPE=#{roleType}
+		</if>
+		<if test="userType!=null and  userType!=''">
+			<![CDATA[ AND A.USER_TYPE=#{userType} ]]>
+		</if> 
+	</select>
+	<!-- 修改人员对应的角色 -->
+ 	<update id="updataPersonRole" parameterType="com.sgm.dms.fol.common.api.domain.PersonRoleDTO">
+		UPDATE TR_POSITION_ROLE SET ROLE_ID=#{roleId}
+		WHERE POSITION_ID=(SELECT POSITION_ID  FROM TS_COMMON_USER_LOGON WHERE LOGON_ID=#{userId})
+	</update> 
+</mapper>
+
+
+
+
+
+
+

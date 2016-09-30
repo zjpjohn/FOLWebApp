@@ -1,0 +1,1020 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<mapper namespace="com.sgm.dms.fol.bonus.repository.BonusDao">
+
+	<!-- select single bonus record with sapCode -->
+	<select id="getBounsRecordBySapCode" resultType="com.sgm.dms.fol.bonus.domain.BonusPo">
+		SELECT SAP_CODE AS sapCode,
+		DEALER_NAME AS dealerName,
+		TOTAL_AMOUNT AS
+		totalAmount,
+		FROZEN_AMOUNT AS frozenAmount,
+		LAST_CHANGE_TIME AS
+		changeTime,
+		CREATE_BY AS createBy,
+		CREATE_DATE AS createDate,
+		UPDATE_BY
+		AS updateBy,
+		UPDATE_DATE AS updateDate,
+		DEALER_TYPE AS
+		dealerType
+		FROM
+		TT_FOL_PT_BONUS_AMOUNT
+
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			WHERE SAP_CODE=#{sapCode}
+		</if>
+	</select>
+	
+	<!-- query bonus record list -->
+	<select id="getBounsRecord" resultType="com.sgm.dms.fol.bonus.domain.BonusPo">
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+		
+		SELECT SAP_CODE AS sapCode,
+		DEALER_NAME AS dealerName,
+		TOTAL_AMOUNT AS
+		totalAmount,
+		FROZEN_AMOUNT AS frozenAmount,
+		LAST_CHANGE_TIME AS
+		changeTime,
+		CREATE_BY AS createBy,
+		CREATE_DATE AS createDate,
+		UPDATE_BY
+		AS updateBy,
+		UPDATE_DATE AS updateDate,
+		DEALER_TYPE AS
+		dealerType
+		FROM
+		TT_FOL_PT_BONUS_AMOUNT
+		
+		ORDER BY SAP_CODE
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+		
+	</select>
+
+
+	<!-- 查询奖金月度明细根据(渠道类型 储备金类型 客户代码 客户名称 年月)配件 -->
+	<select id="getBonusMonthDeatil" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO">
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+
+		SELECT DE.DEALER_CODE AS dealerCode,
+		RE.SAP_CODE AS sapCode,
+		DE.DEALER_NAME AS dealerName,
+		CGR.POSTING_DATE AS postingDate,
+		to_char(CGR.LAST_CHANGE_TIME,'yyyy-MM-dd HH:MM:SS') AS changeTime,
+		CGR.BEFORE_CHANGE_AMOUNT AS beforeChangeAmount,
+		CGR.CHANGE_AMOUNT AS changeAmount,
+		CGR.AFTER_CHANGE_AMOUNT AS folBonusAmount,
+		ST.REFER_TYPE_NAME AS
+		referType,
+		FT.BATCH_NO AS id,
+		CGR.REFER_CODE AS referCode
+		FROM TT_FOL_PT_BONUS_AMOUNT RE
+		JOIN TT_SGM_PT_bonus_CG_RECORD CGR ON RE.SAP_CODE=CGR.SAP_CODE	
+		LEFT JOIN TT_FOL_PT_BONUS_ISSUE_F_RC_TS FT ON FT.TS_ID = CGR.TS_ID
+		JOIN TM_FOL_DEALER_INFO DE ON RE.SAP_CODE = DE.SAP_CODE
+		JOIN TM_FOL_SOA_TRANSITION_TYPE ST ON ST.REFER_TYPE_ID=CGR.REFER_TYPE
+		<!-- 渠道类型 -->
+		<if test="dealerType!=null and dealerType!='-1'">
+			AND DE.DEALER_TYPE=#{dealerType}
+		</if>
+
+		WHERE 1=1 AND NOT EXISTS (
+		SELECT 1
+		FROM TT_SGM_PT_BONUS_CG_RECORD
+		TEMP_CGR
+		WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR.TS_ID=TEMP_CGR.TS_ID
+		<!-- 客户代码 -->
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			  <![CDATA[ AND TEMP_CGR.SAP_CODE =#{sapCode} ]]>
+		</if>
+		)
+		<!-- 公司代码 -->
+		<if test="dealerCode!=null and ! dealerCode.trim().equals('')">
+			<![CDATA[ AND DE.DEALER_CODE =#{dealerCode} ]]>
+		</if>
+		<!-- 客户代码 -->
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			<![CDATA[ AND DE.SAP_CODE =#{sapCode} ]]>
+		</if>
+		<!-- 客户名称 -->
+		<if test="dealerName!=null and ! dealerName.trim().equals('')">
+			<![CDATA[ AND DE.DEALER_NAME =#{dealerName} ]]>
+		</if>
+		<!-- 查询年月 -->
+		<if test="changeTime!=null and ! changeTime.trim().equals('')">
+			<![CDATA[ AND to_char(CGR.LAST_CHANGE_TIME,'yyyy-MM') =#{changeTime} ]]>
+		</if>
+
+		ORDER BY CGR.ID DESC
+
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+	</select>
+	<!-- 根据时间查询奖金期末余额（不包括冻结） -->
+	<select id="getBonusAmountByDateTime" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO">
+		SELECT 
+			 TEMP.bonusAmount AS bonusAmount,
+			(CASE WHEN temp.sapCode IS NOT NULL THEN temp.sapCode ELSE RA.SAP_CODE END) AS sapCode,
+			(CASE WHEN temp.dealerName IS NOT NULL THEN temp.dealerName ELSE DI.DEALER_NAME END) AS dealerName,
+			RA.DEALER_TYPE AS dealerType
+			FROM TT_FOL_PT_BONUS_AMOUNT RA
+			JOIN TM_FOL_DEALER_INFO DI ON RA.SAP_CODE=DI.SAP_CODE
+			LEFT JOIN (SELECT
+				nvl(CGR.AFTER_CHANGE_AMOUNT,0) AS bonusAmount,
+				CGR.SAP_CODE AS sapCode,
+				DI.DEALER_NAME AS dealerName
+				FROM TT_FOL_PT_BONUS_AMOUNT RA
+				JOIN TT_SGM_PT_BONUS_CG_RECORD CGR ON RA.SAP_CODE=CGR.SAP_CODE
+				JOIN (SELECT max(CGR2.ID) CGID,CGR2.SAP_CODE
+					FROM TT_SGM_PT_BONUS_CG_RECORD CGR2
+					JOIN TT_FOL_SOA_TRANSITION ST ON CGR2.TS_ID=ST.TS_ID
+		  <![CDATA[ JOIN TM_FOL_SOA_TRANSITION_TYPE STT ON CGR2.REFER_TYPE=STT.REFER_TYPE_ID AND ((
+					CGR2.POSTING_DATE IS NOT NULL AND  SUBSTR(CGR2.POSTING_DATE,0,6)=REPLACE(#{changeTime},'-','') ) OR (TO_CHAR(CGR2.LAST_CHANGE_TIME,'yyyy-MM')=#{changeTime} AND CGR2.POSTING_DATE IS NULL)) ]]>
+					WHERE CGR2.IS_ROLLBACK=0 AND NOT EXISTS (
+						SELECT 1
+						FROM TT_SGM_PT_BONUS_CG_RECORD TEMP_CGR
+						WHERE TEMP_CGR.IS_ROLLBACK=1 AND
+						CGR2.TS_ID=TEMP_CGR.TS_ID
+						AND TEMP_CGR.SAP_CODE =CGR2.SAP_CODE 
+					)
+					GROUP BY CGR2.SAP_CODE) MAXCGR ON CGR.SAP_CODE=MAXCGR.SAP_CODE AND MAXCGR.CGID=CGR.ID
+				JOIN TM_FOL_DEALER_INFO DI ON CGR.SAP_CODE=DI.SAP_CODE AND
+			CGR.IS_ROLLBACK=0
+	
+			<!-- 渠道类型 -->
+			<if test="dealerType!=null and dealerType!='-1'">
+				AND DI.DEALER_TYPE=#{dealerType}
+			</if>
+	
+			<if test="startSapCode!=null and ! startSapCode.trim().equals('')">
+					<![CDATA[ AND MAXCGR.SAP_CODE>=#{startSapCode} ]]>
+			</if>
+			<if test="endSapCode!=null and ! endSapCode.trim().equals('')">
+					<![CDATA[ AND MAXCGR.SAP_CODE<=#{endSapCode} ]]>
+			</if>
+			) temp on RA.sap_Code=temp.sapCode
+			ORDER BY sapCode
+	</select>
+
+	<!-- 根据时间查询奖金期初余额（不包括冻结） -->
+<!-- 	<select id="findBonusAmountByDateTime" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO"> -->
+<!-- 		SELECT  -->
+<!-- 			TEMP.bonusLastAmount  AS bonusLastAmount, -->
+<!-- 			(CASE WHEN temp.sapCode IS NOT NULL THEN temp.sapCode ELSE RA.SAP_CODE END) AS sapCode, -->
+<!-- 			(CASE WHEN temp.dealerName IS NOT NULL THEN temp.dealerName ELSE DI.DEALER_NAME END) AS dealerName -->
+<!-- 			FROM TT_FOL_PT_BONUS_AMOUNT RA -->
+<!-- 			JOIN TM_FOL_DEALER_INFO DI ON RA.SAP_CODE=DI.SAP_CODE -->
+<!-- 			LEFT JOIN (SELECT -->
+<!-- 			nvl(CGR.AFTER_CHANGE_AMOUNT,0) AS bonusLastAmount, -->
+<!-- 			CGR.SAP_CODE AS sapCode, -->
+<!-- 			DI.DEALER_NAME AS dealerName -->
+<!-- 			FROM TT_FOL_PT_BONUS_AMOUNT RA -->
+<!-- 			JOIN TT_SGM_PT_BONUS_CG_RECORD CGR ON RA.SAP_CODE=CGR.SAP_CODE -->
+<!-- 			JOIN (SELECT -->
+<!-- 			MAX(CGR2.ID) CGID, -->
+<!-- 			CGR2.SAP_CODE -->
+<!-- 			FROM TT_SGM_PT_BONUS_CG_RECORD CGR2 -->
+<!-- 			JOIN TT_FOL_SOA_TRANSITION ST ON CGR2.TS_ID=ST.TS_ID				 -->
+<!-- 				STT.REFER_TYPE_ID in (30120100,60000000) AND -->
+<!-- 				<![CDATA[ JOIN TM_FOL_SOA_TRANSITION_TYPE STT ON CGR2.REFER_TYPE=STT.REFER_TYPE_ID AND (( -->
+<!-- 				CGR2.POSTING_DATE IS NOT NULL AND SUBSTR(CGR2.POSTING_DATE,0,6)<=REPLACE(#{changeTime},'-','')) OR TO_CHAR(CGR2.LAST_CHANGE_TIME,'yyyy-MM')<=#{changeTime} AND CGR2.POSTING_DATE IS NULL )]]> -->
+<!-- 			WHERE CGR2.IS_ROLLBACK=0 AND NOT EXISTS ( -->
+<!-- 			SELECT 1 -->
+<!-- 			FROM -->
+<!-- 			TT_SGM_PT_BONUS_CG_RECORD TEMP_CGR -->
+<!-- 			WHERE TEMP_CGR.IS_ROLLBACK=1 AND -->
+<!-- 			CGR2.TS_ID=TEMP_CGR.TS_ID -->
+<!-- 			AND TEMP_CGR.SAP_CODE =CGR2.SAP_CODE  -->
+<!-- 			) -->
+<!-- 			GROUP BY CGR2.SAP_CODE) MINCGR ON -->
+<!-- 			CGR.SAP_CODE=MINCGR.SAP_CODE AND MINCGR.CGID=CGR.ID -->
+<!-- 			JOIN -->
+<!-- 			TM_FOL_DEALER_INFO DI ON CGR.SAP_CODE=DI.SAP_CODE AND -->
+<!-- 			CGR.IS_ROLLBACK=0 -->
+	
+			<!-- 渠道类型 -->
+<!-- 			<if test="dealerType!=null and dealerType!='-1'"> -->
+<!-- 				AND DI.DEALER_TYPE=#{dealerType} -->
+<!-- 			</if> -->
+	
+<!-- 			<if test="startSapCode!=null and ! startSapCode.trim().equals('')"> -->
+<!-- 					<![CDATA[ AND MINCGR.SAP_CODE>=#{startSapCode} ]]> -->
+<!-- 			</if> -->
+<!-- 			<if test="endSapCode!=null and ! endSapCode.trim().equals('')"> -->
+<!-- 					<![CDATA[ AND MINCGR.SAP_CODE<=#{endSapCode} ]]> -->
+<!-- 			</if> -->
+<!-- 			) temp on RA.sap_Code=temp.sapCode -->
+<!-- 			ORDER BY sapCode -->
+<!-- 	</select> -->
+
+
+	<!-- 根据时间查询奖金月度余额（SAP奖金信息） -->
+	<select id="getMonthBonusAmountByDateTime" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO">
+		SELECT
+		nvl(PMR.SAP_BONUS_AMOUNT,0) AS sapBonusAmount,
+		PMR.SAP_CODE AS sapCode
+		FROM TT_FOL_PT_MONTH_AMOUNT PMR
+		WHERE
+		PMR.CHANGE_MONTH=#{month,jdbcType=VARCHAR} and
+		PMR.CHANGE_YEAR=#{year,jdbcType=VARCHAR}
+		<!-- 渠道类型 -->
+		<if test="dealerType!=null and dealerType!='-1'">
+			AND PMR.DEALER_TYPE=#{dealerType}
+		</if>
+
+		<if test="startSapCode!=null and ! startSapCode.trim().equals('')">
+			<![CDATA[ AND PMR.SAP_CODE>=#{startSapCode} ]]>
+		</if>
+		<if test="endSapCode!=null and ! endSapCode.trim().equals('')">
+			<![CDATA[ AND PMR.SAP_CODE<=#{endSapCode} ]]>
+		</if>
+	</select>
+	<!-- 根据日期 渠道类型 经销商code 查询月末余额 -->
+	<select id="getBonusMonthFistAndLastByDateTime" parameterType="com.sgm.dms.fol.bonus.dto.BonusDTO"
+		resultType="com.sgm.dms.fol.bonus.domain.BonusChangeRecordPo">
+		SELECT
+			BONUSLAST.SAP_CODE as sapCode,
+			BONUSLAST.DEALER_NAME as dealerName,
+			BONUSLAST.AFTER_CHANGE_AMOUNT as afterChangeAmount,
+			BONUSFIRST.BEFORE_CHANGE_AMOUNT as beforeChangeAmount
+		FROM
+		<!--月末 金额 -->
+		(
+			SELECT
+				BCG.LAST_CHANGE_TIME,BCG.SAP_CODE,DI.DEALER_NAME,BCG.TS_ID,
+				BCG.AFTER_CHANGE_AMOUNT,RANK()OVER(PARTITION BY BCG.SAP_CODE ORDER BY
+				BCG.LAST_CHANGE_TIME DESC) AS RN
+			FROM TT_SGM_PT_BONUS_CG_RECORD BCG
+			JOIN TM_FOL_DEALER_INFO DI ON BCG.SAP_CODE=DI.SAP_CODE
+			WHERE 1=1
+				AND substr(TO_CHAR(BCG.LAST_CHANGE_TIME,'YYYYMM'),0,4)=#{year,jdbcType=VARCHAR} 
+			 	AND substr(TO_CHAR(BCG.LAST_CHANGE_TIME,'YYYYMM'),5,7)=#{month,jdbcType=VARCHAR}
+				AND (BCG.IS_ROLLBACK=0 OR BCG.IS_ROLLBACK IS NULL)
+		) BONUSLAST
+		JOIN
+		<!-- 月初 金额 -->
+		(
+			SELECT
+				BCG.LAST_CHANGE_TIME,BCG.SAP_CODE,DI.DEALER_NAME,BCG.TS_ID,
+				BCG.BEFORE_CHANGE_AMOUNT,RANK()OVER(PARTITION BY BCG.SAP_CODE ORDER BY
+				BCG.LAST_CHANGE_TIME ASC) AS RN
+			FROM TT_SGM_PT_BONUS_CG_RECORD BCG
+			JOIN TM_FOL_DEALER_INFO DI ON BCG.SAP_CODE=DI.SAP_CODE
+			WHERE 1=1
+				AND substr(TO_CHAR(BCG.LAST_CHANGE_TIME,'YYYYMM'),0,4)=#{year,jdbcType=VARCHCAR} 
+		 		AND substr(TO_CHAR(BCG.LAST_CHANGE_TIME,'YYYYMM'),5,7)=#{month,jdbcType=VARCHCAR}	
+				AND (BCG.IS_ROLLBACK=0 OR BCG.IS_ROLLBACK IS NULL)
+		) BONUSFIRST ON
+		BONUSFIRST.SAP_CODE=BONUSLAST.SAP_CODE
+			AND BONUSLAST.RN=1 
+			AND BONUSFIRST.RN=1
+		JOIN TM_FOL_DEALER_INFO DI ON BONUSFIRST.SAP_CODE=DI.SAP_CODE
+		<!-- 渠道类型 -->
+		<if test="dealerType!=null and dealerType!='-1'">
+			AND DI.DEALER_TYPE=#{dealerType,jdbcType=VARCHCAR}
+		</if>
+
+		<if test="startSapCode!=null and ! startSapCode.trim().equals('')">
+			<![CDATA[ AND DI.SAP_CODE>=#{startSapCode} ]]>
+		</if>
+		<if test="endSapCode!=null and ! endSapCode.trim().equals('')">
+			<![CDATA[ AND DI.SAP_CODE<=#{endSapCode} ]]>
+		</if>
+		WHERE NOT EXISTS (
+			SELECT 1
+			FROM TT_SGM_PT_BONUS_CG_RECORD TEMP_CGR
+			WHERE TEMP_CGR.IS_ROLLBACK=1 AND (BONUSFIRST.TS_ID=TEMP_CGR.TS_ID or
+			BONUSLAST.TS_ID=TEMP_CGR.TS_ID
+		)
+		<!-- 客户代码 -->
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			  <![CDATA[ AND DI.SAP_CODE =#{sapCode} ]]>
+		</if>
+		)
+	</select>
+	
+	<!-- 根据时间查询奖金期初余额（不包括冻结） -->
+	<select id="findBonusAmountByDateTime" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO">
+		<include refid="BounsBeginningFund"/>
+		
+		<where>
+			<if test="startSapCode!=null and ! startSapCode.trim().equals('')">
+				<![CDATA[ DI.SAP_CODE>=#{startSapCode} ]]>
+			</if>
+			<if test="endSapCode!=null and ! endSapCode.trim().equals('')">
+				<![CDATA[ AND DI.SAP_CODE<=#{endSapCode} ]]>
+			</if>
+			<!-- 渠道类型 -->
+			<if test="dealerType!=null and dealerType!='-1'">
+				AND DI.DEALER_TYPE=#{dealerType}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 期初余额基础数据 -->
+	<sql id="BounsBeginningFund">
+		SELECT 
+			DI.sap_code AS sapCode,
+			DI.DEALER_NAME AS dealerName,
+			BA.TOTAL_AMOUNT-NVL(CGR1.bonusAdd,0)+ABS(NVL(CGR2.billBonus,0)) AS bonusLastAmount
+		FROM TM_FOL_DEALER_INFO DI
+		JOIN TT_FOL_PT_BONUS_AMOUNT BA ON DI.SAP_CODE=BA.SAP_CODE
+		LEFT JOIN (SELECT
+				sum(CGR.CHANGE_AMOUNT)
+				bonusAdd,
+				CGR.sap_code,
+				DI.DEALER_NAME
+			  FROM TT_SGM_PT_BONUS_CG_RECORD CGR
+			  JOIN TM_FOL_DEALER_INFO DI ON CGR.SAP_CODE=DI.SAP_CODE
+			  JOIN TT_FOL_SOA_TRANSITION ST ON CGR.TS_ID=ST.TS_ID
+			  JOIN TM_FOL_SOA_TRANSITION_TYPE STT ON ST.REFER_TYPE=STT.REFER_TYPE_ID 
+				  AND STT.REFER_TYPE_ID in (60000000,30120900,50000100,30121500) 
+				<if test="changeTime!=null and changeTime!=''">
+					AND	(SUBSTR(CGR.POSTING_DATE,0,6)>REPLACE(#{changeTime,jdbcType=VARCHAR},'-','')
+					OR	(TO_CHAR(CGR.LAST_CHANGE_TIME,'yyyy-MM')>#{changeTime,jdbcType=VARCHAR} AND CGR.POSTING_DATE IS NULL))
+				</if>
+				<if test="changeTime==null and changeTime==''">
+					AND	(SUBSTR(CGR.POSTING_DATE,0,6)>=concat(#{year},#{month})
+					OR	(TO_CHAR(CGR.LAST_CHANGE_TIME,'yyyy-MM')>=concat(concat(#{year},'-'),#{month}) AND CGR.POSTING_DATE IS NULL))
+				</if>			  WHERE substr(CGR.CHANGE_AMOUNT,0,1)!='-' AND CGR.IS_ROLLBACK=0 AND NOT EXISTS 
+				(
+				SELECT 1
+				FROM TT_SGM_PT_BONUS_CG_RECORD TEMP_CGR
+				WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR.TS_ID=TEMP_CGR.TS_ID
+<!-- 				<if test="startSapCode!=null and ! startSapCode.trim().equals('')"> -->
+<!-- 					<![CDATA[ AND TEMP_CGR.SAP_CODE>=#{startSapCode} ]]> -->
+<!-- 				</if> -->
+<!-- 				<if test="endSapCode!=null and ! endSapCode.trim().equals('')"> -->
+<!-- 					<![CDATA[ AND TEMP_CGR.SAP_CODE<=#{endSapCode} ]]> -->
+<!-- 				</if> -->
+				)group by CGR.sap_code,DI.DEALER_NAME) CGR1 ON DI.SAP_CODE=CGR1.SAP_CODE
+		LEFT JOIN (SELECT sum(CGR.CHANGE_AMOUNT)
+			billBonus,CGR.sap_code,DI.DEALER_NAME
+			FROM TT_SGM_PT_BONUS_CG_RECORD CGR
+			JOIN TM_FOL_DEALER_INFO DI ON CGR.SAP_CODE=DI.SAP_CODE
+			JOIN TT_FOL_SOA_TRANSITION ST ON
+			CGR.TS_ID=ST.TS_ID
+			JOIN TM_FOL_SOA_TRANSITION_TYPE STT ON ST.REFER_TYPE=STT.REFER_TYPE_ID 
+				AND STT.REFER_TYPE_ID in (30120100,50000101,30121300) 
+				<if test="changeTime!=null and changeTime!=''">
+					AND	(SUBSTR(CGR.POSTING_DATE,0,6)>REPLACE(#{changeTime,jdbcType=VARCHAR},'-','')
+					OR	(TO_CHAR(CGR.LAST_CHANGE_TIME,'yyyy-MM')>#{changeTime,jdbcType=VARCHAR} AND CGR.POSTING_DATE IS NULL))
+				</if>
+				<if test="changeTime==null and changeTime==''">
+					AND	(SUBSTR(CGR.POSTING_DATE,0,6)>=concat(#{year},#{month})
+					OR	(TO_CHAR(CGR.LAST_CHANGE_TIME,'yyyy-MM')>=concat(concat(#{year},'-'),#{month}) AND CGR.POSTING_DATE IS NULL))
+				</if>			WHERE substr(CGR.CHANGE_AMOUNT,0,1)='-' AND CGR.IS_ROLLBACK=0 AND NOT EXISTS
+			(
+				SELECT 1
+				FROM TT_SGM_PT_BONUS_CG_RECORD TEMP_CGR
+				WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR.TS_ID=TEMP_CGR.TS_ID
+<!-- 				<if test="startSapCode!=null and ! startSapCode.trim().equals('')"> -->
+<!-- 					<![CDATA[ AND TEMP_CGR.SAP_CODE>=#{startSapCode} ]]> -->
+<!-- 				</if> -->
+<!-- 				<if test="endSapCode!=null and ! endSapCode.trim().equals('')"> -->
+<!-- 					<![CDATA[ AND TEMP_CGR.SAP_CODE<=#{endSapCode} ]]> -->
+<!-- 				</if> -->
+			)
+			group by CGR.sap_code,DI.DEALER_NAME) CGR2 ON DI.SAP_CODE=CGR2.sap_code
+
+	</sql>
+
+	<!-- 根据时间查询奖金增加和减少（不包括冻结） -->
+	<select id="getBonusChangeAmountByDateTime" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO">
+		SELECT nvl(CGR1.bonusAdd,0) AS bonusAdd,
+			nvl(CGR2.billBonus,0) AS billBonus,
+			DI.sap_code AS sapCode,
+			DI.DEALER_NAME AS dealerName
+		FROM TM_FOL_DEALER_INFO DI
+		LEFT JOIN (SELECT
+				sum(CGR.CHANGE_AMOUNT)
+				bonusAdd,CGR.sap_code,DI.DEALER_NAME
+			  FROM TT_SGM_PT_BONUS_CG_RECORD CGR
+			  JOIN TM_FOL_DEALER_INFO DI ON CGR.SAP_CODE=DI.SAP_CODE
+			  JOIN TT_FOL_SOA_TRANSITION ST ON CGR.TS_ID=ST.TS_ID
+			  JOIN TM_FOL_SOA_TRANSITION_TYPE STT ON ST.REFER_TYPE=STT.REFER_TYPE_ID 
+				  AND STT.REFER_TYPE_ID in (60000000,30120900,50000100,30121500) 
+				  AND (SUBSTR(CGR.POSTING_DATE,0,6)=REPLACE(#{changeTime,jdbcType=VARCHAR},'-','') 
+				  OR (TO_CHAR(CGR.LAST_CHANGE_TIME,'yyyy-MM')=#{changeTime,jdbcType=VARCHAR}AND CGR.POSTING_DATE IS NULL))
+			  WHERE substr(CGR.CHANGE_AMOUNT,0,1)!='-' AND CGR.IS_ROLLBACK=0 AND NOT EXISTS 
+			  (
+				SELECT 1
+				FROM TT_SGM_PT_BONUS_CG_RECORD TEMP_CGR
+				WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR.TS_ID=TEMP_CGR.TS_ID
+				<if test="startSapCode!=null and ! startSapCode.trim().equals('')">
+					<![CDATA[ AND TEMP_CGR.SAP_CODE>=#{startSapCode} ]]>
+				</if>
+				<if test="endSapCode!=null and ! endSapCode.trim().equals('')">
+					<![CDATA[ AND TEMP_CGR.SAP_CODE<=#{endSapCode} ]]>
+				</if>
+				)group by CGR.sap_code,DI.DEALER_NAME) CGR1 ON DI.SAP_CODE=CGR1.SAP_CODE
+		LEFT JOIN (SELECT sum(CGR.CHANGE_AMOUNT)
+			billBonus,CGR.sap_code,DI.DEALER_NAME
+			FROM TT_SGM_PT_BONUS_CG_RECORD CGR
+			JOIN TM_FOL_DEALER_INFO DI ON CGR.SAP_CODE=DI.SAP_CODE
+			JOIN TT_FOL_SOA_TRANSITION ST ON
+			CGR.TS_ID=ST.TS_ID
+			JOIN TM_FOL_SOA_TRANSITION_TYPE STT ON ST.REFER_TYPE=STT.REFER_TYPE_ID 
+				AND STT.REFER_TYPE_ID in (30120100,50000101,30121300) 
+				AND (SUBSTR(CGR.POSTING_DATE,0,6)=REPLACE(#{changeTime,jdbcType=VARCHAR},'-','') 
+				OR (TO_CHAR(CGR.LAST_CHANGE_TIME,'yyyy-MM')=#{changeTime,jdbcType=VARCHAR}AND CGR.POSTING_DATE IS NULL))
+			WHERE substr(CGR.CHANGE_AMOUNT,0,1)='-' AND CGR.IS_ROLLBACK=0 AND NOT EXISTS
+			(
+				SELECT 1
+				FROM TT_SGM_PT_BONUS_CG_RECORD TEMP_CGR
+				WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR.TS_ID=TEMP_CGR.TS_ID
+				<if test="startSapCode!=null and ! startSapCode.trim().equals('')">
+					<![CDATA[ AND TEMP_CGR.SAP_CODE>=#{startSapCode} ]]>
+				</if>
+				<if test="endSapCode!=null and ! endSapCode.trim().equals('')">
+					<![CDATA[ AND TEMP_CGR.SAP_CODE<=#{endSapCode} ]]>
+				</if>
+			)
+			group by CGR.sap_code,DI.DEALER_NAME) CGR2 ON DI.SAP_CODE=CGR2.sap_code
+		
+		<!-- 渠道类型 -->
+		<if test="dealerType!=null and dealerType!='-1'">
+			AND DI.DEALER_TYPE=#{dealerType}
+		</if>
+
+		<where>
+			<if test="startSapCode!=null and ! startSapCode.trim().equals('')">
+				<![CDATA[ DI.SAP_CODE>=#{startSapCode} ]]>
+			</if>
+			<if test="endSapCode!=null and ! endSapCode.trim().equals('')">
+				<![CDATA[ AND DI.SAP_CODE<=#{endSapCode} ]]>
+			</if>
+		</where>
+	</select>	
+	
+	<!-- 查询奖金余额汇总表 -->
+	<select id="findAmountReconcileCollect" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO">
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+		SELECT
+			BA.SAP_CODE AS sapCode,
+			DI.DEALER_NAME AS dealerName,
+<!-- 			NVL(BONUSLAST.AFTER_CHANGE_AMOUNT,0) AS afterChangeAmount, -->
+<!-- 			NVL(BONUSFIRST.BEFORE_CHANGE_AMOUNT,0) AS beforeChangeAmount, -->
+			0 AS afterChangeAmount,
+			NVL(BONUSFIRST.bonusLastAmount,0) AS beforeChangeAmount,
+			FC.CODE_CN_DESC AS typeName
+		FROM TT_FOL_PT_BONUS_AMOUNT BA 
+		JOIN TM_FOL_DEALER_INFO DI ON BA.SAP_CODE=DI.SAP_CODE
+		<!--月末 金额 -->
+<!-- 		LEFT JOIN ( -->
+<!-- 		SELECT -->
+<!-- 		CGR.LAST_CHANGE_TIME, -->
+<!--     	CGR.SAP_CODE, -->
+<!-- 		CGR.AFTER_CHANGE_AMOUNT, -->
+<!--    		RANK()OVER(PARTITION BY CGR.SAP_CODE ORDER BY CGR.ID DESC) AS RN -->
+<!-- 		FROM TT_SGM_PT_BONUS_CG_RECORD cgr   		 -->
+<!-- 		WHERE 1=1 -->
+<!-- 		AND SUBSTR(TO_CHAR(CGR.LAST_CHANGE_TIME,'YYYY-MM'),0,4) =#{year,jdbcType=VARCHAR} -->
+<!-- 		AND SUBSTR(TO_CHAR(CGR.LAST_CHANGE_TIME,'YYYYMM'),5,7)=#{month,jdbcType=VARCHAR} -->
+<!-- 		AND (IS_ROLLBACK=0 OR IS_ROLLBACK IS NULL) -->
+<!-- 		) BONUSLAST ON BA.SAP_CODE=BONUSLAST.SAP_CODE AND BONUSLAST.RN=1  -->
+		<!-- 月初 金额 -->
+		LEFT JOIN (
+<!-- 		SELECT -->
+<!-- 			CGR1.LAST_CHANGE_TIME, -->
+<!-- 	   		CGR1.SAP_CODE, -->
+<!-- 			CGR1.AFTER_CHANGE_AMOUNT AS BEFORE_CHANGE_AMOUNT, -->
+<!-- 	    	RANK()OVER(PARTITION BY CGR1.SAP_CODE ORDER BY CGR1.ID DESC) AS RN -->
+<!-- 		FROM TT_SGM_PT_BONUS_CG_RECORD CGR1 -->
+<!-- 		WHERE 1=1 -->
+<!-- 		<![CDATA[AND SUBSTR(TO_CHAR(CGR1.LAST_CHANGE_TIME,'YYYY-MM'),0,4)<=#{year,jdbcType=VARCHAR}]]> -->
+<!-- 		<![CDATA[AND SUBSTR(TO_CHAR(CGR1.LAST_CHANGE_TIME,'YYYYMM'),5,7)<#{month,jdbcType=VARCHAR}]]> -->
+<!-- 		AND (IS_ROLLBACK=0 OR IS_ROLLBACK IS NULL) -->
+			<include refid="BounsBeginningFund"/>			
+		) BONUSFIRST ON BA.SAP_CODE=BONUSFIRST.sapCode 
+<!-- 		AND BONUSFIRST.RN=1  -->
+		
+		<!-- 品牌 -->
+		JOIN TC_FOL_CODE FC ON SUBSTR((BA.SAP_CODE),0,2)=CAST(FC.CODE AS VARCHAR2(10))
+		<if test="typeName!=null and typeName>=0">
+			 AND FC.CODE=#{typeName,jdbcType=VARCHAR} 
+		</if>
+		WHERE NOT EXISTS (
+			SELECT 1
+			FROM TT_SGM_PT_BONUS_CG_RECORD TEMP_CGR
+			WHERE TEMP_CGR.IS_ROLLBACK=1 AND BA.SAP_CODE=TEMP_CGR.SAP_CODE
+		)
+		ORDER BY BA.SAP_CODE
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if> 
+	</select>
+	
+	<!-- 根据code查询品牌 -->
+	<select id="getTypeNameByCode" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO">
+			SELECT
+			FC.CODE_CN_DESC AS typeName,
+			CGR.SAP_CODE AS sapCode
+		
+			FROM TC_FOL_CODE FC
+			LEFT JOIN TT_SGM_PT_BONUS_CG_RECORD CGR ON
+     		SUBSTR((CGR.SAP_CODE),0,2)=CAST(FC.CODE AS
+			VARCHAR2(10))
+      		WHERE FC.TYPE_NAME='品牌'
+       		ORDER BY SAP_CODE ASC
+	</select>
+
+
+	<!-- 订单使用 -->
+	<select id="getOrderByTime" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO">
+	  	  SELECT nvl(SUM(CGR.CHANGE_AMOUNT),0) AS orderSub,
+    	  CGR.SAP_CODE AS sapCode
+	 	  FROM TT_SGM_PT_BONUS_CG_RECORD CGR
+		  WHERE CGR.REFER_TYPE =#{referType,jdbcType=VARCHAR}	
+			AND ((CGR.POSTING_DATE IS NOT NULL AND SUBSTR(CGR.POSTING_DATE,0,4) = #{year}) OR (SUBSTR(TO_CHAR(CGR.LAST_CHANGE_TIME,'YYYY-MM'),0,4) = #{year}))
+			AND ((CGR.POSTING_DATE IS NOT NULL AND SUBSTR(CGR.POSTING_DATE,5,7) = #{month}) OR (SUBSTR(TO_CHAR(CGR.LAST_CHANGE_TIME,'YYYYMM'),5,7) = #{month}))
+		GROUP BY CGR.SAP_CODE ORDER BY CGR.SAP_CODE ASC
+	</select>
+	
+	<!-- 订单扣減-->
+	<select id="getOrderButton" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO">
+		SELECT 
+		  BA.SAP_CODE AS sapCode,
+		  ABS(T.ORDERSUB) AS orderSub,
+		  SUBSTR(T.CHANGETIME,0,4) AS year,
+		  SUBSTR(T.CHANGETIME,6,7) AS month
+		  FROM TT_FOL_PT_BONUS_AMOUNT BA
+		  JOIN(
+		  SELECT 
+		  CGR.SAP_CODE AS sapCode, 
+		  SUM(CGR.CHANGE_AMOUNT) AS orderSub,
+		  TO_CHAR(LAST_CHANGE_TIME,'YYYY-MM') AS changeTime
+		  FROM TT_SGM_PT_BONUS_CG_RECORD CGR
+		  WHERE CGR.REFER_TYPE=#{referType,jdbcType=VARCHAR}
+		  
+		<!-- 开始日期 -->
+		<if test="startTime!=null and ! startTime.trim().equals('')">
+		    <![CDATA[ AND ((CGR.POSTING_DATE IS NOT NULL AND SUBSTR(CGR.POSTING_DATE,0,6)>=REPLACE(#{startTime},'-','') ) OR (TO_CHAR(CGR.LAST_CHANGE_TIME,'YYYY-MM') >=#{startTime})) ]]>
+		</if>
+		<!-- 结束日期 -->
+		<if test="endTime!=null and ! endTime.trim().equals('')">
+			<![CDATA[ AND ((CGR.POSTING_DATE IS NOT NULL AND SUBSTR(CGR.POSTING_DATE,0,6)<=REPLACE(#{endTime},'-','') ) OR (TO_CHAR(CGR.LAST_CHANGE_TIME,'YYYY-MM') <=#{endTime})) ]]>
+		</if>
+		
+		  GROUP BY CGR.SAP_CODE,TO_CHAR(LAST_CHANGE_TIME,'YYYY-MM')
+		  ORDER BY CGR.SAP_CODE
+		  )T
+		  ON T.SAPCODE = BA.SAP_CODE
+	</select>
+
+	<!-- 查询奖金月度报表(本月期末余额) -->
+	<select id="getBonusMonthForm" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO">
+ 	 	<if test="endNo!=null and endNo>0">
+		SELECT t2.*
+		FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if> 
+  	SELECT 
+    	TEM2.AFTERCHANGEAMOUNT AS afterChangeAmount,
+		BAM.SAP_CODE AS sapCode,
+		TEM2.dealerName,
+		TEM2.year AS year,
+		TEM2.month AS month
+		FROM TT_FOL_PT_BONUS_AMOUNT BAM
+    	JOIN(
+    	SELECT 
+		CGR.SAP_CODE AS sapCode,
+    	DI.DEALER_NAME AS dealerName,
+		CGR.AFTER_CHANGE_AMOUNT AS afterChangeAmount,
+   		SUBSTR(TO_CHAR(CGR.LAST_CHANGE_TIME,'YYYY-MM'),0,4) AS year,
+		SUBSTR(TO_CHAR(CGR.LAST_CHANGE_TIME,'YYYY-MM'),6,7) AS month
+		FROM TT_SGM_PT_BONUS_CG_RECORD CGR
+		JOIN TM_FOL_DEALER_INFO DI ON CGR.SAP_CODE=DI.SAP_CODE
+		JOIN(
+			SELECT SAP_CODE,max(id) AS id ,TO_CHAR(BA.LAST_CHANGE_TIME,'YYYY-MM')
+			FROM TT_SGM_PT_BONUS_CG_RECORD  BA
+			WHERE 1=1
+	    	<if test="startTime!=null and ! startTime.trim().equals('')">
+			<![CDATA[ AND TO_CHAR(BA.LAST_CHANGE_TIME,'YYYY-MM')>=#{startTime,jdbcType=VARCHAR} ]]>
+			</if> 
+			<if test="endTime!=null and ! endTime.trim().equals('')">
+			<![CDATA[ AND TO_CHAR(BA.LAST_CHANGE_TIME,'YYYY-MM')<= #{endTime,jdbcType=VARCHAR} ]]>
+			</if> 
+			GROUP BY SAP_CODE,TO_CHAR(BA.LAST_CHANGE_TIME,'YYYY-MM')
+			ORDER BY SAP_CODE,TO_CHAR(BA.LAST_CHANGE_TIME,'YYYY-MM')
+		) TEMPCR ON TEMPCR.id=CGR.id AND TEMPCR.SAP_CODE=CGR.SAP_CODE
+    	) TEM2 ON BAM.SAP_CODE = TEM2.sapCode 
+    	ORDER BY BAM.SAP_CODE ASC
+ 		<if test="endNo!=null and endNo>0">
+		) t1) t2
+		<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>  
+	</select>
+	<!-- 查询奖金月度报表(本月期初余额) -->
+	<select id="getBeforeAmount" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO">
+ 		<if test="endNo!=null and endNo>0">
+		SELECT t2.*
+		FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if> 
+  		SELECT 
+		BAM.SAP_CODE AS sapCode,
+		TEM1.dealerName,
+		TEM1.BEFORECHANGEAMOUNT AS beforeChangeAmount,
+		TEM1.year AS year,
+		TEM1.month AS month
+		FROM TT_FOL_PT_BONUS_AMOUNT BAM
+   		JOIN(
+	    	SELECT 
+			CGR1.SAP_CODE AS sapCode,
+			DI.DEALER_NAME AS dealerName,
+			CGR1.BEFORE_CHANGE_AMOUNT AS beforeChangeAmount,
+			SUBSTR(TO_CHAR(CGR1.LAST_CHANGE_TIME,'YYYY-MM'),0,4) AS year,
+			SUBSTR(TO_CHAR(CGR1.LAST_CHANGE_TIME,'YYYY-MM'),6,7) AS month
+			FROM TT_SGM_PT_BONUS_CG_RECORD CGR1
+			JOIN TM_FOL_DEALER_INFO DI ON CGR1.SAP_CODE=DI.SAP_CODE
+			JOIN(
+				SELECT  SAP_CODE,min(id) AS id ,TO_CHAR(BA1.LAST_CHANGE_TIME,'YYYY-MM')
+				FROM TT_SGM_PT_BONUS_CG_RECORD  BA1
+				WHERE 1=1
+    	<if test="startTime!=null and ! startTime.trim().equals('')">
+		<![CDATA[ AND TO_CHAR(BA1.LAST_CHANGE_TIME,'YYYY-MM')>=#{startTime,jdbcType=VARCHAR} ]]>
+		</if> 
+		<if test="endTime!=null and ! endTime.trim().equals('')">
+		<![CDATA[ AND TO_CHAR(BA1.LAST_CHANGE_TIME,'YYYY-MM')<= #{endTime,jdbcType=VARCHAR} ]]>
+		</if> 
+<!-- 			<include refid="BounsBeginningFund"/>	 -->
+			
+<!-- 			<where> -->
+<!-- 			    <if test="startTime!=null and ! startTime.trim().equals('')"> -->
+<!-- 				<![CDATA[ TO_CHAR(BA1.LAST_CHANGE_TIME,'YYYY-MM')>=#{startTime,jdbcType=VARCHAR} ]]> -->
+<!-- 				</if>  -->
+<!-- 				<if test="endTime!=null and ! endTime.trim().equals('')"> -->
+<!-- 				<![CDATA[ AND TO_CHAR(BA1.LAST_CHANGE_TIME,'YYYY-MM')<= #{endTime,jdbcType=VARCHAR} ]]> -->
+<!-- 				</if>  -->
+<!-- 			</where> -->
+			GROUP BY SAP_CODE,TO_CHAR(BA1.LAST_CHANGE_TIME,'YYYY-MM')
+			ORDER BY SAP_CODE,TO_CHAR(BA1.LAST_CHANGE_TIME,'YYYY-MM')
+		) TEMPCR1 
+		ON TEMPCR1.id=CGR1.id AND TEMPCR1.SAP_CODE=CGR1.SAP_CODE
+   		 ) TEM1
+    	ON BAM.SAP_CODE = TEM1.sapCode
+    	    ORDER BY BAM.SAP_CODE ASC
+ 		<if test="endNo!=null and endNo>0">
+		) t1) t2
+		<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>  
+	</select>
+	<!-- 根据referType查询奖金解冻 -->
+	<select id="getFreezeBonusByTime" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO">
+		  SELECT 
+		  BA.SAP_CODE AS sapCode,
+		  ABS(T.FREEZEAMOUNT) AS freezeAmount,
+		  SUBSTR(T.CHANGETIME,0,4) AS year,
+  		  SUBSTR(T.CHANGETIME,6,7) AS month
+		  FROM TT_FOL_PT_BONUS_AMOUNT BA
+		  JOIN(
+		  SELECT 
+		  CGR.SAP_CODE as sapCode, 
+		  SUM(CGR.FREEZE_AMOUNT) as freezeAmount,
+		  TO_CHAR(LAST_FREEZE_TIME,'YYYY-MM') as changeTime
+		  FROM TT_SGM_PT_BONUS_FZ_RECORD CGR
+		  WHERE CGR.REFER_TYPE=#{referType,jdbcType=VARCHAR}
+		   <!-- 开始日期 -->
+		  <if test="startTime!=null and ! startTime.trim().equals('')">
+				<![CDATA[ AND TO_CHAR(CGR.LAST_FREEZE_TIME,'YYYY-MM')>=#{startTime,jdbcType=VARCHAR} ]]>
+		  </if>
+		  <!-- 结束日期 -->
+		  <if test="endTime!=null and ! endTime.trim().equals('')">
+			    <![CDATA[AND TO_CHAR(CGR.LAST_FREEZE_TIME,'YYYY-MM') <=#{endTime,jdbcType=VARCHAR} ]]>
+		  </if>
+		  group by CGR.SAP_CODE,TO_CHAR(LAST_FREEZE_TIME,'YYYY-MM')
+		  ORDER BY CGR.SAP_CODE)T
+		  ON T.SAPCODE = BA.SAP_CODE
+	</select>
+		<!-- 根据referType查询奖金冻结 -->
+	<select id="getFrozenBonusByTime" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO">
+		  SELECT 
+		  BA.SAP_CODE AS sapCode,
+		  ABS(T.FROZENAMOUNT) AS frozenAmount,
+		  SUBSTR(T.CHANGETIME,0,4) AS year,
+  		  SUBSTR(T.CHANGETIME,6,7) AS month
+		  FROM TT_FOL_PT_BONUS_AMOUNT BA
+		  JOIN(
+		  SELECT 
+		  CGR.SAP_CODE as sapCode, 
+		  SUM(CGR.FREEZE_AMOUNT) as FROZENAMOUNT,
+		  TO_CHAR(LAST_FREEZE_TIME,'YYYY-MM') as changeTime
+		  FROM TT_SGM_PT_BONUS_FZ_RECORD CGR
+		  WHERE CGR.REFER_TYPE=#{referType,jdbcType=VARCHAR}
+	      <!-- 开始日期 -->
+		  <if test="startTime!=null and ! startTime.trim().equals('')">
+				<![CDATA[ AND TO_CHAR(CGR.LAST_FREEZE_TIME,'YYYY-MM') >=#{startTime,jdbcType=VARCHAR} ]]>
+		  </if>
+		  <!-- 结束日期 -->
+		  <if test="endTime!=null and ! endTime.trim().equals('')">
+		    	<![CDATA[AND TO_CHAR(CGR.LAST_FREEZE_TIME,'YYYY-MM')<=#{endTime,jdbcType=VARCHAR} ]]>
+		  </if>		  
+		  GROUP BY CGR.SAP_CODE,TO_CHAR(LAST_FREEZE_TIME,'YYYY-MM')
+		  ORDER BY CGR.SAP_CODE)T
+		  ON T.SAPCODE = BA.SAP_CODE
+	</select>
+	<!-- 根据referType查询新增颁发-->
+	<select id="getAmountByReferType" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO">
+		  SELECT 
+		  BA.SAP_CODE AS sapCode,
+		  T.bonusAddAmount AS bonusAddAmount,
+		  SUBSTR(T.CHANGETIME,0,4) AS year,
+		  SUBSTR(T.CHANGETIME,6,7) AS month
+		  FROM TT_FOL_PT_BONUS_AMOUNT BA
+		  JOIN(
+		  SELECT 
+		  CGR.SAP_CODE AS sapCode, 
+		  SUM(CGR.CHANGE_AMOUNT) AS bonusAddAmount,
+		  TO_CHAR(LAST_CHANGE_TIME,'YYYY-MM') AS changeTime
+		  FROM TT_SGM_PT_BONUS_CG_RECORD CGR
+		  JOIN(
+		  SELECT SAP_CODE,TO_CHAR(LAST_CHANGE_TIME,'YYYY-MM') FROM TT_SGM_PT_BONUS_CG_RECORD FR
+		  WHERE 1=1
+		<if test="startTime!=null and ! startTime.trim().equals('')">
+				<![CDATA[ AND TO_CHAR(FR.LAST_CHANGE_TIME,'YYYY-MM')>=#{startTime,jdbcType=VARCHAR} ]]>
+		</if> 
+		<if test="endTime!=null and ! endTime.trim().equals('')">
+				<![CDATA[ AND TO_CHAR(FR.LAST_CHANGE_TIME,'YYYY-MM')<= #{endTime,jdbcType=VARCHAR} ]]>
+		</if> 
+		  GROUP BY SAP_CODE, TO_CHAR(LAST_CHANGE_TIME,'YYYY-MM')
+		  )TEMFR
+		  ON TEMFR.SAP_CODE = CGR.SAP_CODE
+		  WHERE CGR.REFER_TYPE=#{referType,jdbcType=VARCHAR}
+		  GROUP BY CGR.SAP_CODE,TO_CHAR(LAST_CHANGE_TIME,'YYYY-MM')
+		  ORDER BY CGR.SAP_CODE
+		  )T
+		  ON T.SAPCODE = BA.SAP_CODE
+	</select>
+	
+	<!-- 财务本月颁发 -->
+	<select id="getBonusByTime" resultType="com.sgm.dms.fol.bonus.dto.BonusReconcileDTO"> 	 
+	    SELECT
+			SUM(CGR.CHANGE_AMOUNT)AS bonusAdd,
+			CGR.SAP_CODE AS sapCode,
+			DI.DEALER_NAME AS dealerName
+		FROM TT_SGM_PT_BONUS_CG_RECORD CGR
+		JOIN TM_FOL_DEALER_INFO DI ON CGR.SAP_CODE=DI.SAP_CODE
+		JOIN TT_FOL_SOA_TRANSITION ST ON CGR.TS_ID=ST.TS_ID
+		JOIN TM_FOL_SOA_TRANSITION_TYPE STT ON ST.REFER_TYPE=STT.REFER_TYPE_ID 
+	   		AND STT.REFER_TYPE_ID =#{referType,jdbcType=VARCHAR}
+			AND TO_CHAR(CGR.LAST_CHANGE_TIME,'YYYY')=#{year,jdbcType=VARCHAR}
+			AND SUBSTR(TO_CHAR(CGR.LAST_CHANGE_TIME,'YYYYMM'),5,7)=#{month,jdbcType=VARCHAR} 
+		WHERE SUBSTR(CGR.CHANGE_AMOUNT,0,1)!='-' AND CGR.IS_ROLLBACK=0 AND NOT
+			EXISTS (
+				SELECT 1
+				FROM TT_SGM_PT_BONUS_CG_RECORD TEMP_CGR
+				WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR.TS_ID=TEMP_CGR.TS_ID
+			)
+		GROUP BY CGR.SAP_CODE,DI.DEALER_NAME
+	</select>
+	
+	<!-- 查询储备金变动明细根据(渠道类型 储备金类型  客户代码 变动类型 变动日期)配件 -->
+ 	<select id="getBonusChangeDeatilWithDealer" resultType="com.sgm.dms.fol.bonus.dto.BonusQueryDTO">	
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+			SELECT  RE.SAP_CODE AS sapCode,
+			DE.DEALER_NAME AS dealerName,
+			TO_CHAR(CGR.LAST_CHANGE_TIME,'YYYY-MM-DD HH24:MI:SS') AS changeTime,
+			CGR.BEFORE_CHANGE_AMOUNT AS beforeAvailAmount,
+			CGR.AFTER_CHANGE_AMOUNT AS afterChangeAmount,
+			ST.REFER_TYPE_NAME AS referType,
+			CGR.REFER_CODE AS referCode,
+			CGR.CHANGE_AMOUNT AS changeAmount,
+			CGR.REMARK AS remark			
+			FROM TT_FOL_PT_BONUS_AMOUNT RE
+			JOIN TT_SGM_PT_BONUS_CG_RECORD CGR ON RE.SAP_CODE=CGR.SAP_CODE AND CGR.IS_ROLLBACK=0
+			JOIN TM_FOL_DEALER_INFO DE ON RE.SAP_CODE = DE.SAP_CODE 
+			JOIN TM_FOL_SOA_TRANSITION_TYPE ST ON ST.REFER_TYPE_ID=CGR.REFER_TYPE				
+			<!-- 渠道类型 -->
+			<if test="dealerType!=null and dealerType!='-1'">
+				 AND DE.DEALER_TYPE=#{dealerType} 
+			</if>
+			<!-- 变动类型 -->
+			<if test="businessCode!=null and businessCode>0">
+				 AND ST.BUSINESS_CODE=#{businessCode} 
+			</if>
+
+			WHERE 1=1 AND NOT EXISTS (
+		 	SELECT 1
+		  	FROM TT_SGM_PT_BONUS_CG_RECORD TEMP_CGR
+		  	WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR.TS_ID=TEMP_CGR.TS_ID
+		  	<!-- 客户代码 -->
+			<if test="sapCode!=null and ! sapCode.trim().equals('')">
+					<![CDATA[ AND TEMP_CGR.SAP_CODE =#{sapCode} ]]>
+			</if> 
+			)				
+			<!-- 客户代码 -->
+			<if test="sapCode!=null and ! sapCode.trim().equals('')">
+				<![CDATA[ AND DE.SAP_CODE =#{sapCode} ]]>
+			</if> 
+			<!-- 变动开始日期 -->
+			<if test="startTime!=null and ! startTime.trim().equals('')">
+				<![CDATA[ AND TO_CHAR(CGR.LAST_CHANGE_TIME,'yyyy-MM-dd') >=#{startTime} ]]>
+			</if>
+			<!-- 变动结束日期 -->
+			<if test="endTime!=null and ! endTime.trim().equals('')">
+				<![CDATA[ AND TO_CHAR(CGR.LAST_CHANGE_TIME,'yyyy-MM-dd') <=#{endTime} ]]>
+			</if>
+			
+			ORDER BY CGR.ID DESC
+			
+			<if test="endNo!=null and endNo>0">
+				) t1) t2
+				<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+			</if>
+		</select>
+	
+	<!-- 查询奖金冻结变动明细根据(渠道类型 储备金类型  客户代码 变动类型 变动日期)配件-->
+ 	<select id="getBonusFreezeDeatilWithDealer" resultType="com.sgm.dms.fol.bonus.dto.BonusQueryDTO">	
+			<if test="endNo!=null and endNo>0">
+				SELECT t2.*
+				FROM (SELECT t1.*,ROWNUM AS RN FROM (
+			</if>
+			SELECT  
+			RE.SAP_CODE AS sapCode,
+			DE.DEALER_NAME AS dealerName,
+			TO_CHAR(FZR.LAST_FREEZE_TIME,'YYYY-MM-DD HH24:MI:SS') AS changeTime, 
+			FZR.BEFORE_FREEZE_AMOUNT AS beforeAvailAmount,
+			FZR.AFTER_FREEZE_AMOUNT AS afterChangeAmount,
+			ST.REFER_TYPE_NAME AS referType,
+			FZR.REFER_CODE AS referCode,
+			FZR.FREEZE_AMOUNT AS changeAmount,
+			FZR.REMARK AS remark	
+			FROM TT_FOL_PT_BONUS_AMOUNT RE
+			JOIN TT_SGM_PT_BONUS_FZ_RECORD FZR ON RE.SAP_CODE=FZR.SAP_CODE AND FZR.IS_ROLLBACK=0
+			JOIN TM_FOL_DEALER_INFO DE ON RE.SAP_CODE = DE.SAP_CODE 
+			JOIN TM_FOL_SOA_TRANSITION_TYPE ST 
+			ON ST.REFER_TYPE_ID=FZR.REFER_TYPE 
+			<!-- 渠道类型 -->
+			<if test="dealerType!=null and dealerType!='-1'">
+				 AND DE.DEALER_TYPE=#{dealerType} 
+			</if>
+			<!-- 变动类型 -->
+			<if test="businessCode!=null and businessCode>0">
+				 AND ST.BUSINESS_CODE=#{businessCode} 
+			</if>
+
+
+			WHERE 1=1 AND NOT EXISTS (
+			  SELECT 1
+			  FROM TT_SGM_PT_BONUS_FZ_RECORD TEMP_FZR
+			  WHERE TEMP_FZR.IS_ROLLBACK=1 AND FZR.TS_ID=TEMP_FZR.TS_ID
+			  <!-- 客户代码 -->
+			  <if test="sapCode!=null and ! sapCode.trim().equals('')">
+				  <![CDATA[ AND TEMP_FZR.SAP_CODE =#{sapCode} ]]>
+			  </if> 
+			)
+					
+			<!-- 客户代码 -->
+			<if test="sapCode!=null and ! sapCode.trim().equals('')">
+				<![CDATA[ AND DE.SAP_CODE =#{sapCode} ]]>
+			</if> 
+			<!-- 变动开始日期 -->
+			<if test="startTime!=null and ! startTime.trim().equals('')">
+				<![CDATA[ AND TO_CHAR(FZR.LAST_FREEZE_TIME,'yyyy-MM-dd') >=#{startTime,jdbcType=VARCHAR} ]]>
+			</if>
+			<!-- 变动结束日期 -->
+			<if test="endTime!=null and ! endTime.trim().equals('')">
+				<![CDATA[ AND TO_CHAR(FZR.LAST_FREEZE_TIME,'yyyy-MM-dd') <=#{endTime,jdbcType=VARCHAR} ]]>
+			</if> 
+			ORDER BY FZR.ID DESC
+			<if test="endNo!=null and endNo>0">
+				) t1) t2
+				<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+			</if>
+		</select>
+	<!-- 查询奖金变动明细根据(渠道类型 储备金类型  客户代码 变动类型 变动日期)配件 -->
+ 	<select id="getBonusChangeDeatilByWhere" resultType="com.sgm.dms.fol.bonus.dto.BonusQueryDTO">	
+			<if test="endNo!=null and endNo>0">
+				SELECT t2.*
+				FROM (SELECT t1.*,ROWNUM AS RN FROM (
+			</if>
+			SELECT  RE.SAP_CODE AS sapCode,
+					DE.DEALER_NAME AS dealerName,
+					TO_CHAR(CGR.LAST_CHANGE_TIME,'YYYY-MM-DD HH24:MI:SS') AS changeTime,
+					CGR.BEFORE_CHANGE_AMOUNT AS beforeAvailAmount,
+					CGR.AFTER_CHANGE_AMOUNT AS afterChangeAmount,
+					ST.REFER_TYPE_NAME AS referType,
+					CGR.REFER_CODE AS referCode,
+					CGR.CHANGE_AMOUNT AS changeAmount,
+					CGR.REMARK AS remark			
+			FROM TT_FOL_PT_BONUS_AMOUNT RE
+			JOIN TT_SGM_PT_BONUS_CG_RECORD CGR ON RE.SAP_CODE=CGR.SAP_CODE AND CGR.IS_ROLLBACK=0
+			JOIN TM_FOL_DEALER_INFO DE ON RE.SAP_CODE = DE.SAP_CODE 
+			JOIN TM_FOL_SOA_TRANSITION_TYPE ST ON ST.REFER_TYPE_ID=CGR.REFER_TYPE
+			<!-- 渠道类型 -->
+			<if test="dealerType!=null and dealerType!='-1'">
+				 AND DE.DEALER_TYPE=#{dealerType} 
+			</if>
+			<!-- 变动类型 -->
+			<if test="businessCode!=null and businessCode>0">
+				 AND ST.BUSINESS_CODE=#{businessCode} 
+			</if>
+
+			WHERE 1=1 AND NOT EXISTS (
+		  	SELECT 1
+		  	FROM TT_SGM_PT_BONUS_CG_RECORD TEMP_CGR
+		  	WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR.TS_ID=TEMP_CGR.TS_ID
+		  	<!-- 客户代码 -->
+			<if test="sapCode!=null and ! sapCode.trim().equals('')">
+				<![CDATA[ AND TEMP_CGR.SAP_CODE =#{sapCode} ]]>
+			</if> 
+			)
+				
+			<!-- 客户代码 -->
+			<if test="sapCode!=null and ! sapCode.trim().equals('')">
+				<![CDATA[ AND DE.SAP_CODE =#{sapCode} ]]>
+			</if> 
+			<!-- 变动开始日期 -->
+			<if test="startTime!=null and ! startTime.trim().equals('')">
+				<![CDATA[ AND TO_CHAR(CGR.LAST_CHANGE_TIME,'yyyy-MM-dd') >=#{startTime} ]]>
+			</if>
+			<!-- 变动结束日期 -->
+			<if test="endTime!=null and ! endTime.trim().equals('')">
+				<![CDATA[ AND TO_CHAR(CGR.LAST_CHANGE_TIME,'yyyy-MM-dd') <=#{endTime} ]]>
+			</if>
+			
+			ORDER BY CGR.ID DESC
+			
+			<if test="endNo!=null and endNo>0">
+				) t1) t2
+				<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+			</if>
+		</select>
+	
+	<!-- 查询奖金冻结变动明细根据(渠道类型 储备金类型  客户代码 变动类型 变动日期)配件-->
+ 	<select id="getBonusFreezeDeatilByWhere" resultType="com.sgm.dms.fol.bonus.dto.BonusQueryDTO">	
+			<if test="endNo!=null and endNo>0">
+				SELECT t2.*
+				FROM (SELECT t1.*,ROWNUM AS RN FROM (
+			</if>
+			SELECT  RE.SAP_CODE AS sapCode,
+					DE.DEALER_NAME AS dealerName,
+					to_char(FZR.LAST_FREEZE_TIME,'YYYY-MM-DD HH24:MI:SS') AS changeTime, 
+					FZR.BEFORE_FREEZE_AMOUNT AS beforeAvailAmount,
+					FZR.AFTER_FREEZE_AMOUNT AS afterChangeAmount,
+					ST.REFER_TYPE_NAME AS referType,
+					FZR.REFER_CODE AS referCode,
+					FZR.FREEZE_AMOUNT AS changeAmount,
+					FZR.REMARK AS remark	
+			FROM TT_FOL_PT_BONUS_AMOUNT RE
+			JOIN TT_SGM_PT_BONUS_FZ_RECORD FZR ON RE.SAP_CODE=FZR.SAP_CODE AND FZR.IS_ROLLBACK=0
+			JOIN TM_FOL_DEALER_INFO DE ON RE.SAP_CODE = DE.SAP_CODE 
+			JOIN TM_FOL_SOA_TRANSITION_TYPE ST ON ST.REFER_TYPE_ID=FZR.REFER_TYPE 
+			<!-- 渠道类型 -->
+			<if test="dealerType!=null and dealerType!='-1'">
+				 AND DE.DEALER_TYPE=#{dealerType} 
+			</if>
+			<!-- 变动类型 -->
+			<if test="businessCode!=null and businessCode>0">
+				 AND ST.BUSINESS_CODE=#{businessCode} 
+			</if>
+			WHERE 1=1 
+			AND NOT EXISTS (
+			SELECT 1
+			FROM TT_SGM_PT_BONUS_FZ_RECORD TEMP_FZR
+			WHERE TEMP_FZR.IS_ROLLBACK=1 AND FZR.TS_ID=TEMP_FZR.TS_ID
+			<!-- 客户代码 -->
+			<if test="sapCode!=null and ! sapCode.trim().equals('')">
+				  <![CDATA[ AND TEMP_FZR.SAP_CODE =#{sapCode} ]]>
+			</if> 
+			)
+					
+			<!-- 客户代码 -->
+			<if test="sapCode!=null and ! sapCode.trim().equals('')">
+				<![CDATA[ AND DE.SAP_CODE =#{sapCode} ]]>
+			</if> 
+			<!-- 变动开始日期 -->
+			<if test="startTime!=null and ! startTime.trim().equals('')">
+				<![CDATA[ AND TO_CHAR(FZR.LAST_FREEZE_TIME,'yyyy-MM-dd') >=#{startTime} ]]>
+			</if>
+			<!-- 变动结束日期 -->
+			<if test="endTime!=null and ! endTime.trim().equals('')">
+				<![CDATA[ AND TO_CHAR(FZR.LAST_FREEZE_TIME,'yyyy-MM-dd') <=#{endTime} ]]>
+			</if> 
+			ORDER BY FZR.ID DESC
+			<if test="endNo!=null and endNo>0">
+				) t1) t2
+				<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+			</if>
+		</select>
+</mapper>

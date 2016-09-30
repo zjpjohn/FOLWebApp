@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 岗位Mapper -->
+<mapper namespace="com.sgm.dms.fol.common.service.repository.PositionDao">
+	
+	<!-- 查询岗位列表部分SQL -->
+	<sql id="positionListSql">
+		  FROM TS_FOL_POSITION TFP
+		 WHERE TFP.STATUS=1
+		<if test="positionName!=null and !positionName.trim().equals('')">
+			AND TFP.POSITION_NAME LIKE '%'||#{positionName}||'%'
+		</if>
+		<if test="dpPositionCode!=null and !dpPositionCode.trim().equals('')">
+			AND TFP.DP_POSITION_CODE=#{dpPositionCode}
+		</if>
+		<if test="positionType!=null and positionType>0">
+			AND TFP.POSITION_TYPE=#{positionType}
+		</if> 
+	</sql>
+	<!-- 查询岗位切换列表部分(sgm) -->
+	<select id = "getSystemmounts" parameterType="java.lang.String" resultType="com.sgm.dms.fol.common.api.domain.PositionSwitchDTO">
+		  SELECT distinct 
+		    TL.LOGON_ID		AS	loginId,
+		    TL.SSO_ACCOUNT	AS	userAccount,
+		    p.POSITION_ID	AS	positionId,
+		    p.POSITION_NAME AS	positionName
+			FROM TS_COMMON_USER_LOGON TL ,TS_FOL_POSITION P ,TS_COMMON_USER_ACCOUNT TA
+			WHERE 1=1 
+			AND TL.POSITION_ID=p.POSITION_ID 
+			AND TA.SSO_ACCOUNT=TL.SSO_ACCOUNT
+			AND P.STATUS=1 
+			AND TL.LOGON_STATUS=1
+			AND TA.USER_TYPE=1
+			AND TL.SSO_ACCOUNT=#{userAccount,jdbcType=VARCHAR}
+	</select>
+	<!-- 查询岗位切换列表部分(dealer) -->
+	<select id = "getPositionSwitch" parameterType="java.lang.String" resultType="com.sgm.dms.fol.common.api.domain.PositionSwitchDTO">
+		  SELECT distinct 
+		    TL.LOGON_ID		AS	loginId,
+		    TL.SSO_ACCOUNT	AS	userAccount,
+		    p.POSITION_ID	AS	positionId,
+		    p.POSITION_NAME AS	positionName,
+		    TD.DEALER_FULLNAME AS dealerName
+			FROM TS_COMMON_USER_LOGON TL ,TS_FOL_POSITION P ,TS_COMMON_USER_ACCOUNT TA,TM_FOL_DEALER_INFO TD
+			WHERE 1=1 
+			AND TL.POSITION_ID=p.POSITION_ID 
+			AND TA.SSO_ACCOUNT=TL.SSO_ACCOUNT
+			AND TL.ORG_ID = TD.OFFICAL_DEALER_ID
+			AND P.STATUS=1 
+			AND TL.LOGON_STATUS=1
+			AND TA.USER_TYPE=2
+			AND TL.SSO_ACCOUNT=#{userAccount,jdbcType=VARCHAR}
+	</select>
+	<!-- 查询岗位列表数量 -->
+	<select id="getPositionCount" parameterType="com.sgm.dms.fol.common.api.domain.PositionDTO" resultType="Long">
+		SELECT COUNT(TFP.POSITION_ID)
+		<include refid="positionListSql"/>
+	</select>
+	
+	<!-- 查询岗位列表,分页 -->
+	<select id="getPositionList" parameterType="com.sgm.dms.fol.common.api.domain.PositionDTO" resultType="com.sgm.dms.fol.common.api.domain.PositionDTO">
+		SELECT * FROM (
+		SELECT T1.*, ROWNUM AS RN FROM (
+		SELECT POSITION_ID    AS positionId,
+			   POSITION_NAME  AS positionName,
+			   POSITION_DESC  AS positionDesc,
+			   REMARK         AS remark,
+			   STATUS         AS status,
+			   POSITION_TYPE  AS positionType,
+			   CREATE_DATE    AS createDate,
+			   CREATE_BY      AS createBy,
+			   UPDATE_DATE    AS updateDate,
+			   UPDATE_BY      AS updateBy,
+			   DP_POSITION_CODE AS dpPositionCode
+		<include refid="positionListSql"/>
+		ORDER BY POSITION_ID
+		) T1 ) T2
+	<![CDATA[
+		 WHERE T2.RN>#{beginNo} and T2.RN<#{endNo}
+	]]>
+	</select>
+	
+	<!-- 查询岗位信息根据(岗位名称 岗位代码 ) -->
+	<select id="getPositionByWhere" resultType="com.sgm.dms.fol.common.api.domain.PositionDTO">
+		SELECT
+			POSITION_ID AS 	positionId    ,
+			POSITION_NAME  AS positionName ,
+			POSITION_DESC  AS  positionDesc,
+			REMARK     AS    remark  ,
+			STATUS      AS    status ,
+			POSITION_TYPE AS   positionType,
+			CREATE_DATE  AS   createDate ,
+			CREATE_BY     AS createBy  ,
+			UPDATE_DATE   AS  updateDate ,
+			UPDATE_BY     AS  updateBy ,
+			DP_POSITION_CODE AS dpPositionCode
+		<include refid="positionListSql"/>
+	</select>
+	
+	<!-- 新增岗位 -->
+	<insert id="addPosition" parameterType="com.sgm.dms.fol.common.api.domain.PositionDTO" >
+		<selectKey resultType="String" order="BEFORE" keyProperty="positionId" >
+			SELECT SEQ_FOL_POSITION.NEXTVAL AS positionId FROM DUAL
+	    </selectKey>
+	    
+		INSERT INTO TS_FOL_POSITION 
+		(POSITION_ID, POSITION_NAME, POSITION_DESC, POSITION_TYPE, DP_POSITION_CODE, STATUS, REMARK, CREATE_DATE, CREATE_BY) 
+		VALUES
+		(#{positionId}, #{positionName}, #{positionDesc,jdbcType=VARCHAR}, #{positionType,jdbcType=NUMERIC},
+		 #{dpPositionCode,jdbcType=VARCHAR}, 1, #{remark,jdbcType=VARCHAR}, 
+		 sysdate, #{createBy,jdbcType=NUMERIC})
+	</insert>
+	
+	<!-- 新增岗位角色对应关系 -->
+	<insert id="addPositionRole" parameterType="com.sgm.dms.fol.common.api.domain.PositionRoleDTO" >
+		<selectKey resultType="Integer" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_POSITION_ROLE.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+	    
+		INSERT INTO TR_POSITION_ROLE 
+		(ID, POSITION_ID, ROLE_ID, STATUS, CREATE_DATE, CREATE_BY) 
+		VALUES
+		(#{id}, #{positionId}, #{roleId}, 1, sysdate, #{createBy,jdbcType=NUMERIC})
+	</insert>
+	
+	<!-- 修改岗位 -->
+	<update id="updatePosition" parameterType="com.sgm.dms.fol.common.api.domain.PositionDTO">
+		UPDATE TS_FOL_POSITION
+		   SET 
+		       POSITION_DESC=#{positionDesc,jdbcType=VARCHAR},
+		       POSITION_TYPE=#{positionType,jdbcType=NUMERIC},
+		       DP_POSITION_CODE=#{dpPositionCode,jdbcType=VARCHAR},
+			<if test="positionName!=null and positionName!=''">
+		       POSITION_NAME=#{positionName,jdbcType=VARCHAR},
+			</if>
+			<if test="status!=null and status>0">
+		       STATUS=#{status,jdbcType=NUMERIC},
+			</if>
+			   UPDATE_DATE=SYSDATE,
+		       UPDATE_BY=#{updateBy,jdbcType=NUMERIC}
+		 WHERE POSITION_ID=#{positionId,jdbcType=NUMERIC}
+	</update>
+	
+	<!-- 删除岗位角色对应关系 -->
+	<delete id="deteteRoleByPositionId" parameterType="java.lang.String">
+		DELETE FROM TR_POSITION_ROLE WHERE POSITION_ID=#{positionId}
+	</delete>
+	
+	<!-- 删除岗位 -->
+	<update id="deletePosition" parameterType="com.sgm.dms.fol.common.api.domain.PositionDTO">
+		UPDATE TS_FOL_POSITION
+		   SET STATUS=#{status},
+			   UPDATE_DATE=SYSDATE,
+		       UPDATE_BY=#{updateBy,jdbcType=NUMERIC}
+		 WHERE POSITION_ID=#{positionId}
+	</update>
+	
+	<select id="getPositionsChecked" resultType="com.sgm.dms.fol.common.api.domain.PositionDTO">
+		SELECT POSITION_ID AS 	positionId    ,
+		       POSITION_NAME  AS positionName ,
+		       POSITION_DESC  AS  positionDesc,
+		       REMARK     AS    remark  ,
+		       STATUS      AS    status ,
+		       POSITION_TYPE AS   positionType,
+		       DP_POSITION_CODE AS dpPositionCode,
+		       (SELECT 1
+		          FROM TS_COMMON_USER_LOGON TCUL 
+		         WHERE TCUL.POSITION_ID=TFP.POSITION_ID
+		           AND TCUL.SSO_ACCOUNT=#{userAccount}
+		           AND TCUL.LOGON_STATUS=1) AS isChecked
+		  FROM TS_FOL_POSITION TFP
+		 WHERE TFP.STATUS=1
+		   AND TFP.POSITION_TYPE=#{type}
+	</select>
+	
+	<select id="getPositionCountByName" parameterType="java.lang.String" resultType="Integer">
+		SELECT COUNT(POSITION_ID) FROM TS_FOL_POSITION WHERE POSITION_NAME=#{name} AND STATUS=1
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<!-- 查询岗位对应的角色信息(查询) -->
+	<select id="findAu" resultType="com.sgm.dms.fol.common.api.domain.PositionRoleDTO">
+			SELECT B.ROLE_ID AS ROLEID,B.ROLE_NAME AS ROLENAME, A.POSITION_ID AS POSITIONID FROM
+			TR_POSITION_ROLE A LEFT JOIN TS_FOL_ROLE B ON A.ROLE_ID=B.ROLE_ID
+		
+			WHERE POSITION_ID=#{positionId} AND A.STATUS=1
+	</select>
+	
+	<!-- 修改岗位对应的角色 (添加)-->
+	 <insert id="updateAuthorityAdd" parameterType="com.sgm.dms.fol.common.api.domain.PositionRoleDTO">
+		INSERT INTO TR_POSITION_ROLE
+		 (ID,POSITION_ID,ROLE_ID,STATUS,
+		  CREATE_DATE,CREATE_BY,UPDATE_DATE,
+		  UPDATE_BY     
+		 )
+		 VALUES
+		 (
+		  #{id},#{positionId },#{roleId}, 1,
+		#{createDate}, #{createBy},#{updateDate}, 
+		#{updateBy}
+		 )
+		 
+	</insert> 
+	
+	<!-- 修改岗位对应的角色(删除,修改成无效) -->
+	  <update id="updateAuthorityDel" parameterType="com.sgm.dms.fol.common.api.domain.PositionRoleDTO">
+		UPDATE  TR_POSITION_ROLE
+		SET
+		STATUS=0
+		WHERE
+		ROLE_ID=#{roleId}
+		AND POSITION_ID=#{positionId}
+	</update>  
+	<!-- checkRoleMenu -->
+	<select id="checkRoleMenu" resultType="com.sgm.dms.fol.common.api.domain.PositionRoleDTO">
+	SELECT * FROM TR_POSITION_ROLE WHERE ROLE_ID=#{param1} AND POSITION_ID=#{param2}
+	</select>
+	
+	<select id="getPositionsByUserId" resultType="com.sgm.dms.fol.common.api.domain.PositionDTO">
+		SELECT P.POSITION_ID AS positionId,
+			P.POSITION_NAME AS positionName,
+			P.POSITION_DESC AS positionDesc,
+			P.REMARK AS remark,
+			P.STATUS AS status,
+			P.POSITION_TYPE AS positionType,
+			P.CREATE_DATE AS createDate,
+			P.CREATE_BY AS createBy,
+			P.UPDATE_DATE AS updateDate,
+			P.UPDATE_BY AS updateBy,
+			P.DP_POSITION_CODE AS dpPositionCode
+		FROM TS_COMMON_USER_LOGON TCUL
+		JOIN TS_FOL_POSITION P ON TCUL.POSITION_ID=P.POSITION_ID
+		WHERE TCUL.LOGON_STATUS=1
+		<if test="userId!=null and userId!=''">
+			AND TCUL.LOGON_ID=#{userId}
+		</if>
+	</select>
+	
+	<select id="getPositionsByUserAccount" resultType="com.sgm.dms.fol.common.api.domain.PositionDTO">
+		SELECT P.POSITION_ID AS positionId,
+			P.POSITION_NAME AS positionName,
+			P.POSITION_DESC AS positionDesc,
+			P.REMARK AS remark,
+			P.STATUS AS status,
+			P.POSITION_TYPE AS positionType,
+			P.CREATE_DATE AS createDate,
+			P.CREATE_BY AS createBy,
+			P.UPDATE_DATE AS updateDate,
+			P.UPDATE_BY AS updateBy,
+			P.DP_POSITION_CODE AS dpPositionCode
+		FROM TS_COMMON_USER_LOGON TCUL
+		JOIN TS_FOL_POSITION P ON TCUL.POSITION_ID=P.POSITION_ID
+		WHERE TCUL.LOGON_STATUS=1
+		<if test="userAccount!=null and userAccount!=''">
+			AND TCUL.SSO_ACCOUNT=#{userAccount}
+		</if>
+	</select>
+</mapper>
+
+
+
+
+
+
+

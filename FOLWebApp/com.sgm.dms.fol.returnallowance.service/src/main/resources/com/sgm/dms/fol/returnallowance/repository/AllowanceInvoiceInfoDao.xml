@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sgm.dms.fol.returnallowance.repository.AllowanceInvoiceInfoDao" >
+  <!-- ================================== 自动生成DAO start ==================================  -->
+  <resultMap id="BaseResultMap" type="com.sgm.dms.fol.returnallowance.domain.AllowanceInvoiceInfo" >
+    <id column="ID" property="id" jdbcType="DECIMAL" />
+    <result column="RETURN_ORDER_ID" property="returnOrderId" jdbcType="DECIMAL" />
+    <result column="RETURN_ORDER_NO" property="returnOrderNo" jdbcType="VARCHAR" />
+    <result column="BILLING_REVERSE_NO" property="billingReverseNo" jdbcType="VARCHAR" />
+    <result column="BILLING_NO" property="billingNo" jdbcType="VARCHAR" />
+    <result column="ORDER_NETVALUE" property="orderNetvalue" jdbcType="DECIMAL" />
+    <result column="BILLING_ORIGN" property="billingOrign" jdbcType="VARCHAR" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+    <result column="VALID" property="valid" jdbcType="DECIMAL" />
+    <result column="CREATE_BY" property="createBy" jdbcType="DECIMAL" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="UPDATE_BY" property="updateBy" jdbcType="DECIMAL" />
+    <result column="UPDATE_DATE" property="updateDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    ID, RETURN_ORDER_ID, RETURN_ORDER_NO, BILLING_REVERSE_NO, BILLING_NO, ORDER_NETVALUE, 
+    BILLING_ORIGN, REMARK, VALID, CREATE_BY, CREATE_DATE, UPDATE_BY, UPDATE_DATE
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.sgm.dms.fol.returnallowance.domain.AllowanceInvoiceInfoExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from TT_FOL_ALLOWANCE_INVOICE_INFO
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from TT_FOL_ALLOWANCE_INVOICE_INFO
+    where ID = #{id,jdbcType=DECIMAL}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from TT_FOL_ALLOWANCE_INVOICE_INFO
+    where ID = #{id,jdbcType=DECIMAL}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.sgm.dms.fol.returnallowance.domain.AllowanceInvoiceInfoExample" >
+    delete from TT_FOL_ALLOWANCE_INVOICE_INFO
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.sgm.dms.fol.returnallowance.domain.AllowanceInvoiceInfo" >
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="BEFORE" >
+      SELECT SEQ_FOL_ALLOWANCE_INVOICE_INFO.NEXTVAL AS id FROM DUAL
+    </selectKey>
+    insert into TT_FOL_ALLOWANCE_INVOICE_INFO (ID, RETURN_ORDER_ID, RETURN_ORDER_NO, 
+      BILLING_REVERSE_NO, BILLING_NO, ORDER_NETVALUE, 
+      BILLING_ORIGN, REMARK, VALID, 
+      CREATE_BY, CREATE_DATE, UPDATE_BY, 
+      UPDATE_DATE)
+    values (#{id,jdbcType=DECIMAL}, #{returnOrderId,jdbcType=DECIMAL}, #{returnOrderNo,jdbcType=VARCHAR}, 
+      #{billingReverseNo,jdbcType=VARCHAR}, #{billingNo,jdbcType=VARCHAR}, #{orderNetvalue,jdbcType=DECIMAL}, 
+      #{billingOrign,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, #{valid,jdbcType=DECIMAL}, 
+      #{createBy,jdbcType=DECIMAL}, SYSDATE, #{updateBy,jdbcType=DECIMAL}, 
+      SYSDATE)
+  </insert>
+  <insert id="insertSelective" parameterType="com.sgm.dms.fol.returnallowance.domain.AllowanceInvoiceInfo" >
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="BEFORE" >
+      SELECT SEQ_FOL_ALLOWANCE_INVOICE_INFO.NEXTVAL AS id FROM DUAL
+    </selectKey>
+    insert into TT_FOL_ALLOWANCE_INVOICE_INFO
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      ID,
+      <if test="returnOrderId != null" >
+        RETURN_ORDER_ID,
+      </if>
+      <if test="returnOrderNo != null" >
+        RETURN_ORDER_NO,
+      </if>
+      <if test="billingReverseNo != null" >
+        BILLING_REVERSE_NO,
+      </if>
+      <if test="billingNo != null" >
+        BILLING_NO,
+      </if>
+      <if test="orderNetvalue != null" >
+        ORDER_NETVALUE,
+      </if>
+      <if test="billingOrign != null" >
+        BILLING_ORIGN,
+      </if>
+      <if test="remark != null" >
+        REMARK,
+      </if>
+      <if test="valid != null" >
+        VALID,
+      </if>
+      <if test="createBy != null" >
+        CREATE_BY,
+      </if>
+        CREATE_DATE,
+      <if test="updateBy != null" >
+        UPDATE_BY,
+      </if>
+        UPDATE_DATE,
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      #{id,jdbcType=DECIMAL},
+      <if test="returnOrderId != null" >
+        #{returnOrderId,jdbcType=DECIMAL},
+      </if>
+      <if test="returnOrderNo != null" >
+        #{returnOrderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="billingReverseNo != null" >
+        #{billingReverseNo,jdbcType=VARCHAR},
+      </if>
+      <if test="billingNo != null" >
+        #{billingNo,jdbcType=VARCHAR},
+      </if>
+      <if test="orderNetvalue != null" >
+        #{orderNetvalue,jdbcType=DECIMAL},
+      </if>
+      <if test="billingOrign != null" >
+        #{billingOrign,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="valid != null" >
+        #{valid,jdbcType=DECIMAL},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=DECIMAL},
+      </if>
+      SYSDATE,
+      <if test="updateBy != null" >
+        #{updateBy,jdbcType=DECIMAL},
+      </if>
+      SYSDATE
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.sgm.dms.fol.returnallowance.domain.AllowanceInvoiceInfoExample" resultType="java.lang.Integer" >
+    select count(*) from TT_FOL_ALLOWANCE_INVOICE_INFO
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update TT_FOL_ALLOWANCE_INVOICE_INFO
+    <set >
+      <if test="record.id != null" >
+        ID = #{record.id,jdbcType=DECIMAL},
+      </if>
+      <if test="record.returnOrderId != null" >
+        RETURN_ORDER_ID = #{record.returnOrderId,jdbcType=DECIMAL},
+      </if>
+      <if test="record.returnOrderNo != null" >
+        RETURN_ORDER_NO = #{record.returnOrderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="record.billingReverseNo != null" >
+        BILLING_REVERSE_NO = #{record.billingReverseNo,jdbcType=VARCHAR},
+      </if>
+      <if test="record.billingNo != null" >
+        BILLING_NO = #{record.billingNo,jdbcType=VARCHAR},
+      </if>
+      <if test="record.orderNetvalue != null" >
+        ORDER_NETVALUE = #{record.orderNetvalue,jdbcType=DECIMAL},
+      </if>
+      <if test="record.billingOrign != null" >
+        BILLING_ORIGN = #{record.billingOrign,jdbcType=VARCHAR},
+      </if>
+      <if test="record.remark != null" >
+        REMARK = #{record.remark,jdbcType=VARCHAR},
+      </if>
+      <if test="record.valid != null" >
+        VALID = #{record.valid,jdbcType=DECIMAL},
+      </if>
+      <if test="record.createBy != null" >
+        CREATE_BY = #{record.createBy,jdbcType=DECIMAL},
+      </if>
+      <if test="record.createDate != null" >
+        CREATE_DATE = #{record.createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.updateBy != null" >
+        UPDATE_BY = #{record.updateBy,jdbcType=DECIMAL},
+      </if>
+        UPDATE_DATE = SYSDATE,
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update TT_FOL_ALLOWANCE_INVOICE_INFO
+    set ID = #{record.id,jdbcType=DECIMAL},
+      RETURN_ORDER_ID = #{record.returnOrderId,jdbcType=DECIMAL},
+      RETURN_ORDER_NO = #{record.returnOrderNo,jdbcType=VARCHAR},
+      BILLING_REVERSE_NO = #{record.billingReverseNo,jdbcType=VARCHAR},
+      BILLING_NO = #{record.billingNo,jdbcType=VARCHAR},
+      ORDER_NETVALUE = #{record.orderNetvalue,jdbcType=DECIMAL},
+      BILLING_ORIGN = #{record.billingOrign,jdbcType=VARCHAR},
+      REMARK = #{record.remark,jdbcType=VARCHAR},
+      VALID = #{record.valid,jdbcType=DECIMAL},
+      CREATE_BY = #{record.createBy,jdbcType=DECIMAL},
+      CREATE_DATE = #{record.createDate,jdbcType=TIMESTAMP},
+      UPDATE_BY = #{record.updateBy,jdbcType=DECIMAL},
+      UPDATE_DATE = SYSDATE
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.sgm.dms.fol.returnallowance.domain.AllowanceInvoiceInfo" >
+    update TT_FOL_ALLOWANCE_INVOICE_INFO
+    <set >
+      <if test="returnOrderId != null" >
+        RETURN_ORDER_ID = #{returnOrderId,jdbcType=DECIMAL},
+      </if>
+      <if test="returnOrderNo != null" >
+        RETURN_ORDER_NO = #{returnOrderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="billingReverseNo != null" >
+        BILLING_REVERSE_NO = #{billingReverseNo,jdbcType=VARCHAR},
+      </if>
+      <if test="billingNo != null" >
+        BILLING_NO = #{billingNo,jdbcType=VARCHAR},
+      </if>
+      <if test="orderNetvalue != null" >
+        ORDER_NETVALUE = #{orderNetvalue,jdbcType=DECIMAL},
+      </if>
+      <if test="billingOrign != null" >
+        BILLING_ORIGN = #{billingOrign,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        REMARK = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="valid != null" >
+        VALID = #{valid,jdbcType=DECIMAL},
+      </if>
+      <if test="createBy != null" >
+        CREATE_BY = #{createBy,jdbcType=DECIMAL},
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateBy != null" >
+        UPDATE_BY = #{updateBy,jdbcType=DECIMAL},
+      </if>
+        UPDATE_DATE = SYSDATE,
+    </set>
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.sgm.dms.fol.returnallowance.domain.AllowanceInvoiceInfo" >
+    update TT_FOL_ALLOWANCE_INVOICE_INFO
+    set RETURN_ORDER_ID = #{returnOrderId,jdbcType=DECIMAL},
+      RETURN_ORDER_NO = #{returnOrderNo,jdbcType=VARCHAR},
+      BILLING_REVERSE_NO = #{billingReverseNo,jdbcType=VARCHAR},
+      BILLING_NO = #{billingNo,jdbcType=VARCHAR},
+      ORDER_NETVALUE = #{orderNetvalue,jdbcType=DECIMAL},
+      BILLING_ORIGN = #{billingOrign,jdbcType=VARCHAR},
+      REMARK = #{remark,jdbcType=VARCHAR},
+      VALID = #{valid,jdbcType=DECIMAL},
+      CREATE_BY = #{createBy,jdbcType=DECIMAL},
+      CREATE_DATE = #{createDate,jdbcType=TIMESTAMP},
+      UPDATE_BY = #{updateBy,jdbcType=DECIMAL},
+      UPDATE_DATE = SYSDATE
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+  <!-- ================================== 自动生成DAO end ==================================  -->
+</mapper>

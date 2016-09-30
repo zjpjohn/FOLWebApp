@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>FOL SGM APP</title>
+	<meta charset="UTF-8" />
+	<meta http-equiv="pragram" content="no-cache"> 
+	<meta http-equiv="cache-control" content="no-cache, must-revalidate"> 
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="expires" content="0">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link rel="stylesheet" type="text/css" href="common/styles/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="vendor/jquery-easyui/themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="vendor/jquery-easyui/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="vendor/jquery-easyui/themes/color.css">
+	<link rel="stylesheet" type="text/css" href="common/styles/framework.css">
+	<link rel="stylesheet" type="text/css" href="common/styles/ngDialog-theme-default.css">
+	<link rel="stylesheet" type="text/css" href="common/styles/ngDialog.min.css">
+	<link rel="stylesheet" type="text/css" href="common/styles/ngDialog-theme-plain.min.css">
+	
+	<script type="text/javascript">
+	 //	document.domain = "saic-gm.com";
+	 var pathName = document.location.pathname;
+	 var index = pathName.substr(1).indexOf("/");
+	 var contextPath = pathName.substr(0, index + 1);
+	 
+	 function doIdentity(){
+		 console.log(contextPath);
+	 	window.location.href ='msg_identity.html';
+	 }
+	/**
+	*uploadFileTest文件回调函数
+	*/
+	function uploadFileTest(callback,fileId,fileName){
+		var uploadFileId=window.document.getElementById(fileId).value;
+		var uploadFileName=window.document.getElementById(fileName).value;
+		window[callback](uploadFileId,uploadFileName); 
+	}
+	
+	/**
+	*getToken获取token  五分钟之后失效
+	*/
+	function getToken(){
+		var token ="";
+		$.ajax({
+			type:"get",
+			url: 'common/token',
+			dataType:'json',
+			async:false,
+			success:function(data){
+				token = data.token;
+				window.document.getElementById("uploadToken").value = token;
+			},
+			error:function(data){
+			}
+		});
+		return token;
+	}
+	/*
+	*打开文件上传按钮
+	*/
+	function uploadFileOpenWindows(callback,fileSize,fileType){
+		var date=(new Date).getTime();
+		$("#uploadFileDiv").append("<input name=\"fileId\" id=\"fileId"+date+"\" type=\"hidden\">");
+		$("#uploadFileDiv").append("<input name=\"fileName\" id=\"fileName"+date+"\" type=\"hidden\">");
+		//$("#uploadFileDiv").append("<input id=\"uploadFileValue"+date+"\" value=\""+callback+"\" type=\"hidden\">");
+		$("#uploadFileDiv").append("<input id=\"uploadFileTest"+date+"\" onclick='return uploadFileTest(\""
+			+callback+"\",\"fileId"+date+"\",\"fileName"+date+"\")' type=\"hidden\">");
+		var token = getToken();
+		if(token!=""){
+			window.open("http://dapi.saic-gm.com/fileservice/html/upload.html?token=" + token + 
+				"&resultId=fileId"+date+"&resultName=fileName"+date+"&resultEvent=uploadFileTest"+date+".click", "_blank", 
+				"height=200, width=520, top=300, left=480, toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no");
+		}else{
+			$.messager.alert('提示信息','Token获取失败！');
+		}
+	}
+	//文件下载
+	function preDownload(fileId) {
+		var token = getToken();
+		if(token!=""){
+			window.open("http://dapi.saic-gm.com/fileservice/html/download.html?token=" + token + 
+				"&fileId="+fileId, "File Download Page", 
+				"height=200, width=520, top=300, left=480, toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no");
+		}else{
+			$.messager.alert('提示信息','Token获取失败！');
+		}
+	}
+	
+	function clearCookies(){
+		var cookies = document.cookie.split(";");  
+	    for (var i = 0; i < cookies.length; i++) {  
+	        var cookie = cookies[i];  
+	        var eqPos = cookie.indexOf("=");  
+	        var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;  
+	        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";  
+	    }  
+		if(cookies.length > 0) {  
+		    for (var i = 0; i < cookies.length; i++) {  
+		        var cookie = cookies[i];  
+		        var eqPos = cookie.indexOf("=");  
+		        var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;  
+		        var domain = location.host.substr(location.host.indexOf('.'));  
+		        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=" + domain;  
+		    }  
+		} 
+	}
+	</script>
+	
+	<!-- Jquery & Uitl -->
+	<script src="js/config.js?v=0.0.2"></script>
+	<script src="vendor/jquery/jquery-1.8.3.js"></script>
+	<script src="vendor/jquery-easyui/jquery.easyui.min.js"></script>
+	<script src="vendor/jquery-easyui/easyloader.js"></script>
+	<script src="vendor/jquery-easyui/locale/easyui-lang-zh_CN.js"></script>
+	<script src="common/scripts/FolUtil.js?v=0.0.2"></script>
+	
+	<!-- AngularJS -->
+	<script src="vendor/angularjs/angular.js"></script>
+	<script src="vendor/angularjs/angular-touch.min.js"></script>
+	<script src="vendor/angularjs/angular-resource.min.js"></script>
+	<script src="vendor/angular-ui-router/angular-ui-router.min.js"></script>
+	<script src="vendor/angularjs/angular-cookies.min.js"></script>
+	<script src="vendor/angularjs/angular-promise-tracker.js"></script>
+	
+	<!-- Common Angular & EasyUI JS -->
+	<script src="js/app.js?v=0.0.2"></script>
+	<script src="common/scripts/framework.js?v=0.0.2"></script>
+	<script src="common/scripts/angularjs-esayui.js"></script>
+	<script src="common/scripts/easyui-extend-validate.js"></script>
+	<script src="common/scripts/ngDialog.min.js"></script>
+	<script src="common/scripts/HttpInterceptor.js"></script>
+
+	<!-- AugularJS Controller -->
+	<script src="js/controller/build/controller.min.js?v=0.0.6"></script>
+
+	<!-- AugularJS Service -->
+	<script src="js/service/build/service.min.js?v=0.0.6"></script>
+	<script src="js/service/msgIdentityService.js?v=0.0.3"></script>
+</head>
+<body class="sgm_sys_page_w" ng-app="Framework">
+	<div class="page">
+		<header>
+			<div id="header">
+				<!--Logo-->
+				<div class="sgmlogo">
+					<a href="index.html"><img width="173" height="58" alt="logo" src="common/images/login_logo1.png" /></a>
+				</div>
+				<div class="sgmdp_title">财务在线管理系统FOL</div>
+			</div>
+		</header>
+		<!--Section-->
+		<section>
+			<!--Topbar-->
+			<div class="topbar">
+				<div class="logout">
+					<a href="common/logout"  onclick="clearCookies();">登出系统</a>
+				</div>
+					 <div ng-controller="identityNumCtrl">
+					<ul ng-if="num>1">
+						<div class="logout">
+							<a onclick="doIdentity();" href="">岗位切换</a>
+						</div>
+					</ul>
+				</div> 
+				<div class="welcome">
+					<a href="#">欢迎{{user.name}}</a>
+				</div>
+			</div>
+			<!--Content-->
+			<div class="content_w">
+				<div class="sidebox">
+					<div left-menu></div>
+<!-- 					<div ng-include="'common/views/left-menu.html'"></div> -->
+				</div>
+				<div class="mainbox">
+					<div class="crumbs">
+						<a href="index.html">首页</a> <a href="index.html#/{{pagePath.url}}"
+						ng-repeat="pagePath in appStatus.activePagePath"
+						ng-class="{current:$last}" ng-bind="pagePath.name"></a>
+					</div>
+					<div ui-view></div>
+				</div>
+			</div>
+		</section>
+		<!-- Footer -->
+
+	</div>
+	<div hidden="true" style="display: none;" id="uploadFileDiv">
+		<input name="uploadToken" id="uploadToken" type="hidden">
+		<input name="fileSuffix" id="fileSuffix" type="hidden" value=".xml.XML">
+	</div>
+
+</body>
+</html>

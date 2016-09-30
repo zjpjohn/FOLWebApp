@@ -1,0 +1,43 @@
+
+<div ae-panel title="重新匹配">
+	<div class="row-fluid">
+		<div class="span6">
+			<div control-group padding-top="20px" padding-left="20px" padding-right="20px" padding-bottom="5px">
+				<ae-label name="上传日期"></ae-label>
+				<input ae-datebox/>
+			</div>
+		</div>
+		<div class="span6">
+			<div control-group padding-top="20px" padding-left="20px" padding-right="20px" padding-bottom="5px">
+				<ae-label name="批次号"></ae-label>
+				<input ae-textbox/>
+			</div>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<div align="center">
+			<!-- <a ae-Linkbutton href="javascript:;" on-click-function="findReserveAmount">查询</a> -->
+			<a ae-Linkbutton href="javascript:;" on-click-function="findReserveAmountTest">查询</a>
+		</div>
+	</div>
+	<div class="row-fluid" ng-show="true">
+		<div class="span12">
+			<table ae-Datagrid title="查询结果列表" onrowenter="true" pagination="true" pageSize="10">
+				<thead>
+					<tr>
+						<th colspan="2"><strong>奖金发布版本(市场部上传)</strong></th>
+						<th colspan="2"><strong >奖金签字版本(商务控制科上传)</strong></th>
+						<th data-options="field:'e',align:'center'" width="11%" rowspan="2"><strong>操作</strong></th>
+					
+					</tr>
+					<tr>
+						<th data-options="field:'dealerName',align:'center'" width="22%"><strong>创建日期</strong></th>
+						<th data-options="field:'dealerName',align:'center'" width="22%"><strong>批次号</strong></th>
+						<th data-options="field:'dealerName',align:'center'" width="20%"><strong>上传日期</strong></th>
+						<th data-options="field:'dealerName',align:'center'" width="20%"><strong>批次号</strong></th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</div>

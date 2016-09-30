@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<mapper namespace="com.sgm.dms.fol.common.service.repository.AuthorityDao">
+
+	<!-- 查询角色列表部分SQL -->
+	<sql id="authorityListSql">
+		  FROM TS_FOL_ROLE TFR
+		 WHERE TFR.ROLE_STATUS=1
+		<if test="roleType!=null and roleType>0">
+			AND TFR.ROLE_TYPE=#{roleType}
+		</if>
+	</sql>
+	
+	<!-- 查询角色列表数量 -->
+	<select id="getAuthorityCount" parameterType="com.sgm.dms.fol.common.api.domain.AuthorityDTO" resultType="Long">
+		SELECT COUNT(TFR.ROLE_ID)
+		<include refid="authorityListSql"/>
+	</select>
+	
+	<!-- 查询角色列表,分页 -->
+	<select id="getAuthorityList" parameterType="com.sgm.dms.fol.common.api.domain.AuthorityDTO" resultType="com.sgm.dms.fol.common.api.domain.AuthorityDTO">
+		SELECT * FROM (
+		SELECT T1.*, ROWNUM AS RN FROM (
+		SELECT ROLE_ID AS roleId,
+			   ROLE_NAME AS roleName,
+			   ROLE_DESC AS roleDesc,
+			   ROLE_STATUS AS roleStatus,
+			   ROLE_TYPE AS roleType,
+			   (SELECT TFC.CODE_CN_DESC FROM TC_FOL_CODE TFC WHERE TFC.CODE_ID=TFR.ROLE_TYPE) AS roleTypeDesc,
+			   CREATE_DATE AS createDate,
+			   UPDATE_DATE AS updateDate,
+			   UPDATE_BY AS updateBy,
+			   CREATE_BY AS createBy,
+			   TYPE AS type
+		<include refid="authorityListSql"/>
+		ORDER BY ROLE_ID
+		) T1 ) T2
+	<![CDATA[
+		 WHERE T2.RN>#{beginNo} and T2.RN<#{endNo}
+	]]>
+	</select>
+	
+	<!-- 查询角色列表,不分页 -->
+	<select id="getAuthorityByWhere" parameterType="com.sgm.dms.fol.common.api.domain.AuthorityDTO" resultType="com.sgm.dms.fol.common.api.domain.AuthorityDTO">
+		SELECT ROLE_ID AS roleId,
+			   ROLE_NAME AS roleName,
+			   ROLE_DESC AS roleDesc,
+			   ROLE_STATUS AS roleStatus,
+			   ROLE_TYPE AS roleType,
+			   CREATE_DATE AS createDate,
+			   UPDATE_DATE AS updateDate,
+			   UPDATE_BY AS updateBy,
+			   CREATE_BY AS createBy,
+			   TYPE AS type
+		<include refid="authorityListSql"/>
+	</select>
+	
+	<select id="getAuthorityListByTypePosition" parameterType="com.sgm.dms.fol.common.api.domain.AuthorityDTO" resultType="com.sgm.dms.fol.common.api.domain.AuthorityDTO">
+		SELECT ROLE_ID AS roleId,
+			   ROLE_NAME AS roleName,
+			   ROLE_DESC AS roleDesc,
+			   ROLE_STATUS AS roleStatus,
+			   ROLE_TYPE AS roleType,
+			   CREATE_DATE AS createDate,
+			   UPDATE_DATE AS updateDate,
+			   UPDATE_BY AS updateBy,
+			   CREATE_BY AS createBy,
+			   TYPE AS type,
+			   (SELECT 1 from TR_POSITION_ROLE TPR WHERE TFR.ROLE_ID=TPR.ROLE_ID and TPR.POSITION_ID=#{positionId} AND TPR.STATUS=1 AND ROWNUM = 1) as isChecked
+		  FROM TS_FOL_ROLE TFR
+		 WHERE TFR.ROLE_STATUS=1
+		   AND TFR.ROLE_TYPE=#{roleType}
+	</select>
+	
+	
+	<!--添加角色 -->
+	<insert id="addAuthority" parameterType="com.sgm.dms.fol.common.api.domain.AuthorityDTO">
+		<selectKey resultType="Long" order="BEFORE" keyProperty="roleId" >
+			SELECT SEQ_FOL_ROLE.NEXTVAL AS roleId FROM DUAL
+	    </selectKey>
+	    
+		INSERT INTO TS_FOL_ROLE
+		( ROLE_ID, ROLE_NAME, ROLE_TYPE, ROLE_DESC, ROLE_STATUS, CREATE_BY, CREATE_DATE ) 
+		VALUES 
+		( #{roleId}, #{roleName}, #{roleType}, #{roleDesc}, 1, #{createBy,jdbcType=NUMERIC}, SYSDATE ) 
+	</insert>
+	
+	<!--修改角色 -->
+	<update id="updateAuthority" parameterType="com.sgm.dms.fol.common.api.domain.AuthorityDTO"> 
+		UPDATE TS_FOL_ROLE
+		   SET 
+		       ROLE_TYPE=#{roleType},
+		       ROLE_DESC=#{roleDesc,jdbcType=VARCHAR},
+			<if test="roleName != null and roleName != ''">
+		       ROLE_NAME=#{roleName},
+			</if>
+			<if test="roleStatus!=null and roleStatus>0">
+		       ROLE_STATUS=#{roleStatus},
+			</if>
+		       UPDATE_DATE=SYSDATE,
+		       UPDATE_BY=#{updateBy,jdbcType=NUMERIC}
+		 WHERE ROLE_ID=#{roleId}
+	</update>
+	
+	<!-- 新增角色菜单关系 -->
+	<insert id="addAuthorMethod" parameterType="com.sgm.dms.fol.common.api.domain.RoleMenuDTO">
+		<selectKey resultType="Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_AUTHOR_METHOD_METHOD_ID.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+
+		INSERT INTO TR_ROLE_AUTHOR_METHOD
+		( ROLE_METHOD_ID,ROLE_ID,METHOD_ID,IS_VALID,STATUS,CREATE_DATE,CREATE_BY )
+		VALUES
+		( #{id},#{roleId},#{methodId}, 1, 1,SYSDATE, #{createBy,jdbcType=NUMERIC})
+	</insert>
+	<!-- 新增角色菜单关系 -->
+	<insert id="addRoleMenu" parameterType="com.sgm.dms.fol.common.api.domain.RoleMenuDTO">
+		<selectKey resultType="Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_MENU_ROLE.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+
+		INSERT INTO TR_MENU_ROLE
+		( ID,MENU_ID,ROLE_ID,CREATE_DATE,CREATE_BY,STATUS )
+		VALUES
+		( #{id},#{menuId},#{roleId}, SYSDATE, #{createBy,jdbcType=NUMERIC}, 1)
+	</insert>
+		
+	<!-- 根据菜单类型查询菜单 -->
+	<select id="findMenuByMenuType" parameterType="java.lang.Long" resultType="com.sgm.dms.fol.common.api.domain.RoleMenuDTO">
+		SELECT MENU_ID AS menuId , MENU_NAME AS menuName
+		  FROM TS_FOL_MENU 
+		 WHERE MENU_TYPE=#{menuType}
+		   AND MENU_STATUS=1
+	</select>
+	
+	<!-- 根据菜单类型,角色 查询菜单 -->
+	<select id="findMenuByMenuTypeRoleId" resultType="com.sgm.dms.fol.common.api.domain.RoleMenuDTO">
+		SELECT 	TFM.MENU_ID AS menuId, 
+				TFM.MENU_NAME AS menuName,
+       			(CASE WHEN TFM.PARENT_ID = 0 THEN '一级菜单' ELSE '二级菜单' END ) AS functionName,		
+          		(SELECT 1 from TR_MENU_ROLE TMR WHERE TFM.MENU_ID=TMR.MENU_ID and TMR.ROLE_ID=#{roleId} AND TMR.STATUS=1) as isChecked
+         FROM TS_FOL_MENU TFM
+         WHERE TFM.MENU_TYPE=#{menuType} AND TFM.MENU_STATUS=1
+         ORDER BY TFM.ORDER_SORT ASC
+<!--            AND TFM.PARENT_ID != 0 -->
+	</select>
+	
+	<!--删除角色菜单对应关系 -->
+	<delete id="deteteMenuRoleByRoleId" parameterType="java.lang.Long"> 
+		DELETE FROM TR_MENU_ROLE WHERE ROLE_ID=#{roleId}
+	</delete>
+	<delete id="deteteAuthorMethodByRoleId" parameterType="java.lang.Long"> 
+		DELETE FROM TR_ROLE_AUTHOR_METHOD WHERE ROLE_ID=#{roleId}
+	</delete>
+	
+	<!-- 删除角色 -->
+	<update id="delAuthority" parameterType="com.sgm.dms.fol.common.api.domain.AuthorityDTO">
+		UPDATE TS_FOL_ROLE
+		   SET ROLE_STATUS=#{roleStatus},
+		       UPDATE_DATE=SYSDATE,
+		       UPDATE_BY=#{updateBy,jdbcType=NUMERIC}
+		 WHERE ROLE_ID=#{roleId}
+	</update>
+	
+	<select id="getAuthorityCountByName" parameterType="java.lang.String" resultType="Integer">
+		SELECT COUNT(ROLE_ID) FROM TS_FOL_ROLE WHERE ROLE_NAME=#{name} AND ROLE_STATUS=1
+	</select>
+	
+	
+	<!-- 查询角色对应的权限 -->
+	<select id="findRoleMenu" parameterType="com.sgm.dms.fol.common.api.domain.RoleMenuDTO"
+		resultType="com.sgm.dms.fol.common.api.domain.RoleMenuDTO">
+	SELECT 
+    B.MENU_ID AS MENUID,B.ROLE_ID AS ROLEID  
+    FROM
+		TS_FOL_MENU
+    A LEFT JOIN TR_MENU_ROLE B ON A.MENU_ID=B.MENU_ID
+		WHERE
+		ROLE_ID=#{roleId} AND STATUS=1
+	</select>
+	
+	<!-- 查询所有权限 -->
+	<select id="findMenuByMenuId" parameterType="com.sgm.dms.fol.common.api.domain.RoleMenuDTO"
+		resultType="com.sgm.dms.fol.common.api.domain.RoleMenuDTO">
+		SELECT
+		MENU_ID AS MENUID ,
+		MENU_NAME AS MENUNAME
+		FROM
+
+		TS_FOL_MENU WHERE MENU_ID=57 OR MENU_ID=58 OR MENU_ID=59
+
+	</select>
+	
+
+	<!-- 修改角色 -->
+	<update id="updatarole" parameterType="com.sgm.dms.fol.common.api.domain.AuthorityDTO">
+		UPDATE TS_FOL_ROLE
+		SET
+		ROLE_NAME=#{roleName},
+		ROLE_DESC=#{roleDesc},
+		ROLE_TYPE=#{roleType},
+		UPDATE_DATE=#{updateDate}
+		WHERE ROLE_ID=#{roleId}
+	</update>
+
+	<!--根据角色修改权限(ADD) -->
+	<insert id="updateAuthorityADD" parameterType="com.sgm.dms.fol.common.api.domain.RoleMenuDTO">
+		INSERT INTO
+		TR_MENU_ROLE ( ID,MENU_ID,ROLE_ID,CREATE_DATE,STATUS
+		) VALUES (
+		#{id},#{menuId},#{roleId}, #{createDate},1)
+	</insert>
+	
+	<!-- 根据角色修改权限(DEL)-->
+	 <update id="updateAuthorityDel" parameterType="com.sgm.dms.fol.common.api.domain.RoleMenuDTO">
+		UPDATE TR_MENU_ROLE
+		SET
+		STATUS=0
+		WHERE
+		ROLE_ID=#{roleId}
+		AND MENU_ID=#{menuId}
+	</update>  
+	
+
+	
+	
+	<!-- checkRoleMenu -->
+	<select id="checkRoleMenu" resultType="com.sgm.dms.fol.common.api.domain.RoleMenuDTO">
+	SELECT * FROM TR_MENU_ROLE WHERE ROLE_ID=#{param1} AND MENU_ID=#{param2}
+	</select>
+</mapper>

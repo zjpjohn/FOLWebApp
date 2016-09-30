@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<!-- 银行维护 -->
+<mapper namespace="com.sgm.dms.fol.bankTicket.repository.BankTicketAuditFlowDao">
+
+ 	<!-- 保存银行银票额度信息 -->
+ 	<insert id="addBankTicketAuditFlowRecord" parameterType="com.sgm.dms.fol.bankTicket.dto.BankTicketAuditFlowDTO">
+ 		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_TT_FOL_BANK_TI_AUDIT_F_ID.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+ 		INSERT INTO TT_FOL_BANK_TICKET_AUDIT_FLOW(
+ 			ID,
+			REFER_TABLE_ID,
+			BUSINESS_CODE,
+			AUDIT_STATUS,
+			AUDIT_MSG,
+			AUDIT_DATE,
+			STATUS,
+			REMARK,
+			CREATE_BY,
+			CREATE_DATE,
+			UPDATE_BY,
+			UPDATE_DATE)
+        VALUES
+           (#{id}, 
+            #{referTableId}, 
+            #{businessCode},
+            #{auditStatus}, 
+            #{auditMsg,jdbcType=VARCHAR}, 
+            SYSDATE,
+            1,
+            #{remark,jdbcType=VARCHAR},
+            #{createBy}, 
+            SYSDATE, 
+            #{updateBy}, 
+            SYSDATE
+           )
+ 	</insert>
+	
+</mapper>

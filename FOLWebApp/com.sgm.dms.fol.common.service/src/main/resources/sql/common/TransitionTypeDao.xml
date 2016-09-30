@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sgm.dms.fol.common.service.repository.TransitionTypeDao">
+
+	<select id="queryAll" resultType="com.sgm.dms.fol.common.service.domains.TransitionTypePo">
+		SELECT REFER_TYPE_ID AS referTypeId,
+			REFER_TYPE_NAME AS referTypeName,
+			REFER_TYPE_CLASSIFY AS referTypeClassify,
+			IS_PUBLIC AS isPublic,
+			CREATE_BY AS createBy,
+			CREATE_DATE AS createDate,
+			UPDATE_BY AS updateBy,
+			UPDATE_DATE AS updateDate,
+			FOL_TYPE_ID AS folTypeId,
+			REFER_TYPE_SOURCE AS referTypeSource
+		FROM TM_FOL_SOA_TRANSITION_TYPE
+    </select>
+    
+</mapper>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://www.springframework.org/schema/mvc
+         http://www.springframework.org/schema/mvc/spring-mvc.xsd
+         http://www.springframework.org/schema/context
+         http://www.springframework.org/schema/context/spring-context.xsd
+         http://www.springframework.org/schema/tx
+		 http://www.springframework.org/schema/tx/spring-tx.xsd
+         http://www.springframework.org/schema/aop
+		 http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- @Service annotations are auto-detected. -->
+    <context:annotation-config/>
+    <context:component-scan base-package="com.sgm.dms.fol.controller.**">
+    	<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>  
+       	<context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice"/>  
+    </context:component-scan>
+    <context:property-placeholder location="classpath:config/url.properties" />
+    <!-- Mail Service, JDK1.7 required! -->
+
+	<mvc:annotation-driven />
+	<mvc:default-servlet-handler />
+	
+	<!-- 系统配置:自动兼容Linux/Windows文件路径格式 -->
+	<bean id="systemConfigurer" class="com.sgm.dms.fol.common.service.utils.SystemConfigurer" init-method="init">
+		<property name="windowsLog4jPath">
+			<value>/log/windows.properties</value>
+		</property>
+		<property name="linuxLog4jPath">
+			<value>/log/linux.properties</value>
+		</property>
+		<property name="windowsUploadPath">
+			<value>D:/TempSpace/log/FOL/upload/</value>
+		</property>
+		<property name="linuxUploadPath">
+			<value>/midware/fol4SGM/upload/</value>
+		</property>
+		<property name="linuxGwmFtpPath">
+			<value>/midware/fol4SGM/upload/ftp</value>
+		</property>
+		<property name="windowsGwmFtpPath">
+			<value>D:/TempSpace/log/fol4SGM/upload/ftp</value>
+		</property>
+		<property name="linuxTempPath">
+			<value>/midware/fol4SGM/clap/temp/</value>
+		</property>
+		<property name="windowsTempPath">
+			<value>D:/TempSpace/clap/temp/</value>
+		</property>
+	</bean>
+	
+	<!-- 计划任务 -->
+	<!-- 
+	<bean id="scheduleFactory" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource"/>
+		</property>
+		<property name="applicationContextSchedulerContextKey" value="applicationContextKey" />
+		<property name="configLocation" value="classpath:quartz/quartz.properties" />
+	</bean>
+	<bean id="scheduleService" class="com.sgm.dms.clap.ewa.common.service.ScheduleServiceImpl" init-method="init" destroy-method="destory"/>
+	-->
+ 	<!-- 上传文件拦截，设置最大上传文件大小 ：5M -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="5242880" />
+		<property name="resolveLazily" value="true" />
+	</bean>
+	
+	<bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+		<property name="order" value="1" />
+		<property name="defaultContentType" value="text/html"/>
+		<property name="mediaTypes">
+			<map>
+				<entry key="json" value="application/json" />
+			</map>
+		</property>
+		<property name="viewResolvers">
+            <list>
+                <bean class="org.springframework.web.servlet.view.BeanNameViewResolver" />
+                <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+                    <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+			        <property name="prefix" value="/views/"/>
+			        <property name="suffix" value=".html"/>
+                </bean>
+            </list>
+        </property>
+		<property name="defaultViews">
+			<list>
+				<!-- JSON View -->
+				<bean class="org.springframework.web.servlet.view.json.MappingJackson2JsonView"/>
+				<!-- XML View -->
+				<bean class="org.springframework.web.servlet.view.xml.MarshallingView">
+					<property name="marshaller">
+						<bean class="org.springframework.oxm.xstream.XStreamMarshaller" />
+					</property>
+				</bean>
+			</list>
+		</property>
+		<property name="ignoreAcceptHeader" value="true" />
+	</bean>
+	
+	<!-- 调用restful接口的spring模板 -->
+	<bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+	     <property name="interceptors">
+	         <list>
+	              <bean class="com.sgm.dms.fol.common.service.utils.FolRestClientLoggingInterceptor"></bean>
+	         </list>
+	     </property>
+	</bean>
+	
+	<!-- aop -->
+	<aop:aspectj-autoproxy/>
+<!-- 	<bean id="authorAspectj" class="com.sgm.solution.framework.urlaccess.annotations.AnnotationProcessor" init-method="init"> -->
+<!-- 		<property name="jndiName" value="jdbc/dsfol" /> -->
+<!-- 	</bean> -->
+	<!-- 数据防篡改 -->
+	<bean id="dataDistortAspect" class="com.sgm.solution.framework.dataAuthority.annotations.AnnotationProcessor"/>
+</beans>

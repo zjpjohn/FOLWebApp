@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://impl.ws.agent.service.dms.sgm.com/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:ns2="http://schemas.xmlsoap.org/soap/http" xmlns:ns1="http://ws.agent.service.dms.sgm.com/" name="ClaimOperationWebServiceImplService" targetNamespace="http://impl.ws.agent.service.dms.sgm.com/">
+  <wsdl:import location="http://10.203.97.36:7003/ServiceAgentWebWOL/services/ClaimOperationWebService?wsdl=ClaimOperationWebService.wsdl" namespace="http://ws.agent.service.dms.sgm.com/">
+    </wsdl:import>
+  <wsdl:binding name="ClaimOperationWebServiceImplServiceSoapBinding" type="ns1:ClaimOperationWebService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="changeSubmitToReject">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="changeSubmitToReject">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="changeSubmitToRejectResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeInvoiceToPayment">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="changeInvoiceToPayment">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="changeInvoiceToPaymentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeInvoiceToPaymentCompensation">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="changeInvoiceToPaymentCompensation">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="changeInvoiceToPaymentCompensationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeSubmitToDenyCompensation">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="changeSubmitToDenyCompensation">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="changeSubmitToDenyCompensationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeSubmitToRejectCompensation">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="changeSubmitToRejectCompensation">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="changeSubmitToRejectCompensationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changePaymentToInvoice">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="changePaymentToInvoice">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="changePaymentToInvoiceResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeSubmitToDeny">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="changeSubmitToDeny">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="changeSubmitToDenyResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeSubmitToPayment">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="changeSubmitToPayment">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="changeSubmitToPaymentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeSubmitToPaymentCompensation">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="changeSubmitToPaymentCompensation">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="changeSubmitToPaymentCompensationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changePaymentToInvoiceCompensation">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="changePaymentToInvoiceCompensation">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="changePaymentToInvoiceCompensationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ClaimOperationWebServiceImplService">
+    <wsdl:port binding="tns:ClaimOperationWebServiceImplServiceSoapBinding" name="ClaimOperationWebServiceImplPort">
+      <soap:address location="http://10.203.97.36:7003/ServiceAgentWebWOL/services/ClaimOperationWebService"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

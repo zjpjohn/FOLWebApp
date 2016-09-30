@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<mapper namespace="com.sgm.dms.fol.reconciliation.repository.BillFileDao">
+
+	<!-- 添加大文件记录 -->
+	<insert id="addBillFile"  parameterType="com.sgm.dms.fol.reconciliation.dto.BillFileDTO" >
+	  <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+	    SELECT   SEQ_TT_FOL_BILL_FILE_ID.NEXTVAL AS id from DUAL
+	  </selectKey>
+	  
+	   INSERT INTO TT_FOL_BILL_FILE
+		   (ID,
+		    FILE_NAME,
+		    FILE_URL,
+		   	CREATE_DATE,
+		    CREATE_BY,
+		    UPDATE_BY,
+		    UPDATE_DATE,
+		    STATUS,
+		    FILED_ID,
+		    BILL_DATE,
+			EFFECTIVE_DATE,
+			TITLE
+		    
+		    
+		   )
+		VALUES
+		   (#{id},
+		   #{fileName},
+		   #{fileUrl},
+		   #{createDate},
+		   #{createBy},
+		   #{updateBy},
+		   #{updateDate},
+		   #{status},
+		   #{filedId},
+		   #{dbBillDate},
+		   #{effectiveDate},
+		   #{title}
+		   
+		   )
+	</insert>
+	
+	<!-- 更新发布状态 -->
+	<update id="updateBillFileStatusById" parameterType="com.sgm.dms.fol.reconciliation.dto.BillFileDTO">
+	   UPDATE TT_FOL_BILL_FILE SET STATUS=#{status},UPDATE_BY=#{updateBy},UPDATE_DATE=SYSDATE
+	   WHERE ID=#{id}
+	</update>
+	
+	<!-- 根据文件账单日期 覆盖原来的文件 -->
+	<update id="updateFiledIdByBillDate">
+		
+	   UPDATE TT_FOL_BILL_FILE SET
+	   		FILE_NAME=#{fileName},
+	   		FILE_URL=#{fileUrl},
+	   		CREATE_DATE=#{createDate},
+	   		CREATE_BY=#{createBy},
+	   		UPDATE_BY=#{updateBy},
+	   		UPDATE_DATE=#{updateDate},
+	   		EFFECTIVE_DATE=#{effectiveDate},
+			TITLE=#{title},
+		    FILED_ID=#{filedId},
+		    BILL_DATE=#{dbBillDate}
+	   WHERE TO_CHAR(BILL_DATE,'YYYY-MM')=TO_CHAR(#{dbBillDate},'YYYY-MM')
+	</update>
+	
+	<!-- 导出大文件 -->
+	<select id="findDealerFileByFdAndPage" resultType="com.sgm.dms.fol.reconciliation.dto.BillFileDTO" parameterType="com.sgm.dms.fol.reconciliation.dto.BillFileDTO">
+			SELECT T2.*  FROM
+				(
+				SELECT fd.ID AS id,
+					fd.TITLE AS title,
+					fd.CREATE_DATE AS createDate,
+					fd.CREATE_BY AS createBy,
+					fd.UPDATE_BY AS updateBy,
+					fd.UPDATE_DATE AS updateDate,
+					fd.STATUS As status,
+					fd.BILL_DATE AS dbBillDate,
+					fd.EFFECTIVE_DATE AS effectiveDate,
+					fd.FILE_NAME AS fileName,
+					fd.FILED_ID AS filedId,
+					ROWNUM rn
+				FROM (
+						SELECT
+						t.*
+						FROM TT_FOL_BILL_FILE t
+						WHERE 1=1
+					
+					<if test="dbBillDate!=null and  dbBillDate!=''">
+						AND TO_CHAR(t.BILL_DATE,'YYYY-MM')=TO_CHAR(#{dbBillDate},'YYYY-MM')
+					</if>
+					<!-- <if test="status!=null and  status>=0">
+						AND t.STATUS=#{status}
+					</if> -->
+					ORDER BY ROWNUM DESC
+				) fd
+				WHERE 1=1
+					<if test="endNo!=null and endNo>0">
+						<![CDATA[ AND ROWNUM <=#{endNo} ]]>
+					</if>
+				
+				
+				) T2
+			WHERE 1=1
+				<if test="endNo!=null and  endNo>0">
+						<![CDATA[ AND rn >=#{beginNo} ]]>
+				</if>
+			
+	</select>
+	<!-- 根据BILL_DATE 查询文件 -->
+	<select  id="findBillFileByBillDate"  resultType="com.sgm.dms.fol.reconciliation.dto.BillFileDTO">
+			SELECT  
+				ID,
+				TITLE,
+				CREATE_DATE,
+				CREATE_BY,
+				UPDATE_BY,
+				UPDATE_DATE,
+				STATUS,
+				BILL_DATE AS dbBillDate,
+				EFFECTIVE_DATE AS effectiveDate,
+				FILE_NAME,
+				FILED_ID
+			FROM TT_FOL_BILL_FILE
+			WHERE TO_CHAR(BILL_DATE,'YYYY-MM')=TO_CHAR(#{param1},'YYYY-MM')
+	</select>
+</mapper>

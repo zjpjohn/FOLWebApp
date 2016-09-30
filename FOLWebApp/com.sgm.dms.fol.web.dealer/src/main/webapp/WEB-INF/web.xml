@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
+	<display-name>fol-Dealer</display-name>
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath:spring/spring-config.xml,
+		             classpath:spring/spring-mvc.xml
+		</param-value>
+	</context-param>
+	
+	<filter>
+		<filter-name>OAuthClientFilter</filter-name>
+		<filter-class>com.sgm.dms.am.client.filter.OAuthClientFilter</filter-class>
+		
+		<init-param>
+			<param-name>clientId</param-name>
+			<param-value>992606f1a42143cb80c28e364b57f9f3</param-value>
+		</init-param>
+		
+		<init-param>
+			<param-name>clientSecret</param-name>
+			<param-value>5f95ce5f069804e24ba8c01fcb0e5b1d</param-value>
+		</init-param>
+		
+		<init-param>
+			<param-name>excludePath</param-name>
+			<param-value>/styles/,/images/,/js/,/scripts/,/vendor/,/msg_logon.html,/msg_sso_logon.html,/login.html</param-value>
+		</init-param>
+		
+		<init-param>
+			<param-name>excludeFile</param-name>
+			<param-value>png,jpg,gif,ico</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>verifyUrl</param-name>
+			<param-value>http://dp.saic-gm.com/am/oauth</param-value>
+		</init-param>
+		
+		<init-param>
+			<param-name>tokenUrl</param-name>
+			<param-value>http://dphttp.sgm.shanghaigm.com/am/oauth</param-value>
+		</init-param>
+		
+		<init-param>
+			<param-name>referUrl</param-name>
+			<param-value>https://dcw.saic-gm.com/fol4Dealer/index.html</param-value>
+		</init-param>
+	</filter>
+	
+	<filter-mapping>
+		<filter-name>OAuthClientFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+  
+	<filter>
+		<filter-name>httpMethodFilter</filter-name>
+		<filter-class>org.springframework.web.filter.HiddenHttpMethodFilter</filter-class>
+	</filter>
+	<!-- 字符编码过滤器 -->
+	<filter>
+		<filter-name>encodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<init-param>
+			<param-name>forceEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	
+	<filter>
+		<filter-name>FolDealerLoginFilter</filter-name>
+		<filter-class>com.sgm.dms.fol.common.service.filters.FolDealerLoginFilter</filter-class>
+	
+		<init-param>
+			<param-name>excludePath</param-name>
+			<param-value>/styles/,/images/,/js/,/scripts/,/vendor/,/msg_identity.html,/login.html,/system/systemamount/find,/user/menu</param-value>
+		</init-param>
+		<init-param>
+			<param-name>excludeFile</param-name>
+			<param-value>png,jpg,gif,ico</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>FolDealerLoginFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping> 
+
+	<filter-mapping>
+		<filter-name>httpMethodFilter</filter-name>
+		<servlet-name>Spring MVC Dispatcher Servlet</servlet-name>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<servlet-name>Spring MVC Dispatcher Servlet</servlet-name>
+	</filter-mapping>
+	
+	<!-- Spring 容器加载 -->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	
+	<!-- The front controller of this Spring Web application, responsible for handling all application requests -->
+	<servlet>
+		<servlet-name>Spring MVC Dispatcher Servlet</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>classpath:spring/spring-mvc.xml</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+  
+	<servlet-mapping>
+		<servlet-name>Spring MVC Dispatcher Servlet</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+	
+	<welcome-file-list>
+		<welcome-file>/index.html</welcome-file>
+	</welcome-file-list>
+</web-app>

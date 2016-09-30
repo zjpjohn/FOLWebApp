@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<mapper namespace="com.sgm.dms.fol.bankTicket.repository.BankBankTicketDao">
+	<!-- 银行银票额度维护 -->
+	<resultMap id="bankBankTicketRecord" type="com.sgm.dms.fol.bankTicket.dto.BankBankTicketDTO">
+		<id 	property="id" 		    column="ID" 		        javaType="java.lang.Long" 	jdbcType="NUMERIC"/>
+		<result property="dealerType" 	column="DEALER_TYPE" 		javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+		<result property="bankId" 		column="BANK_ID" 			javaType="java.lang.Long" 	jdbcType="NUMERIC"/>
+		<result property="amount" 		column="AMOUNT" 		    javaType="java.math.BigDecimal"	jdbcType="NUMERIC"/>
+		<result property="auditStatus" 	column="AUDIT_STATUS" 		javaType="java.lang.Integer"	jdbcType="NUMERIC"/>
+		<result property="auditMsg" 	column="AUDIT_MSG" 			javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="bankAbbr" 	column="BANK_ABBR" 			javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="bankChName" 	column="BANK_CH_NAME" 		javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="bankEnName" 	column="BANK_EN_NAME" 		javaType="java.lang.String"		jdbcType="VARCHAR"/>
+ 	</resultMap>
+ 	
+ 	<!-- 保存银行银票额度信息 -->
+ 	<insert id="saveBankBankTicket" parameterType="com.sgm.dms.fol.bankTicket.dto.BankBankTicketDTO">
+ 		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_TT_FOL_BANK_BANK_TICKET_ID.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+ 		INSERT INTO TT_FOL_BANK_BANK_TICKET
+			(ID, 
+			 DEALER_TYPE, 
+			 BANK_ID, 
+			 AMOUNT, 
+			 AUDIT_STATUS, 
+			 STATUS,
+			 REMARK, 
+			 CREATE_BY, 
+			 CREATE_DATE,
+			 UPDATE_BY, 
+			 UPDATE_DATE,
+			 MAINTAIN_TYPE
+			)
+        VALUES
+           (#{id}, 
+            #{dealerType,jdbcType=NUMERIC}, 
+            #{bankId},
+            #{amount}, 
+            1, 
+            1, 
+            #{remark,jdbcType=VARCHAR}, 
+            #{createBy}, 
+            SYSDATE, 
+            #{updateBy}, 
+            SYSDATE,
+            #{maintainType}
+           )
+ 	</insert>
+ 	
+ 	<!-- 查询银行银票额度数据 -->
+ 	<select id="findBankBankTicketDataByWhs" parameterType="com.sgm.dms.fol.bankTicket.dto.BankBankTicketDTO" resultMap="bankBankTicketRecord">
+ 			SELECT  N.*   FROM (
+	 			SELECT  T.*,ROWNUM AS RN  FROM 
+		 			(
+			 			SELECT 
+						BT.*,BT.AMOUNT AS moneyDisplay,BI.BANK_ABBR,BI.BANK_CH_NAME,BI.BANK_EN_NAME,TC.CODE_CN_DESC AS auditStatusName,TC2.CODE_CN_DESC AS dealerTypeName,F.AUDIT_MSG
+						FROM TT_FOL_BANK_BANK_TICKET BT
+						LEFT JOIN TT_FOL_BANK_INFO BI ON BT.BANK_ID=BI.ID AND BI.STATUS=1
+						LEFT JOIN TC_FOL_CODE TC ON TC.CODE=BT.AUDIT_STATUS AND TC.TYPE_NAME='银票审核状态' AND TC.STATUS=10011001
+						LEFT JOIN TC_FOL_CODE TC2 ON TC2.CODE=BT.DEALER_TYPE AND TC2.TYPE_NAME='渠道类型' AND TC2.STATUS=10011001
+						LEFT JOIN (SELECT MAX(AF.ID) FLOW_ID,AF.REFER_TABLE_ID
+						FROM TT_FOL_BANK_TICKET_AUDIT_FLOW AF
+						JOIN TT_FOL_BUSINESS_TABLE FBT ON AF.BUSINESS_CODE=FBT.BUSINESS_CODE
+						WHERE FBT.STATUS=1 AND FBT.BUSINESS_TABLE_NAME='TT_FOL_BANK_BANK_TICKET'
+						GROUP BY REFER_TABLE_ID) AUDITFLOW ON AUDITFLOW.REFER_TABLE_ID=BT.ID
+						LEFT JOIN TT_FOL_BANK_TICKET_AUDIT_FLOW F ON F.ID=AUDITFLOW.FLOW_ID
+						WHERE BT.STATUS=1
+						
+						<if test="dealerType!=null and dealerType>=0">
+							AND BT.DEALER_TYPE=#{dealerType} 
+						</if>  
+						<if test="auditStatus!=null and auditStatus>=0">
+							AND BT.AUDIT_STATUS=#{auditStatus} 
+						</if> 
+						<if test="auditStatus!=null and auditStatus==-1">
+							AND BT.AUDIT_STATUS NOT IN (3,6)
+						</if> 
+						<if test="maintainType!=null and maintainType>=0">
+							AND BT.MAINTAIN_TYPE=#{maintainType} 
+						</if> 
+						<if test="auditStatusList != null">
+							AND BT.AUDIT_STATUS IN 
+							<foreach item="item" index="index" collection="auditStatusList" open="(" separator="," close=")">
+									#{item}
+							</foreach>
+						</if>
+					) T 
+			     
+			     <![CDATA[ WHERE ROWNUM <=#{endNo} ]]>
+			    	
+		    	) N
+    	<![CDATA[ WHERE N.RN>=#{beginNo}]]>
+ 	</select>
+ 	
+ 	<!-- 查询查询银行银票额度记录数 -->
+ 	<select id="findBankBankTicketDataCountByWhs" parameterType="com.sgm.dms.fol.bankTicket.dto.BankBankTicketDTO" resultType="java.lang.Integer">
+ 			SELECT 
+				COUNT(1)
+				FROM TT_FOL_BANK_BANK_TICKET BT
+				LEFT JOIN TT_FOL_BANK_INFO BI ON BT.BANK_ID=BI.ID
+				WHERE BT.STATUS=1
+				<if test="dealerType!=null and dealerType>=0">
+					AND BT.DEALER_TYPE=#{dealerType} 
+				</if>  
+				<if test="auditStatus!=null and auditStatus>=0">
+					AND BT.AUDIT_STATUS=#{auditStatus} 
+				</if> 
+				<if test="auditStatus!=null and auditStatus==-1">
+					AND BT.AUDIT_STATUS NOT IN (3,6)
+				</if> 
+				<if test="maintainType!=null and maintainType>=0">
+					AND BT.MAINTAIN_TYPE=#{maintainType} 
+				</if> 
+				<if test="auditStatusList != null">
+				AND BT.AUDIT_STATUS IN 
+				<foreach item="item" index="index" collection="auditStatusList" open="(" separator="," close=")">
+						#{item}
+				</foreach>
+			</if>
+ 	</select>
+ 	
+	<!-- 查询单条银行银票 (修改用到)-->
+    <select id="findBankBankTicketDataById"  resultMap="bankBankTicketRecord">
+    	SELECT 
+			BT.*,BI.BANK_ABBR,BI.BANK_CH_NAME,BI.BANK_EN_NAME
+		FROM TT_FOL_BANK_BANK_TICKET BT
+		LEFT JOIN TT_FOL_BANK_INFO BI ON BT.BANK_ID=BI.ID
+		AND BT.STATUS=1
+		AND BT.ID=#{param1}
+    </select>	
+    
+    <!-- 查询出所有渠道的银行银票-->
+    <select id="findAllDealerBankBankTicketData" resultMap="bankBankTicketRecord">
+    	SELECT 
+			BT.*,BI.BANK_ABBR,BI.BANK_CH_NAME,BI.BANK_EN_NAME
+		FROM TT_FOL_BANK_BANK_TICKET BT
+		JOIN TT_FOL_BANK_INFO BI ON BT.BANK_ID=BI.ID
+		AND BT.STATUS=1
+		AND BT.DEALER_TYPE IS NOT NULL
+    </select>
+    
+<!--     根据银行缩写查询出银行银票（排除渠道） -->
+    <select id="findBankBankTicketDataByBankAbbr" resultMap="bankBankTicketRecord">
+    	SELECT 
+			BT.*,BI.BANK_ABBR,BI.BANK_CH_NAME,BI.BANK_EN_NAME
+		FROM TT_FOL_BANK_BANK_TICKET BT
+		JOIN TT_FOL_BANK_INFO BI ON BT.BANK_ID=BI.ID
+		AND BT.STATUS=1
+		AND BT.DEALER_TYPE IS NULL
+		AND BI.BANK_ABBR=#{bankAbbr}
+    </select>
+	
+	<!--更新银行银票信息  -->
+	<update id="updateBankBankTicket" parameterType="com.sgm.dms.fol.bankTicket.dto.BankBankTicketDTO">
+	 	UPDATE OWFOL.TT_FOL_BANK_BANK_TICKET
+			SET AMOUNT=#{amount}, 
+			AUDIT_STATUS=#{auditStatus},
+			UPDATE_BY=#{updateBy}, 
+			UPDATE_DATE=SYSDATE
+			<if test="dealerType!=null and dealerType>=0">
+				,DEALER_TYPE=#{dealerType}
+			</if>
+			<if test="remark!=null and remark!=''">
+				,REMARK=#{remark}
+			</if>
+		WHERE ID=#{id}
+	</update>
+	
+
+<!-- 	查询出当前有效的银票金额总和 -->
+	<select id="findUsedBankTicketTotalAmount" resultType="com.sgm.dms.fol.bankTicket.dto.QueryBankTicketTotalAmountDTO" parameterType="com.sgm.dms.fol.bankTicket.dto.QueryBankTicketTotalAmountDTO">
+		SELECT nvl(SUM(BTA.AMOUNT),0) AS availAmount,BI.ID AS bankId
+	    FROM TT_FOL_PT_BANK_TI_AMOUNT BTA
+	    JOIN TT_FOL_BANK_INFO BI ON UPPER(BI.BANK_ABBR)=UPPER(BTA.BANK_ID)
+	    WHERE BTA.VALID = #{valid}
+         AND (BTA.SAP_EXECUTE_RESULT = #{sapExecuteResult} or BTA.SAP_EXECUTE_RESULT is NULL)
+         <![CDATA[ AND BTA.EXPIRATION_DATE>TO_CHAR(SYSDATE,'YYYYMMDD') ]]>
+         AND (BTA.FOL_RESULT = #{folResult})
+         
+         <if test="bankId!=null and bankId>0">
+         	AND BI.ID = #{bankId}
+         </if>
+         
+         AND (BTA.SAIC_RESULT IN 
+			 <foreach item="item" index="index" collection="saicResultList" open="(" separator="," close=")">
+				 #{item}
+			 </foreach>
+			or BTA.SAIC_RESULT is NULL)
+		 GROUP BY BI.ID
+	</select>
+	
+	<select id="findUsedBankTicketDealerTotalAmount" resultType="java.math.BigDecimal" parameterType="com.sgm.dms.fol.bankTicket.dto.QueryBankTicketTotalAmountDTO">
+		SELECT nvl(SUM(BTA.AMOUNT),0)
+	    FROM TT_FOL_PT_BANK_TI_AMOUNT BTA
+	    JOIN TT_FOL_BANK_INFO BI ON UPPER(BI.BANK_ABBR)=UPPER(BTA.BANK_ID)
+	    JOIN TM_FOL_DEALER_INFO DI ON BTA.SAP_CODE=DI.SAP_CODE
+	    WHERE BI.ID = #{bankId}
+         AND (BTA.SAP_EXECUTE_RESULT = #{sapExecuteResult} or BTA.SAP_EXECUTE_RESULT is NULL)
+         <![CDATA[ AND BTA.EXPIRATION_DATE>TO_CHAR(SYSDATE,'YYYYMMDD') ]]>
+         AND (BTA.FOL_RESULT = #{folResult})
+         AND BTA.VALID = #{valid}
+         AND (BTA.SAIC_RESULT IN 
+			 <foreach item="item" index="index" collection="saicResultList" open="(" separator="," close=")">
+				 #{item}
+			 </foreach>
+			or BTA.SAIC_RESULT is NULL)
+		 AND  DI.DEALER_TYPE=#{dealerType}
+	</select>
+
+</mapper>

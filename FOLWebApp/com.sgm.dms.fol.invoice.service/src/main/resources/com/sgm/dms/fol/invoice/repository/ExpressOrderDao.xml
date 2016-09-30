@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sgm.dms.fol.invoice.repository.ExpressOrderDao" >
+  <resultMap id="BaseResultMap" type="com.sgm.dms.fol.invoice.domain.ExpressOrder" >
+    <id column="EXPRESS_NO" property="expressNo" jdbcType="VARCHAR" />
+    <result column="EXPRESS_UNIT" property="expressUnit" jdbcType="DECIMAL" />
+    <result column="CHANGE_TIME" property="changeTime" jdbcType="DATE" />
+    <result column="CHANGE_MSG" property="changeMsg" jdbcType="VARCHAR" />
+    <result column="POST_USER" property="postUser" jdbcType="VARCHAR" />
+    <result column="POST_USER_PHONE" property="postUserPhone" jdbcType="VARCHAR" />
+    <result column="EXPRESS_STATUS" property="expressStatus" jdbcType="DECIMAL" />
+    <result column="VALID" property="valid" jdbcType="DECIMAL" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+    <result column="CREATE_BY" property="createBy" jdbcType="DECIMAL" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="DATE" />
+    <result column="UPDATE_BY" property="updateBy" jdbcType="DECIMAL" />
+    <result column="UPDATE_DATE" property="updateDate" jdbcType="DATE" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    EXPRESS_NO, EXPRESS_UNIT, CHANGE_TIME, CHANGE_MSG, POST_USER, POST_USER_PHONE, EXPRESS_STATUS, 
+    VALID, REMARK, CREATE_BY, CREATE_DATE, UPDATE_BY, UPDATE_DATE
+  </sql>
+  
+  <insert id="insert" parameterType="com.sgm.dms.fol.invoice.domain.ExpressOrder" >
+    insert into TT_FOL_EXPRESS_ORDER (EXPRESS_NO, EXPRESS_UNIT, CHANGE_TIME, 
+      CHANGE_MSG, POST_USER, POST_USER_PHONE, 
+      EXPRESS_STATUS, VALID, REMARK, 
+      CREATE_BY, CREATE_DATE, UPDATE_BY, 
+      UPDATE_DATE)
+    values (#{expressNo,jdbcType=VARCHAR}, #{expressUnit,jdbcType=DECIMAL}, #{changeTime,jdbcType=DATE}, 
+      #{changeMsg,jdbcType=VARCHAR}, #{postUser,jdbcType=VARCHAR}, #{postUserPhone,jdbcType=VARCHAR}, 
+      #{expressStatus,jdbcType=DECIMAL}, #{valid,jdbcType=DECIMAL}, #{remark,jdbcType=VARCHAR}, 
+      #{createBy,jdbcType=DECIMAL}, #{createDate,jdbcType=DATE}, #{updateBy,jdbcType=DECIMAL}, 
+      #{updateDate,jdbcType=DATE})
+  </insert>
+  
+</mapper>

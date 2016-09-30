@@ -1,0 +1,12 @@
+/**
+ * 
+ */
+FolController.controller('UserController',['$scope','UserService',function($scope,UserService){
+	$scope.doLogout=function(){
+		UserService.logout('common/logout',function(data){
+			$.messager.alert("退出已成功");
+		},function(response_info){
+			console.log(response_info);
+		});
+	};
+}]);

@@ -1,0 +1,70 @@
+<ul>
+	<li ng-repeat="menu in menuDatas" ng-class="{open:menu.active}">
+		<a href="#" ng-click="submenusClick($event)" ng-if="menu.submenus.length>0" 
+			ng-class="{category_menu:menu.submenus.length>0}">{{menu.name}}</a>
+		<a href="#" ng-if="menu.submenus.length==0" ng-class="{current:menu.active}" 
+			ui-sref="{{menu.id}}">{{menu.name}}</a>
+		<ul ng-if="(menu.submenus.length>0 && menu.active)" style="display: block;">
+			<li ng-repeat="submenu in menu.submenus">
+				<a href="#" ng-class="{current:submenu.active}" ui-sref="{{menu.id+'_'+submenu.id}}">{{submenu.name}}</a>
+			</li>
+		</ul>
+		<ul ng-if="!menu.active">
+			<li ng-repeat="submenu in menu.submenus">
+				<a href="#" ng-class="{current:submenu.active}" ui-sref="{{menu.id+'_'+submenu.id}}">{{submenu.name}}</a>
+			</li>
+		</ul>
+	</li> 
+<!-- 测试Menu -->
+<!-- 	<li ng-class="{open:menu.active}"> -->
+<!-- 		<a href="#">储备金管理</a> -->
+<!-- 		<ul style="display: block;"> -->
+<!-- 			<li> -->
+<!-- 				<a href="#" ui-sref="findReserveAmount">储备金查询</a> -->
+<!-- 				<a href="#" ui-sref="reserveChangeDeatilInquiry">储备金变动明细查询</a> -->
+<!-- 				<a href="#" ui-sref="reserveAmountReconcile">储备金余额对账</a> -->
+<!-- 				<a href="#" ui-sref="reserveMonthDeatil">储备金月度明细查询</a> -->
+<!-- 			</li> -->
+<!-- 		</ul> -->
+<!-- 	</li> -->
+	<!--<li ng-class="{open:menu.active}">
+		<a href="#">奖金管理</a>
+		<ul style="display: block;">
+			<li>
+				<a href="#" ui-sref="bonusDefinition">奖金定义</a>
+				<a href="#" ui-sref="differenceDetail">差异明细</a>
+				<a href="#" ui-sref="reMatching">重新匹配</a>
+				<a href="#" ui-sref="bonusWeight">奖金重处理</a>
+				<a href="#" ui-sref="findBonusIssue">奖金颁发查询</a>
+				<a href="#" ui-sref="findBonusAmount">奖金查询</a>
+				<a href="#" ui-sref="bonusChangeDetailInquiry">奖金变动明细查询</a>
+			</li>
+		</ul>
+	</li>  -->
+<!-- 	<li ng-class="{open:menu.active}"> -->
+<!-- 		<a href="#">对账管理</a> -->
+<!-- 		<ul style="display: block;"> -->
+<!-- 			<li> -->
+<!-- 				<a href="#" ui-sref="customerBilling">客户对账单导入</a> -->
+<!-- 			</li> -->
+<!-- 		</ul> -->
+<!-- 	</li> -->
+	<!--<li ng-class="{open:menu.active}">
+		<a href="#">业务审核</a>
+		<ul style="display: block;">
+			<li>
+				<a href="#" ui-sref="returnDiscountAudit">退货折让单审核</a>
+			</li>
+		</ul>
+	</li>  -->
+<!-- 	<li ng-class="{open:menu.active}"> -->
+<!-- 		<a href="#">系统管理</a> -->
+<!-- 		<ul style="display: block;"> -->
+<!-- 			<li> -->
+<!-- 				<a href="#" ui-sref="systemPoRoMain">系统岗位角色维护</a> -->
+<!-- 				<a href="#" ui-sref="systemRoRiMain">系统角色权限维护</a> -->
+<!-- 				<a href="#" ui-sref="personRole">系统人员角色维护</a> -->
+<!-- 			</li> -->
+<!-- 		</ul> -->
+<!-- 	</li> -->
+</ul>

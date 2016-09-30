@@ -1,0 +1,569 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<mapper namespace="com.sgm.dms.fol.bonus.repository.BonusIssueDao">
+	<!-- 奖金发放上传版本 -->
+	<resultMap id="bonusIssueFIleResult" type="com.sgm.dms.fol.bonus.dto.BonusIssueFileDTO">
+		<id 	property="id" 		    column="ID" 		        javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+		<result property="batchNo" 		column="BATCH_NO" 			javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+		<result property="effectDate" 	column="EFFECT_DATE" 		javaType="java.util.Date"		jdbcType="DATE"/>
+		<result property="matchState" 	column="MATCH_STATE" 	    javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+		<result property="status" 	    column="STATUS" 	        javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+		<result property="bonusType" 	column="BONUS_TYPE" 		javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+		<result property="dealerType" 	column="DEALER_TYPE" 		javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+		<result property="remark" 		column="REMARK" 			javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+		<result property="createBy" 	column="CREATE_BY" 		    javaType="java.lang.Integer"	jdbcType="NUMERIC"/>
+		<result property="createDate" 	column="CREATE_DATE" 		javaType="java.util.Date"		jdbcType="DATE"/>
+		<result property="updateBy" 	column="UPDATE_BY" 		    javaType="java.lang.Integer"	jdbcType="NUMERIC"/>
+		<result property="updateDate" 	column="UPDATE_DATE" 		javaType="java.util.Date"		jdbcType="DATE"/>
+ 		<result property="issueStatus" 	column="ISSUE_STATUS" 		javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+ 		<result property="publishDate" 	column="PUBLISH_DATE" 		javaType="java.util.Date"		jdbcType="DATE"/>
+ 		<result property="filedId" 		column="FILE_ID" 			javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+ 	</resultMap>
+ 	
+ 	
+ 	<!--奖金记录  -->
+ 	<resultMap id="bonusRecordResult" type="com.sgm.dms.fol.bonus.dto.BonusIssueRecordDTO">
+		<id 	property="id" 		    column="ID" 		        javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+		<result property="batchNo" 		column="BATCH_NO" 			javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+		<result property="status" 	    column="STATUS" 	        javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+		<result property="bonusType" 	column="BONUS_TYPE" 		javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+		<result property="remark" 		column="REMARK" 			javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+ 		<result property="amount" 		column="AMOUNT" 			javaType="java.math.BigDecimal" jdbcType="NUMERIC"/>
+ 		<result property="flowNo" 		column="FLOW_NO" 			javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+ 		<result property="sapCode" 		column="SAP_CODE" 			javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+ 		<result property="serv" 		column="SERV" 				javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+ 		<result property="createBy" 	column="CREATE_BY" 		    javaType="java.lang.Integer"	jdbcType="NUMERIC"/>
+		<result property="createDate" 	column="CREATE_DATE" 		javaType="java.util.Date"		jdbcType="DATE"/>
+		<result property="updateBy" 	column="UPDATE_BY" 		    javaType="java.lang.Integer"	jdbcType="NUMERIC"/>
+		<result property="updateDate" 	column="UPDATE_DATE" 		javaType="java.util.Date"		jdbcType="DATE"/>
+		<result property="dealerType" 	column="DEALER_TYPE" 		javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+ 		<result property="issueErrMsgCode" 	column="ISSUE_ERR_MSG_CODE" javaType="java.lang.String" 	jdbcType="VARCHAR"/>
+ 		<result property="executeDate" 	column="EXECUTE_DATE" 		javaType="java.util.Date"		jdbcType="DATE"/>
+ 		<result property="issueStatus" 	column="ISSUE_STATUS" 		javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+ 	</resultMap>
+ 	
+ 	<!-- 检查奖金发放版本是否已经上查传  -->
+ 	<select  id="findBonusIssueFileByBatchNo" resultMap="bonusIssueFIleResult">
+ 		SELECT *  FROM TT_FOL_PT_BONUS_ISSUE_FILE 
+ 			WHERE BATCH_NO=#{param1,jdbcType=VARCHAR}  AND STATUS=1
+ 	</select>
+ 	
+ 	<!-- 检查奖金发放版本是否已经上查传  -->
+ 	<select  id="findBonusIssueFileByBatchNoLock" resultMap="bonusIssueFIleResult">
+ 		SELECT *  FROM TT_FOL_PT_BONUS_ISSUE_FILE 
+ 			WHERE BATCH_NO=#{param1,jdbcType=VARCHAR}  AND STATUS=1
+ 	</select>
+ 	
+	<!-- 查询奖金发放版本上传  审核 和发放列表-->	
+	<select id="findBonusIssueFileByWhs" parameterType="com.sgm.dms.fol.bonus.dto.BonusIssueFileDTO" resultMap="bonusIssueFIleResult">
+		SELECT  N.*   FROM 
+    		(
+				SELECT  T.*,ROWNUM AS RN  FROM 
+				(
+					SELECT C.*,RANK()OVER(PARTITION BY C.DEALER_TYPE ORDER BY C.BATCH_NO ASC) 
+					FROM TT_FOL_PT_BONUS_ISSUE_FILE C 
+					WHERE 1=1 
+					AND C.STATUS=#{status}
+					<if test="dealerType!=null and dealerType>=0">
+						AND C.DEALER_TYPE=#{dealerType}
+					</if>
+					<if test="bonusType!=null and  bonusType>=0">
+						AND C.BONUS_TYPE=#{bonusType}
+					</if>
+					<if test="beginDate!=null and beginDate!=''">
+						<![CDATA[ AND TO_CHAR(C.UPDATE_DATE,'YYYY-MM-DD')>=#{beginDate}]]>
+					</if>
+					<if test="endDate!=null and endDate!=''">
+						<![CDATA[AND TO_CHAR(C.UPDATE_DATE,'YYYY-MM-DD')<=#{endDate}]]>
+					</if>     
+					<if test="batchNo!=null and ! batchNo.trim().equals('')">
+						AND C.BATCH_NO=#{batchNo}
+					</if>
+					<if test="issueStatus!=null and  issueStatus >=0">
+						AND C.ISSUE_STATUS=#{issueStatus}
+					</if>
+					<if test="type!=null and  type==1 ">
+						AND C.MATCH_STATE=4 AND C.ISSUE_STATUS=4
+					</if>
+					<if test="type!=null and  type==2 ">
+						AND C.MATCH_STATE NOT IN(3,4) AND C.ISSUE_STATUS=4
+					</if>
+					<if test="type!=null and  type==3 ">
+						AND C.MATCH_STATE=3 AND C.ISSUE_STATUS=1
+					</if>
+					
+		    	) T 
+		    	WHERE 1=1
+		    	<![CDATA[ AND ROWNUM <=#{endNo} ]]>
+		    	
+	    	) N
+	    
+    	WHERE 1=1 
+    	<![CDATA[ AND N.RN>=#{beginNo}]]>
+		ORDER BY N.BATCH_NO ASC
+	</select>
+	
+	<!-- 查询奖金发放版本总条数 -->
+	<select id="findBonusIssueFileCountByWhs" parameterType="com.sgm.dms.fol.bonus.dto.BonusIssueFileDTO"  resultType="java.lang.Integer">
+		SELECT  count(1)
+			FROM TT_FOL_PT_BONUS_ISSUE_FILE C 
+			WHERE 1=1 
+			AND C.STATUS=#{status}
+			<if test="dealerType!=null and dealerType>=0">
+				AND C.DEALER_TYPE=#{dealerType}
+			</if>
+			<if test="bonusType!=null and  bonusType>=0">
+				AND C.BONUS_TYPE=#{bonusType}
+			</if>
+			<if test="beginDate!=null and ! beginDate.trim().equals('')">
+				<![CDATA[ AND TO_CHAR(C.UPDATE_DATE,'YYYY-MM-DD')>=#{beginDate}]]>
+			</if>
+			<if test="endDate!=null and ! endDate.trim().equals('')">
+				<![CDATA[AND TO_CHAR(C.UPDATE_DATE,'YYYY-MM-DD')<=#{endDate}]]>
+			</if>     
+			<if test="batchNo!=null and ! batchNo.trim().equals('')">
+				AND C.BATCH_NO=#{batchNo}
+			</if>
+			<if test="issueStatus!=null and  issueStatus >=0">
+				AND C.ISSUE_STATUS=#{issueStatus}
+			</if>
+			<if test="type!=null and  type==1 ">
+				AND C.MATCH_STATE=4 AND C.ISSUE_STATUS=4
+			</if>
+			<if test="type!=null and  type==2 ">
+				<![CDATA[AND C.MATCH_STATE NOT IN(3,4) AND C.ISSUE_STATUS=4]]>
+			</if>
+			<if test="type!=null and  type==3 ">
+				AND C.MATCH_STATE=3 AND C.ISSUE_STATUS=1
+			</if>
+	</select>
+	<!-- 奖金重新处理查询(查询发放失败的记录) -->
+	<select id="findBonusIssueAgainExecuteByWhs" parameterType="com.sgm.dms.fol.bonus.dto.BonusIssueRecordDTO" resultMap="bonusRecordResult">
+		SELECT  N.*   FROM 
+    		(
+			SELECT  T.*,ROWNUM AS RN  FROM 
+				(
+				SELECT DISTINCT RE.*,FI.DEALER_TYPE,to_char(RT.EXECUTE_DATE,'yyyy-MM-dd') AS executeDateDisplay,RT.EXECUTE_STATUS,
+				FC.CODE_CN_DESC AS executeMsg,RANK()OVER(PARTITION BY RE.BATCH_NO ORDER BY RE.SAP_CODE ASC)
+				FROM TT_FOL_PT_BONUS_ISSUE_F_RECORD RE  
+				JOIN TT_FOL_PT_BONUS_ISSUE_FILE FI ON RE.BATCH_NO=FI.BATCH_NO AND FI.ISSUE_STATUS=2
+				JOIN TT_FOL_PT_BONUS_ISSUE_RESULT RT ON RT.ISSUE_RECORD_ID=RE.ID 
+				JOIN (SELECT MAX(CREATE_DATE) AS CREATE_DATE,ISSUE_RECORD_ID FROM TT_FOL_PT_BONUS_ISSUE_RESULT GROUP BY ISSUE_RECORD_ID) MAXRT ON MAXRT.CREATE_DATE=RT.CREATE_DATE AND MAXRT.ISSUE_RECORD_ID=RT.ISSUE_RECORD_ID
+<!-- 				(RT.EXECUTE_STATUS=1 AND RE.ISSUE_STATUS=5 ) -->
+				AND ((RT.EXECUTE_STATUS=2 AND RE.ISSUE_STATUS=2) OR RE.ISSUE_STATUS=5) 
+				LEFT JOIN TC_FOL_CODE FC ON FC.CODE=REPLACE(RT.ISSUE_ERR_MSG_CODE,'0','') AND FC.TYPE='1078'
+				WHERE  RE.STATUS=1 AND FI.STATUS=1  AND RE.ISSUE_STATUS!=3
+				<if test="bonusType!=null and  bonusType>=0">
+						AND RE.BONUS_TYPE=#{bonusType}
+				</if>
+				<if test="serv!=null and  serv >=0">
+						AND RE.SERV=#{serv}
+				</if>
+				<if test="batchNo!=null and ! batchNo.trim().equals('')">
+						AND RE.BATCH_NO=#{batchNo}
+				</if>
+				<if test="sapCode!=null and ! sapCode.trim().equals('')">
+						AND RE.SAP_CODE=#{sapCode}
+				</if>
+				<if test="beginDate!=null and beginDate!=''">
+					<![CDATA[AND TO_CHAR(RT.EXECUTE_DATE,'yyyy-MM-dd')>=#{beginDate}]]>
+				</if>
+				<if test="endDate!=null and endDate!=''">
+					<![CDATA[AND TO_CHAR(RT.EXECUTE_DATE,'yyyy-MM-dd')<=#{endDate}]]>
+				</if>
+				) T 
+		     WHERE 1=1
+		     <![CDATA[ AND ROWNUM <=#{endNo} ]]>
+		    	
+	    	) N
+	    
+    	WHERE 1=1 
+    	<![CDATA[ AND N.RN>=#{beginNo}]]>
+		ORDER BY N.BATCH_NO ASC
+	</select>
+	
+	<!-- 奖金重新处理查询总条数(查询发放失败的记录数) -->
+	<select id="findBonusIssueAgainExecuteCountByWhs" parameterType="com.sgm.dms.fol.bonus.dto.BonusIssueRecordDTO" resultType="java.lang.Integer">
+		SELECT COUNT(1) 
+		FROM (
+			SELECT DISTINCT RE.*
+			FROM TT_FOL_PT_BONUS_ISSUE_F_RECORD RE 
+			LEFT JOIN TT_FOL_PT_BONUS_ISSUE_FILE FI	ON RE.BATCH_NO=FI.BATCH_NO AND FI.ISSUE_STATUS=2
+			LEFT JOIN TT_FOL_PT_BONUS_ISSUE_RESULT RT ON RT.ISSUE_RECORD_ID=RE.ID 
+			AND  ( (RT.EXECUTE_STATUS=2 AND   RE.ISSUE_STATUS=2) 
+			OR  (RT.EXECUTE_STATUS=1 AND RE.ISSUE_STATUS=5 ))
+			WHERE 1=1 and RE.STATUS=1 AND FI.STATUS=1
+			 AND RE.ISSUE_STATUS!=3
+			<if test="bonusType!=null and  bonusType>=0">
+				AND RE.BONUS_TYPE=#{bonusType}
+			</if>
+			<if test="serv!=null and  serv >= 0">
+				AND RE.SERV=#{serv}
+			</if>
+			<if test="batchNo!=null and ! batchNo.trim().equals('')">
+				AND RE.BATCH_NO=#{batchNo}
+			</if>
+			<if test="sapCode!=null and ! sapCode.trim().equals('')">
+				AND RE.SAP_CODE=#{sapCode}
+			</if>
+			<if test="beginDate!=null and beginDate!=''">
+				<![CDATA[AND TO_CHAR(RT.EXECUTE_DATE,'yyyy-MM-dd')>=#{beginDate}]]>
+			</if>
+			<if test="endDate!=null and endDate!=''">
+				<![CDATA[AND TO_CHAR(RT.EXECUTE_DATE,'yyyy-MM-dd')<=#{endDate}]]>
+			</if>
+			)
+	</select>
+	<!-- 奖金颁发查询(查询奖金发放成功的文件) -->
+	<select id="findBonusPublishedFileByWhs" parameterType="com.sgm.dms.fol.bonus.dto.BonusIssueFileDTO" resultMap="bonusIssueFIleResult">
+		<if test="endNo!=null and endNo>0">
+		SELECT  N.*   FROM 
+    		(
+			SELECT  T.*,ROWNUM AS RN  FROM 
+				(
+		</if>
+				SELECT  FI.* ,RANK()OVER(PARTITION BY FI.BATCH_NO ORDER BY FI.CREATE_DATE ASC,FI.UPDATE_DATE ASC)
+				FROM TT_FOL_PT_BONUS_ISSUE_FILE FI 
+				WHERE  FI.ISSUE_STATUS=3  AND FI.MATCH_STATE=3
+				
+				<if test="status!=null and status>=0">
+					AND FI.STATUS =#{status}
+				</if>  
+				<if test="batchNo!=null and ! batchNo.trim().equals('')">
+						AND FI.BATCH_NO=#{batchNo}
+				</if>
+				<if test="beginDate!=null and beginDate!=''">
+						<![CDATA[AND TO_CHAR(FI.CREATE_DATE,'YYYY-MM-DD')>=#{beginDate}]]>
+				</if>
+				<if test="endDate!=null and endDate!=''">
+						<![CDATA[AND TO_CHAR(FI.CREATE_DATE,'YYYY-MM-DD')<=#{endDate}]]>
+				</if>
+		<if test="endNo!=null and endNo>0">
+				) T 
+		     WHERE 1=1
+		     
+		     <![CDATA[ AND ROWNUM <=#{endNo} ]]>
+		    	
+	    	) N
+	    
+    	WHERE 1=1 
+    	<![CDATA[ AND N.RN>=#{beginNo}]]>
+    	
+		ORDER BY N.CREATE_DATE ASC
+		</if>
+	</select>
+	
+	<!-- 奖金颁发查询记录总数 -->
+	<select id="findBonusPublishedFileCountByWhs" parameterType="com.sgm.dms.fol.bonus.dto.BonusIssueFileDTO" resultType="java.lang.Integer">
+		
+				SELECT  count(1)
+				FROM TT_FOL_PT_BONUS_ISSUE_FILE FI 
+				WHERE FI.ISSUE_STATUS=3  AND FI.MATCH_STATE=3
+				<if test="status!=null and status>0">
+					AND FI.STATUS =#{status}
+				</if>  
+				<if test="batchNo!=null and ! batchNo.trim().equals('')">
+						AND FI.BATCH_NO=#{batchNo}
+				</if>
+				<if test="beginDate!=null and beginDate!=''">
+						<![CDATA[AND TO_CHAR(FI.CREATE_DATE,'YYYY-MM-DD')>=#{beginDate}]]>
+				</if>
+				<if test="endDate!=null and endDate!=''">
+						<![CDATA[AND TO_CHAR(FI.CREATE_DATE,'YYYY-MM-DD')<=#{endDate}]]>
+				</if>
+				 
+		    
+	</select>
+	
+	<!-- 根据奖金上传批次号查询上传记录 -->
+	<select id="findBonusRecordFileByBatchNo" resultMap="bonusRecordResult">
+			SELECT  * FROM TT_FOL_PT_BONUS_ISSUE_F_RECORD WHERE BATCH_NO=#{param1} 
+			AND STATUS=1
+	</select>
+	
+	<!-- 查询发放文件明细 -->
+	<select id="findBonusPublishFileDetailByBatchNo" resultType="com.sgm.dms.fol.bonus.dto.BonusIssueRecordDTO">
+			SELECT  FR.SAP_CODE AS sapCode,
+			FR.BATCH_NO AS batchNo,
+			FC.CODE_CN_DESC AS servName,
+			DI.DEALER_TYPE_NAME AS dealerTypeName,
+			FR.BONUS_TYPE AS bonusType,
+			FR.AMOUNT AS amount,
+			BIF.PUBLISH_DATE AS publishDateDisplay			
+  			FROM TT_FOL_PT_BONUS_ISSUE_F_RECORD  FR
+  			JOIN TT_FOL_PT_BONUS_ISSUE_FILE BIF ON BIF.BATCH_NO = FR.BATCH_NO
+  			LEFT JOIN TM_FOL_DEALER_INFO DI ON FR.SAP_CODE = DI.SAP_CODE
+  			LEFT JOIN TC_FOL_CODE FC ON FC.CODE=FR.SERV AND TYPE='1011'
+ 	 		WHERE FR.STATUS=1
+  			<if test="param1!=null and param1!=''">
+  				AND FR.BATCH_NO=#{param1}
+  			</if>
+  			<if test="param2!=null and param2!=''">
+  				AND FR.ISSUE_STATUS=#{param2}
+  			</if>
+	</select>
+	
+	<!-- 根据奖金上传批次号查询上传记录 -->
+	<select id="findBonusRecordByBatchNoLock" resultMap="bonusRecordResult">
+			SELECT  * FROM TT_FOL_PT_BONUS_ISSUE_F_RECORD WHERE BATCH_NO=#{param1} AND STATUS=1 for update
+	</select>
+	
+	<!-- 更新文件 -->
+	<update id="updateBonusIssueFileStatusById" parameterType="com.sgm.dms.fol.bonus.dto.BonusIssueFileDTO">
+		UPDATE 
+		TT_FOL_PT_BONUS_ISSUE_FILE
+		SET
+		<if test="status!=null and status>=0">
+			STATUS=#{status},
+		</if> 
+        <if test="matchState!=null and matchState>=0">
+			MATCH_STATE=#{matchState},
+		</if>
+		<if test="issueStatus!=null and issueStatus>=0">
+			ISSUE_STATUS=#{issueStatus},
+		</if>
+		<if test="publishDate!=null">
+			PUBLISH_DATE=#{publishDate},
+		</if>
+		<if test="dealerType!=null and dealerType>=0">
+			DEALER_TYPE=#{dealerType},
+		</if>
+		<if test="bonusType!=null and bonusType>=0">
+			BONUS_TYPE=#{bonusType},
+		</if>
+		<if test="batchNo!=null and ! batchNo.trim().equals('')">
+			BATCH_NO=#{batchNo},
+		</if>
+		<if test="effectDate!=null">
+			EFFECT_DATE=#{effectDate},
+		</if>
+		<if test="filedId!=null and ! filedId.trim().equals('')">
+			FILE_ID=#{filedId},
+		</if>
+		<if test="remark!=null and ! remark.trim().equals('')">
+			REMARK=#{remark},
+		</if>
+        UPDATE_BY=#{updateBy},
+        UPDATE_DATE=SYSDATE
+        WHERE BATCH_NO=#{batchNo}
+	</update>
+	<!-- 作废导入记录(更新文件状态为无效)  -->
+	<update id="updateBonusIssueRecordStatusById" parameterType="com.sgm.dms.fol.bonus.dto.BonusIssueRecordDTO">
+		UPDATE 
+		TT_FOL_PT_BONUS_ISSUE_F_RECORD 
+        SET 
+        <if test="status!=null and status>=0">
+			STATUS=#{status},
+		</if>
+		<if test="remark!=null and ! remark.trim().equals('')">
+			REMARK=#{remark},
+		</if>
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			SAP_CODE=#{sapCode},
+		</if>
+		<if test="flowNo!=null and ! flowNo.trim().equals('')">
+			FLOW_NO=#{flowNo},
+		</if>
+		<if test="createBy!=null and createBy>0">
+			CREATE_BY=#{createBy},
+		</if>
+		<if test="createDate!=null">
+			CREATE_DATE=#{createDate},
+		</if>
+		<if test="amount!=null">
+			AMOUNT=#{amount},
+		</if>
+		<if test="serv!=null and serv >=0">
+			SERV=#{serv},
+		</if>
+		<if test="batchNo!=null and ! batchNo.trim().equals('')">
+			BATCH_NO=#{batchNo},
+		</if>
+		<if test="issueStatus!=null and  issueStatus>=0">
+			ISSUE_STATUS=#{issueStatus},
+		</if>
+		UPDATE_BY=#{updateBy},
+        UPDATE_DATE=#{updateDate}
+        WHERE ID=#{id}
+              <if test="issueStatus==3">
+			    and ISSUE_STATUS != 3
+			   </if>
+        <!-- <if test="flowNo!=null and ! flowNo.trim().equals('')">
+			AND FLOW_NO=#{flowNo}
+		</if> -->
+	</update>
+	
+	<update id="updateBonusIssueRecordStatusByFlowNo" parameterType="com.sgm.dms.fol.bonus.dto.BonusIssueRecordDTO">
+		UPDATE 
+		TT_FOL_PT_BONUS_ISSUE_F_RECORD 
+        SET 
+        <if test="status!=null and status>=0">
+			STATUS=#{status},
+		</if>
+		<if test="remark!=null and ! remark.trim().equals('')">
+			REMARK=#{remark},
+		</if>
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			SAP_CODE=#{sapCode},
+		</if>
+		<if test="flowNo!=null and ! flowNo.trim().equals('')">
+			FLOW_NO=#{flowNo},
+		</if>
+		<if test="createBy!=null and createBy>0">
+			CREATE_BY=#{createBy},
+		</if>
+		<if test="createDate!=null">
+			CREATE_DATE=#{createDate},
+		</if>
+		<if test="amount!=null">
+			AMOUNT=#{amount},
+		</if>
+		<if test="serv!=null and serv >=0">
+			SERV=#{serv},
+		</if>
+		<if test="batchNo!=null and ! batchNo.trim().equals('')">
+			BATCH_NO=#{batchNo},
+		</if>
+		<if test="issueStatus!=null and  issueStatus>=0">
+			ISSUE_STATUS=#{issueStatus},
+		</if>
+		UPDATE_BY=#{updateBy},
+        UPDATE_DATE=#{updateDate}
+        WHERE FLOW_NO=#{flowNo}
+	</update>
+	
+	<!-- 新增文件 -->
+	<insert id="saveBonusIssueFile" parameterType="com.sgm.dms.fol.bonus.dto.BonusIssueFileDTO">
+	 	<selectKey resultType="int" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_FOL_PT_BONUS_ISSUE_FILE_ID.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+	 	INSERT INTO TT_FOL_PT_BONUS_ISSUE_FILE
+		 	(
+		 	ID,
+			BATCH_NO,
+			EFFECT_DATE,
+			MATCH_STATE,
+			STATUS,
+			REMARK,
+			CREATE_BY,
+			CREATE_DATE,
+			UPDATE_BY,
+			UPDATE_DATE,
+			BONUS_TYPE,
+			DEALER_TYPE,
+			PUBLISH_DATE,
+			ISSUE_STATUS,
+			FILE_ID
+			
+		 	)
+		 	VALUES
+		 	(
+		 	#{id},
+		 	#{batchNo,jdbcType=VARCHAR},
+		 	#{effectDate,jdbcType=DATE},
+		 	#{matchState,jdbcType=NUMERIC},
+		 	#{status,jdbcType=NUMERIC},
+		 	#{remark,jdbcType=VARCHAR},
+		 	#{createBy,jdbcType=NUMERIC},
+		 	SYSDATE,
+		 	#{updateBy,jdbcType=NUMERIC},
+		 	SYSDATE,
+		 	#{bonusType,jdbcType=NUMERIC},
+		 	#{dealerType,jdbcType=NUMERIC},
+		 	#{publishDate,jdbcType=DATE},
+		 	#{issueStatus,jdbcType=NUMERIC},
+		 	#{filedId,jdbcType=VARCHAR}
+		 	)
+	</insert>
+	
+	<!-- 新增发放记录 -->
+	<insert id="saveBonusIssueRecord" parameterType="com.sgm.dms.fol.bonus.dto.BonusIssueRecordDTO">
+		<selectKey resultType="int" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_FOL_BONUS_ISSUE_RECORD_ID.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+		INSERT INTO TT_FOL_PT_BONUS_ISSUE_F_RECORD
+		 	(
+		 	ID,
+			SAP_CODE,
+			BONUS_TYPE,
+			BATCH_NO,
+			STATUS,
+			AMOUNT,
+			SERV,
+			REMARK,
+			CREATE_BY,
+			CREATE_DATE,
+			UPDATE_BY,
+			UPDATE_DATE,
+			FLOW_NO,
+			FILE_ID
+		 	)
+		 VALUES
+		 	(
+		 	#{id},
+		 	#{sapCode,jdbcType=VARCHAR},
+		 	#{bonusType,jdbcType=NUMERIC},
+		 	#{batchNo,jdbcType=VARCHAR},
+		 	#{status,jdbcType=NUMERIC},
+		 	#{amount,jdbcType=NUMERIC},
+		 	#{serv,jdbcType=NUMERIC},
+		 	#{remark,jdbcType=VARCHAR},
+		 	#{createBy,jdbcType=NUMERIC},
+		 	#{createDate,jdbcType=DATE},
+		 	#{updateBy,jdbcType=NUMERIC},
+		 	#{updateDate,jdbcType=DATE},
+		 	#{id},
+		 	#{fileId}
+		 	
+		 	)
+	</insert>
+	
+	<!-- 新增发放结果记录 -->
+	<insert id="saveBonusIssueResult" parameterType="com.sgm.dms.fol.bonus.dto.BonusIssueResultDTO">
+		INSERT INTO TT_FOL_PT_BONUS_ISSUE_RESULT
+			(
+			ISSUE_RECORD_ID,
+			ISSUE_ERR_MSG_CODE,
+			EXECUTE_DATE,
+			EXECUTE_STATUS,
+			REMARK,
+			CREATE_BY,
+			CREATE_DATE,
+			UPDATE_BY,
+			UPDATE_DATE	
+			)
+		VALUES
+			(
+			#{issueRecordId,jdbcType=NUMERIC},
+		 	#{issueErrMsgCode,jdbcType=VARCHAR},
+		 	SYSDATE,
+		 	#{executeStatus,jdbcType=NUMERIC},
+		 	#{remark,jdbcType=VARCHAR},
+		 	#{createBy,jdbcType=NUMERIC},
+		 	SYSDATE,
+		 	#{updateBy,jdbcType=NUMERIC},
+		 	SYSDATE
+			)
+	</insert>
+	
+	<!-- 查询最大批次号 -->
+	<select id="getMaxBatchNo" resultType="java.lang.String">
+		SELECT MAX(BATCH_NO)  FROM TT_FOL_PT_BONUS_ISSUE_FILE WHERE SUBSTR(BATCH_NO,0,8)=TO_CHAR(SYSDATE,'YYYYMMDD')
+	</select>
+	
+	<!-- 根据ts查询记录 -->
+	<select id="findBonusIssueRecordByFlowNo" resultType="com.sgm.dms.fol.bonus.dto.BonusIssueRecordDTO">
+		 SELECT *  FROM TT_FOL_PT_BONUS_ISSUE_F_RECORD 
+		 	WHERE FLOW_NO=#{param1}
+				
+	</select>
+	
+	<!-- 根据批次号查询发放未成功的记录 -->
+	<select id="findBonusRecordIssueIsNotSucByBatchNo" resultType="com.sgm.dms.fol.bonus.dto.BonusIssueRecordDTO">
+		SELECT *  FROM TT_FOL_PT_BONUS_ISSUE_F_RECORD 
+		 	WHERE BATCH_NO=#{param1}
+		 	<![CDATA[ AND ISSUE_STATUS!=3 ]]>
+	</select>
+</mapper>

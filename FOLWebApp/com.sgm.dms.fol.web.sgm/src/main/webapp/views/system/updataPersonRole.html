@@ -1,0 +1,75 @@
+<div ae-panel title="系统人员角色维护"  style="width: 99%; padding: 20px;" ng-controller="updataPersonRoleCtrl">
+	<div class="row-fluid">
+		<div control-group style="display: inline-block; margin-top: 10px;margin-left: 20px; width: 30%;">
+			<ae-label name="帐号名*" width="80px"></ae-label>
+			<input ae-textbox id="userAccount" textbox-value="userAccount" style="width:50%"/>
+		</div>
+		<div style="display: inline-block; margin-top: 10px; width: 30%;">
+			<ae-label name="用户类型*" width="80px"></ae-label>
+			<input ae-combobox id="userType" style="width:50%" editable="false" disabled data-options="valueField:'code',textField:'codeCnDesc'"/>
+		</div>
+		<div style="display: inline-block; margin-top: 10px; width: 30%;">
+			<ae-label name="姓名*" width="80px"></ae-label>
+			<input ae-textbox id="userName" textbox-value="userName" style="width:50%"/>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<div style="display: inline-block; margin-top: 10px;margin-left: 20px; width: 30%;">
+			<ae-label name="性别*" width="80px">性别：</ae-label>
+			<input ae-combobox id="gender" style="width:50%" editable="false" data-options="valueField:'code',textField:'codeCnDesc'"/>
+		</div>
+		<div style="display: inline-block; margin-top: 10px; width: 30%;">
+			<ae-label name="手机" width="80px"></ae-label>
+			<input ae-textbox id="handPhone" textbox-value="handPhone" style="width:50%"/>
+		</div>
+		<div style="display: inline-block; margin-top: 10px; width: 30%;">
+			<ae-label name="生日" width="80px"></ae-label>
+			<input ae-datebox id="birthday" editable="false"
+					datebox-value="userBirthday"
+					ng-model="userBirthday"
+					style="width: 140px; height: 26px"/>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<div style="display: inline-block; margin-top: 10px; margin-left: 20px; width: 30%;">
+			<ae-label name="地址" width="80px"></ae-label>
+			<input ae-textbox id="addr" textbox-value="addr" style="width:50%"/>
+		</div>
+		<div style="display: inline-block; margin-top: 10px; width: 30%;">
+			<ae-label name="邮编" width="80px"></ae-label>
+			<input ae-textbox id="zipCode" textbox-value="zipCode" style="width:50%"/>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<div style="display: inline-block; margin-top: 10px;margin-left: 20px; width: 30%;">
+			<ae-label name="电子邮件" width="80px"></ae-label>
+			<input  id="email" ae-textbox textbox-value="email" style="width:50%"/>
+		</div>
+		<div style="display: inline-block; margin-top: 10px; width: 30%;">
+			<ae-label name="启用状态*" width="80px"></ae-label>
+			<input ae-combobox id="userStatus" style="width:50%" editable="false"  data-options="valueField:'code',textField:'codeCnDesc'"/>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<div align="center">
+			<a ae-Linkbutton class="c6" href="javascript:;" on-click-function="userUpdate">提交</a>
+			<a ae-Linkbutton href="javascript:;" ui-sref="personRole">返回</a>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<div style="display: inline-block; margin-top: 10px; width: 100%;">
+			<table id="grid_positions" ae-datagrid 
+			    title="岗位列表"
+				style="width: 99%; height: 340px"
+				data-options="rownumbers:true,pagination:false,url:'',method:'post',toolbar:'#toolbar_dealerLms'">
+				<thead>
+					<tr>
+						<th data-options="field:'checkbox',checkbox:true,width:60">选择</th>
+						<th data-options="field:'positionName',width:400">名称 </th>
+						<th data-options="field:'dpPositionCode',width:400">岗位代码 </th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</div>

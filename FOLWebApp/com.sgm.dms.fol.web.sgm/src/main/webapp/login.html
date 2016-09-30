@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport"
+			content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" type="text/css"
+			href="vendor/jquery-easyui/themes/default/easyui.css">
+		<link rel="stylesheet" type="text/css"
+			href="vendor/jquery-easyui/themes/icon.css">
+		<link rel="stylesheet" type="text/css"
+			href="vendor/jquery-easyui/themes/color.css">
+		<link rel="stylesheet" type="text/css" href="common/styles/page.css">
+		<title>登入页面</title>
+		<script type="text/javascript">
+			function doLogin() {
+				var pathName = document.location.pathname;
+				var index = pathName.substr(1).indexOf("/");
+				var contextPath = pathName.substr(0, index + 1);
+				document.loginform.action = contextPath + "/common/oldlogin";
+				//document.loginform.action = contextPath + "/reserve/reserveList";
+			}
+		</script>
+	</head>
+	<body class="login">
+		<div class="page">
+			<section>
+				<div class="content">
+					<!--Login-->
+					<div class="loginstyle">
+						<div class="login_logo">
+<!-- 							<img width="173" height="60" alt="logo"
+								src="common/images/login_logo.png" />
+ -->
+ 						</div>
+						<div class="sgm_dp_titletext01">
+<!-- 
+							<img width="260" height="40" alt="User"
+								src="common/images/login_text.png" />
+ -->
+						</div>
+						<div class="cl"></div>
+						<div class="login_leftbox"></div>
+						<div class="login_bg001"></div>
+						<div class="login_midbox">
+							<div class="login_midtopbox">
+	
+								<div class="sgm_dp_login_content">
+									<form name="loginform" action="" method="post" novalidate>
+										<div class="login_infobox">
+<!-- 											
+											<div class="redtext">${message}</div>
+ 											<input type="hidden" name="uuid" value="${uuid}"/>
+-->
+											<div class="sgm_username">
+												<input id="username" name="userAccount" class="easyui-textbox"
+													style="width: 220px; height: 28px; padding-left: 4px;"
+													data-options="prompt:'用户名',iconCls:'icon-man',iconWidth:38"
+													type="text" />
+											</div>
+											<div class="sgm_password">
+												<input id="password" class="easyui-textbox" type="password"
+													style="width: 220px; height: 28px; padding-left: 4px;"
+													data-options="prompt:'密码',iconCls:'icon-lock',iconWidth:38"
+													name="password" type="password" />
+											</div>
+<!-- 
+											<div class="sgm_captcha">
+												<input id="captcha" name="captcha" class="easyui-textbox"
+													style="height: 28px; padding-left: 4px;"
+													data-options="prompt:'验证码'" type="text" /> <img
+													src="captcha.jpg?uuid=${uuid}" width="111" height="27" />
+											</div>
+ -->
+										</div>
+										<div class="cl"></div>
+										<div class="login_msg">
+											<span class="graybluetext"><a href="forgetPassword"
+												target="_blank">忘记密码？</a></span>
+										</div>
+									<div class="login_bt01">
+											<input class="easyui-linkbutton c8" type="submit" onclick="doLogin();"
+												value="登&nbsp录" />
+										</div>
+										<input type="hidden" id="aType" name="aType" value="sgm">
+									</form>
+								</div>
+							</div>
+							<div class="login_midbottombox"></div>
+						</div>
+						<div class="login_bg003"></div>
+						<div class="login_rightbox"></div>
+						<div class="cl"></div>
+					</div>
+				</div>
+			</section>
+			<!-- Footer -->
+		</div>
+		<script type="text/javascript" src="vendor/jquery/jquery-1.8.3.js"></script>
+		<script type="text/javascript"
+			src="vendor/jquery-easyui/jquery.easyui.min.js"></script>
+		<script type="text/javascript"
+			src="vendor/jquery-easyui/easyloader.js"></script>
+		<script type="text/javascript"
+			src="vendor/jquery-easyui/locale/easyui-lang-zh_CN.js"></script>
+	</body>
+</html>

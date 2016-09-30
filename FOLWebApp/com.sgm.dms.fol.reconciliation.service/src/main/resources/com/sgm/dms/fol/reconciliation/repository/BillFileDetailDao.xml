@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<mapper namespace="com.sgm.dms.fol.reconciliation.repository.BillFileDetailDao">
+
+	<!-- 添加小文件记录 -->
+	<insert id="addBillFileDetail"
+		parameterType="com.sgm.dms.fol.reconciliation.dto.BillFileDetailDTO">
+		<!-- <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="parentId"> 
+			SELECT SEQ_TT_FOL_BILL_FILE_ID.CURRVAL AS parentId from DUAL </selectKey> -->
+
+		INSERT INTO TT_FOL_BILL_FILE_DETAIL
+		(ID,
+		TITLE,
+		DEALER_CODE,
+		CREATE_DATE,
+		CREATE_BY,
+		UPDATE_BY,
+		UPDATE_DATE,
+		DEALER_NAME,
+		STATUS,
+		BILL_DATE,
+		EFFECTIVE_DATE,
+		FILE_URL,
+		FILED_ID
+		)
+		VALUES
+		(SEQ_TT_FOL_BILL_FILE_DETAIL_ID.NEXTVAL,
+		#{title},
+		#{dealerCode},
+		#{createDate},
+		#{createBy},
+		#{updateBy},
+		#{updateDate},
+		#{dealerName},
+		#{status},
+		#{dbBillDate},
+		#{effectiveDate},
+		#{fileUrl,jdbcType=VARCHAR},
+		#{filedId}
+		)
+	</insert>
+
+	<!-- 对账单明细 查询   -->
+	<select id="findDealerBillFileDetailByFdAndPage"
+		resultType="com.sgm.dms.fol.reconciliation.dto.BillFileDetailDTO">
+		SELECT T2.* FROM
+		(
+			SELECT fd.ID,
+			fd.FILED_ID filedId,
+			fd.TITLE,
+			fd.DEALER_CODE AS dealerCode,
+			fd.PARENT_ID,
+			fd.CREATE_DATE,
+			fd.CREATE_BY,
+			fd.UPDATE_BY,
+			fd.UPDATE_DATE,
+			fd.dealerName,
+			fd.STATUS,
+			fd.BILL_DATE AS dbBillDate,
+			fd.EFFECTIVE_DATE AS effectiveDate,
+			fd.IS_CONFIRM AS isConfirm,
+			ROWNUM rn
+		FROM (
+			SELECT T.*,DI.DEALER_NAME dealerName 
+			FROM TT_FOL_BILL_FILE_DETAIL T
+			JOIN TM_FOL_DEALER_INFO DI ON T.DEALER_CODE=DI.SAP_CODE
+			WHERE T.IS_DEL=0
+		<if test="dealerCode!=null and ! dealerCode.trim().equals('')">
+			AND T.DEALER_CODE=#{dealerCode}
+		</if>
+		<if test="dealerName!=null and ! dealerName.trim().equals('')">
+			AND DI.DEALER_NAME like '%'||#{dealerName}||'%'
+		</if>
+		<if test="dbBillDate!=null and  dbBillDate!=''">
+			AND TO_CHAR(T.BILL_DATE,'YYYY-MM')=TO_CHAR(#{dbBillDate},'YYYY-MM')
+		</if>
+		<!-- <if test="status!=null and  status>=0">
+			AND t.STATUS=#{status}
+		</if> -->
+		ORDER BY T.CREATE_DATE DESC, T.ID DESC
+		) fd
+		WHERE 1=1
+		<if test="endNo!=null and  endNo>0">
+				<![CDATA[ AND ROWNUM <=#{endNo} ]]>
+		</if>
+
+		) T2
+		WHERE 1=1
+		<if test="endNo!=null and  endNo>0">
+				<![CDATA[ AND rn >=#{beginNo} ]]>
+		</if>
+
+
+	</select>
+	
+	<!--查询 已发布的对账 单 小 文件  -->
+	<select id="findDealerBillFileDetailForBillFilePublishedByFdAndPage"
+		resultType="com.sgm.dms.fol.reconciliation.dto.BillFileDetailDTO">
+		SELECT T2.* FROM
+		(
+		SELECT fd.ID,
+		fd.TITLE,
+		fd.DEALER_CODE AS dealerCode,
+		fd.PARENT_ID,
+		fd.CREATE_DATE,
+		fd.CREATE_BY,
+		fd.UPDATE_BY,
+		fd.UPDATE_DATE,
+		fd.DEALER_NAME AS dealerName,
+		fd.STATUS,
+		fd.BILL_DATE AS dbBillDate,
+		fd.EFFECTIVE_DATE AS effectiveDate,
+		fd.IS_CONFIRM AS isConfirm,
+		fd.FILED_ID AS filedId,
+		ROWNUM rn
+		FROM (
+		SELECT
+		t.*
+		FROM TT_FOL_BILL_FILE_DETAIL t,TT_FOL_BILL_FILE f
+		WHERE  TO_CHAR(T.BILL_DATE,'YYYY-MM')=TO_CHAR(f.BILL_DATE,'YYYY-MM')
+		AND f.STATUS=1 AND t.IS_DEL=0
+		<if test="dealerCode!=null and ! dealerCode.trim().equals('')">
+			AND t.DEALER_CODE=#{dealerCode}
+		</if>
+		<if test="dealerName!=null and ! dealerName.trim().equals('')">
+			AND t.DEALER_NAME like '%'||#{dealerName}||'%'
+		</if>
+		<if test="dbBillDate!=null and  dbBillDate!=''">
+			AND TO_CHAR(t.BILL_DATE,'YYYY-MM')=TO_CHAR(#{dbBillDate},'YYYY-MM')
+		</if>
+		<!-- <if test="status!=null and  status>=0">
+			AND t.STATUS=#{status}
+		</if> -->
+		ORDER BY t.CREATE_DATE DESC
+		) fd
+		WHERE 1=1
+		<if test="endNo!=null and  endNo>0">
+				<![CDATA[ AND ROWNUM <=#{endNo} ]]>
+		</if>
+
+		) T2
+		WHERE 1=1
+		<if test="endNo!=null and  endNo>0">
+				<![CDATA[ AND rn >=#{beginNo} ]]>
+		</if>
+
+
+	</select>
+
+	<!-- 对账单签收 -->
+	<update id="updateBillFileStatusById"
+		parameterType="com.sgm.dms.fol.reconciliation.dto.BillFileDetailDTO">
+		UPDATE
+		TT_FOL_BILL_FILE_DETAIL
+		SET STATUS=#{status},
+		IS_DEL=#{isDel},
+		UPDATE_BY=#{updateBy},
+		UPDATE_DATE=#{updateDate}
+		WHERE ID=#{id}
+	</update>
+	
+	<!-- 根据 账单日期 和有效标识 查询小文件  -->
+	<select id="findBillFileDetailByBillDateAndIsDel" resultType="com.sgm.dms.fol.reconciliation.dto.BillFileDetailDTO">
+		SELECT 
+			ID,
+			TITLE,
+			DEALER_CODE AS dealerCode,
+			PARENT_ID,
+			CREATE_DATE,
+			CREATE_BY,
+			UPDATE_BY,
+			UPDATE_DATE,
+			DEALER_NAME AS dealerName,
+			STATUS,
+			BILL_DATE AS dbBillDate,
+			EFFECTIVE_DATE AS effectiveDate
+		FROM TT_FOL_BILL_FILE_DETAIL
+		WHERE IS_DEL=0
+		 AND TO_CHAR(BILL_DATE,'YYYY-MM')=TO_CHAR(#{param1},'YYYY-MM')
+		
+	</select>
+	
+	<!-- 查看文件是否已确认 -->
+	<select id="findBillFileByIdAndIsDel" resultType="com.sgm.dms.fol.reconciliation.dto.BillFileDetailDTO">
+		SELECT 
+			ID,
+			TITLE,
+			DEALER_CODE AS dealerCode,
+			PARENT_ID,
+			CREATE_DATE,
+			CREATE_BY,
+			UPDATE_BY,
+			UPDATE_DATE,
+			DEALER_NAME AS dealerName,
+			STATUS,
+			BILL_DATE AS dbBillDate,
+			EFFECTIVE_DATE AS effectiveDate
+		FROM TT_FOL_BILL_FILE_DETAIL
+		WHERE IS_DEL=1 AND STATUS=1
+		AND ID=#{param1}
+	</select>
+	<!-- 确认文件签收 -->
+	<update id="updateBillFileIsConfirmById" parameterType="com.sgm.dms.fol.reconciliation.dto.BillFileDetailDTO">
+		UPDATE
+			TT_FOL_BILL_FILE_DETAIL
+			SET IS_CONFIRM=#{isConfirm},
+			UPDATE_BY=#{updateBy},
+			UPDATE_DATE=#{updateDate}
+		WHERE ID=#{id}
+	</update>
+</mapper>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<mapper namespace="com.sgm.dms.fol.bankTicket.repository.InterestRateHisDao">
+
+ 	 <select id="findInterestRateHis" resultType="com.sgm.dms.fol.bankTicket.domain.InterestRateHisPo">
+	 		SELECT 	ID AS id,
+					ANNUAL_INTEREST_RATE AS annualInterestRate,
+					DISCOUNT_RATE AS discountRate,
+					ADDED_TAX_RATE AS addedTaxRate,
+					STATUS AS status,
+					REMARK AS remark,
+					CREATE_BY AS createBy,
+					CREATE_DATE AS createDate,
+					UPDATE_BY AS updateBy,
+					UPDATE_DATE AS updateDate 
+			FROM TT_FOL_INTEREST_RATE_HIS
+			WHERE ROWNUM=1 and STATUS=1
+			ORDER BY ID DESC
+ 	 </select>
+ 	 <!-- 查询当前年化利率 -->
+ 	 <select id="getInterestRateCurrent" resultType="com.sgm.dms.fol.bankTicket.dto.TicketInterestRateDTO">
+	 	SELECT CUR.* FROM
+    	(
+      		SELECT  HIS.ID AS id,
+					100*HIS.ANNUAL_INTEREST_RATE AS currentInterestRate,
+					100*(SELECT IR.ANNUAL_INTEREST_RATE FROM TT_FOL_INTEREST_RATE_HIS IR WHERE IR.AUDIT_STATUS = 2 AND IR.STATUS=1) AS unAuditRateCur,
+					100*HIS.DISCOUNT_RATE AS discountRate,
+					100*HIS.ADDED_TAX_RATE AS addedTaxRate,
+          		 	TC.CODE_CN_DESC AS auditStatusName,
+					HIS.STATUS AS status,
+					HIS.REMARK AS remark,
+					HIS.CREATE_BY AS createBy,
+					HIS.CREATE_DATE AS createDate,
+					HIS.UPDATE_BY AS updateBy,
+					HIS.UPDATE_DATE AS updateDate, 
+					HIS.AUDIT_MSG AS auditMsg,
+					HIS.AUDIT_STATUS AS auditStatus,
+					TO_CHAR(HIS.AUDIT_DATE,'SYYYY-MM-DD HH24:MI:SS') AS auditDate		
+			FROM TT_FOL_INTEREST_RATE_HIS HIS
+          	LEFT JOIN TC_FOL_CODE TC ON TC.CODE=HIS.AUDIT_STATUS  AND TC.TYPE_NAME='银票审核状态' AND TC.STATUS=10011001
+     		WHERE  HIS.STATUS=1 AND HIS.AUDIT_STATUS=7
+      		ORDER BY ID DESC
+     		 ) CUR
+    		WHERE ROWNUM = 1
+ 	</select>
+ 	 <!-- 查询历史年化利率 -->
+ 	 <select id="getInterestRateHis" resultType="com.sgm.dms.fol.bankTicket.dto.TicketInterestRateDTO">
+ 	 	<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+	 		SELECT 	HIS.ID AS id,
+					100*HIS.ANNUAL_INTEREST_RATE AS historyInterestRate,
+					100*HIS.DISCOUNT_RATE AS discountRate,
+					100*HIS.ADDED_TAX_RATE AS addedTaxRate,
+          			TC.CODE_CN_DESC AS auditStatusName ,					
+					HIS.STATUS AS status,
+					HIS.REMARK AS remark,
+					HIS.CREATE_BY AS createBy,
+					HIS.CREATE_DATE AS createDate,
+					HIS.UPDATE_BY AS updateBy,
+					HIS.UPDATE_DATE AS updateDate,
+					HIS.AUDIT_STATUS AS auditStatus,
+					HIS.AUDIT_MSG AS auditMsg,
+					TO_CHAR(HIS.AUDIT_DATE,'SYYYY-MM-DD HH24:MI:SS') AS auditDate		
+			FROM TT_FOL_INTEREST_RATE_HIS HIS
+    		LEFT JOIN TC_FOL_CODE TC ON TC.CODE=HIS.AUDIT_STATUS AND TC.TYPE_NAME='银票审核状态' AND TC.STATUS=10011001
+			WHERE HIS.STATUS=1
+			ORDER BY HIS.ID DESC
+			<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+ 	</select>
+ 	 	 <!-- 查询当前年化利率（审核） -->
+ 	 <select id="getInterestRateAudit" resultType="com.sgm.dms.fol.bankTicket.dto.TicketInterestRateDTO">
+	 		SELECT 	HIS.ID AS id,
+					100*HIS.ANNUAL_INTEREST_RATE AS annualInterestRate,
+					100*HIS.DISCOUNT_RATE AS discountRate,
+					100*HIS.ADDED_TAX_RATE AS addedTaxRate,
+          			TC.CODE_CN_DESC AS auditStatusName,					
+					HIS.STATUS AS status,
+					HIS.REMARK AS remark,
+					HIS.CREATE_BY AS createBy,
+					HIS.CREATE_DATE AS createDate,
+					HIS.UPDATE_BY AS updateBy,
+					HIS.UPDATE_DATE AS updateDate, 
+					HIS.AUDIT_STATUS AS auditStatus,
+					HIS.AUDIT_MSG AS auditMsg,
+					TO_CHAR(HIS.AUDIT_DATE,'SYYYY-MM-DD HH24:MI:SS') AS auditDate					
+			FROM TT_FOL_INTEREST_RATE_HIS HIS
+    		LEFT JOIN TC_FOL_CODE TC ON TC.CODE=HIS.AUDIT_STATUS AND TC.TYPE_NAME='银票审核状态' AND TC.STATUS=10011001
+			WHERE HIS.AUDIT_STATUS=2 AND HIS.STATUS=1
+ 	</select>
+ 	<!-- 年化利率审核 -->
+	<update id="updateInterestRateCurAudit" parameterType="com.sgm.dms.fol.bankTicket.dto.TicketInterestRateDTO">
+	 	    UPDATE TT_FOL_INTEREST_RATE_HIS 
+			SET 
+				UPDATE_BY=#{updateBy},
+		   		UPDATE_DATE = SYSDATE,
+		   		AUDIT_DATE = SYSDATE,
+		   		<if test="remark!=null and remark>=0">
+			    REMARK=#{remark,jdbcType=VARCHAR}, 
+				</if>
+		   		STATUS=1,
+		   		AUDIT_STATUS = #{auditStatus,jdbcType=VARCHAR},
+		   		AUDIT_MSG = #{auditMsg,jdbcType=VARCHAR}
+			WHERE AUDIT_STATUS = 2
+	</update>
+	<!-- 票据贴息年化利率维护修改(新增记录)-->
+	<insert id="updateInterestRateHis" parameterType="com.sgm.dms.fol.bankTicket.dto.TicketInterestRateDTO">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_TT_FOL_INTEREST_RATE_HIS.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+			iNSERT INTO TT_FOL_INTEREST_RATE_HIS 
+				(
+				ID,
+				ANNUAL_INTEREST_RATE,
+				DISCOUNT_RATE,
+				ADDED_TAX_RATE,
+				STATUS,
+				REMARK,
+				CREATE_BY,
+				CREATE_DATE,
+				UPDATE_BY,
+				UPDATE_DATE,
+				AUDIT_STATUS,
+				AUDIT_MSG,
+				AUDIT_DATE
+				)
+			VALUES
+				(
+				#{id},
+				#{annualInterestRate,jdbcType=VARCHAR},
+				#{discountRate,jdbcType=VARCHAR},
+				#{addedTaxRate,jdbcType=VARCHAR},
+				1,
+				#{remark,jdbcType=VARCHAR},
+				#{createBy},
+				sysdate,
+				#{updateBy},
+				sysdate,
+				2,
+				#{auditMsg,jdbcType=VARCHAR},
+				sysdate
+				)
+	 </insert>
+</mapper>

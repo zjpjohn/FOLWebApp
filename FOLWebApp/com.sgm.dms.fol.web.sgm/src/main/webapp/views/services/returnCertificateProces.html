@@ -1,0 +1,114 @@
+<div ae-panel title="退货证明处理">
+	<div class="row-fluid">
+		<div class="span4">
+			<div control-group  padding-top="20px" padding-left="32px" padding-right="20px" padding-bottom="5px">
+				<ae-label name="客户代码"></ae-label>
+				<ae-label name="1"></ae-label>
+			</div>
+		</div>
+		<div class="span4">
+			<div control-group  padding-top="20px" padding-left="55px" padding-right="20px" padding-bottom="5px">
+				<ae-label name="客户名称"></ae-label>
+				<ae-label name="2"></ae-label>
+		</div>
+		</div>
+		<div class="span4" > 
+			<div control-group  padding-top="20px" padding-left="20px" padding-right="20px" padding-bottom="5px">
+				<ae-label name="折让单单号"></ae-label>
+				<ae-label name="3"></ae-label>
+			</div>
+		</div>
+		
+	</div>
+	<div class="row-fluid">
+		<div class="span4">
+			<div control-group padding-left="30px" padding-top="0px">
+				<ae-label name="快递单号"></ae-label>
+				<ae-label name="4"></ae-label>
+			</div>
+		</div>
+		<div class="span4">
+			<div control-group padding-left="0px" padding-top="0px">
+				<ae-label name="专用红票通知单号"></ae-label>
+				<ae-label name="5"></ae-label>
+			</div>
+		</div>
+		<div class="span4">
+			<div control-group padding-left="62px" padding-top="0px">
+				<ae-label name="电话"></ae-label>
+				<ae-label name="6"></ae-label>
+			</div>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<div class="span4">
+			<div control-group padding-left="30px" padding-top="0px">
+				<ae-label name="银行账户"></ae-label>
+				<ae-label name="7"></ae-label>
+			</div>
+		</div>
+		<div class="span4">
+			<div control-group padding-left="57px" padding-top="0px">
+				<ae-label name="邮寄日期"></ae-label>
+				<ae-label name="8"></ae-label>
+			</div>
+		</div>
+		<div class="span4">
+			<div control-group padding-left="62px" padding-top="0px">
+				<ae-label name="备注"></ae-label>
+				<ae-label name="9"></ae-label>
+			</div>
+		</div>
+	</div>
+	<div class="row-fluid" ng-show="true">
+		<div class="span12">
+			<table ae-Datagrid style="width:100%" title="退货证明信息">
+				<thead>
+					<tr>
+						<th data-options="field:'no',align:'center'" width="10%"><strong>序号</strong></th>
+						<th data-options="field:'dealerCode',align:'center'" width="10%"><strong >退货证明单号</strong></th>
+						<th data-options="field:'dealerName',align:'center'" width="8%"><strong>处理状态</strong></th>
+						<th data-options="field:'dealerType',align:'center'" width="8%"><strong>申请日期</strong></th>
+						<th data-options="field:'reserveType',align:'center'" width="10%"><strong>退货金额（含税）</strong></th>
+						<th data-options="field:'totalAmount',align:'center'" width="8%"><strong>上报人</strong></th>
+						<th data-options="field:'frozenAmount',align:'center'" width="10%"><strong>上报日期</strong></th>
+						<th data-options="field:'a',align:'center'" width="10%"><strong>上报日期</strong></th>
+						<th data-options="field:'b',align:'center'" width="10%"><strong>受理日期</strong></th>
+						<th data-options="field:'c',align:'center'" width="18%"><strong>受理意见</strong></th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>	
+	
+	<div class="row-fluid" ng-show="true">
+		<div class="span12">
+			<table ae-Datagrid style="width:100%" title="发票信息">
+				<thead>
+					<tr>
+						<th data-options="field:'no',align:'center'" width="10%"><strong>序号</strong></th>
+						<th data-options="field:'dealerCode',align:'center'" width="20%"><strong >退货证明单号</strong></th>
+						<th data-options="field:'dealerName',align:'center'" width="20%"><strong>退货发票号</strong></th>
+						<th data-options="field:'dealerType',align:'center'" width="20%"><strong>金额</strong></th>
+						<th data-options="field:'reserveType',align:'center'" width="30%"><strong>销售发票号</strong></th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+	
+	<div class="row-fluid">
+		<div class="span6">
+			<div control-group padding-left="62px" padding-top="0px">
+				<ae-label name="SGM受理意见"></ae-label>
+				<input ae-textbox/>
+			</div>
+		</div>
+		<div align="center" class="span6">
+			<a ae-Linkbutton href="javascript:;" on-click-function="find">同意</a>
+			<a ae-Linkbutton href="javascript:;" on-click-function="find">拒绝</a>
+			<a ae-Linkbutton href="#" ui-sref="returnDiscountAudit">返回</a>
+		</div>
+	</div>
+		
+</div>

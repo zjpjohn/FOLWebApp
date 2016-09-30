@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 储备金Mapper -->
+<mapper namespace="com.sgm.dms.fol.reserve.repository.ReserveDao">
+
+ 	<!-- 查询储备金信息根据(渠道类型 储备金类型  客户代码 )配件-->
+ 	<select id="getReserveAmountByWhere"  resultType="com.sgm.dms.fol.reserve.dto.ReserveDTO">	
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+		SELECT 
+		    RE.SAP_CODE AS sapCode,
+			DE.DEALER_NAME AS dealerName,
+			DE.DEALER_TYPE_NAME AS dealerTypeName,
+			RE.TOTAL_AMOUNT AS totalAmount,
+			RE.FROZEN_AMOUNT AS frozenAmount,
+			(RE.TOTAL_AMOUNT-RE.FROZEN_AMOUNT) AS availAmount
+		FROM TT_FOL_PT_RESERVE_AMOUNT RE
+		JOIN TM_FOL_DEALER_INFO DE ON RE.SAP_CODE = DE.SAP_CODE
+		<!-- 渠道类型 -->
+		<if test="dealerType!=null and dealerType>=0">
+			 AND DE.DEALER_TYPE=#{dealerType} 
+		</if>
+		WHERE 1=1
+				
+		<!-- 客户代码 -->
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			<![CDATA[ AND DE.SAP_CODE =#{sapCode} ]]>
+		</if>
+		
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+	</select>
+ 	
+	<!-- 查询储备金变动明细根据(渠道类型 储备金类型  客户代码 变动类型 变动日期)配件 -->
+ 	<select id="getReserveChangeDeatilByWhere" resultType="com.sgm.dms.fol.reserve.dto.ReserveDTO">	
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+		SELECT  RE.SAP_CODE AS sapCode,
+				DE.DEALER_NAME AS dealerName,
+				to_char(CGR.LAST_CHANGE_TIME,'YYYY-MM-DD HH24:MI:SS') AS changeTime,
+				CGR.BEFORE_CHANGE_AMOUNT AS beforeAvailAmount,
+				CGR.AFTER_CHANGE_AMOUNT AS afterChangeAmount,
+				ST.REFER_TYPE_NAME AS referType,
+				CGR.REFER_CODE AS referCode,
+				CGR.CHANGE_AMOUNT AS changeAmount,
+				CGR.REMARK AS remark			
+		FROM TT_FOL_PT_RESERVE_AMOUNT RE
+		JOIN TT_SGM_PT_RESERVE_CG_RECORD CGR ON RE.SAP_CODE=CGR.SAP_CODE AND CGR.IS_ROLLBACK=0
+		JOIN TM_FOL_DEALER_INFO DE ON RE.SAP_CODE = DE.SAP_CODE 
+		JOIN TM_FOL_SOA_TRANSITION_TYPE ST ON ST.REFER_TYPE_ID=CGR.REFER_TYPE
+		<!-- 渠道类型 -->
+		<if test="dealerType!=null and dealerType>=0">
+			 AND DE.DEALER_TYPE=#{dealerType} 
+		</if>
+		<!-- 变动类型 -->
+		<if test="businessCode!=null and businessCode>0">
+			 AND ST.BUSINESS_CODE=#{businessCode} 
+		</if>
+
+		WHERE 1=1 AND NOT EXISTS (
+		  SELECT 1
+		  FROM TT_SGM_PT_RESERVE_CG_RECORD TEMP_CGR
+		  WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR.TS_ID=TEMP_CGR.TS_ID
+		  <!-- 客户代码 -->
+			<if test="sapCode!=null and ! sapCode.trim().equals('')">
+				<![CDATA[ AND TEMP_CGR.SAP_CODE =#{sapCode} ]]>
+			</if> 
+		)
+				
+		<!-- 客户代码 -->
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			<![CDATA[ AND DE.SAP_CODE =#{sapCode} ]]>
+		</if> 
+		<!-- 变动开始日期 -->
+		<if test="startTime!=null and ! startTime.trim().equals('')">
+			<![CDATA[ AND to_char(CGR.LAST_CHANGE_TIME,'yyyy-MM-dd') >=#{startTime} ]]>
+		</if>
+		<!-- 变动结束日期 -->
+		<if test="endTime!=null and ! endTime.trim().equals('')">
+			<![CDATA[ AND to_char(CGR.LAST_CHANGE_TIME,'yyyy-MM-dd') <=#{endTime} ]]>
+		</if>
+		
+		ORDER BY CGR.ID DESC
+		
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+	</select>
+	
+	<!-- 查询储备金冻结变动明细根据(渠道类型 储备金类型  客户代码 变动类型 变动日期)配件-->
+ 	<select id="getReserveFreezeDeatilByWhere" resultType="com.sgm.dms.fol.reserve.dto.ReserveDTO">	
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+		SELECT  RE.SAP_CODE AS sapCode,
+				DE.DEALER_NAME AS dealerName,
+				to_char(FZR.LAST_FREEZE_TIME,'YYYY-MM-DD HH24:MI:SS') AS changeTime, 
+				FZR.BEFORE_FREEZE_AMOUNT AS beforeAvailAmount,
+				FZR.AFTER_FREEZE_AMOUNT AS afterChangeAmount,
+				ST.REFER_TYPE_NAME AS referType,
+				FZR.REFER_CODE AS referCode,
+				FZR.FREEZE_AMOUNT AS changeAmount,
+				FZR.REMARK AS remark	
+		FROM TT_FOL_PT_RESERVE_AMOUNT RE
+		JOIN TT_SGM_PT_RESERVE_FZ_RECORD FZR ON RE.SAP_CODE=FZR.SAP_CODE AND FZR.IS_ROLLBACK=0
+		JOIN TM_FOL_DEALER_INFO DE ON RE.SAP_CODE = DE.SAP_CODE 
+		JOIN TM_FOL_SOA_TRANSITION_TYPE ST ON ST.REFER_TYPE_ID=FZR.REFER_TYPE 
+		<!-- 渠道类型 -->
+		<if test="dealerType!=null and dealerType>=0">
+			 AND DE.DEALER_TYPE=#{dealerType} 
+		</if>
+		<!-- 变动类型 -->
+		<if test="businessCode!=null and businessCode>0">
+			 AND ST.BUSINESS_CODE=#{businessCode} 
+		</if>
+
+
+		WHERE 1=1 AND NOT EXISTS (
+		  SELECT 1
+		  FROM TT_SGM_PT_RESERVE_FZ_RECORD TEMP_FZR
+		  WHERE TEMP_FZR.IS_ROLLBACK=1 AND FZR.TS_ID=TEMP_FZR.TS_ID
+		  <!-- 客户代码 -->
+		  <if test="sapCode!=null and ! sapCode.trim().equals('')">
+			  <![CDATA[ AND TEMP_FZR.SAP_CODE =#{sapCode} ]]>
+		  </if> 
+		)
+				
+		<!-- 客户代码 -->
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			<![CDATA[ AND DE.SAP_CODE =#{sapCode} ]]>
+		</if> 
+		<!-- 变动开始日期 -->
+		<if test="startTime!=null and ! startTime.trim().equals('')">
+			<![CDATA[ AND to_char(FZR.LAST_FREEZE_TIME,'yyyy-MM-dd') >=#{startTime} ]]>
+		</if>
+		<!-- 变动结束日期 -->
+		<if test="endTime!=null and ! endTime.trim().equals('')">
+			<![CDATA[ AND to_char(FZR.LAST_FREEZE_TIME,'yyyy-MM-dd') <=#{endTime} ]]>
+		</if> 
+		ORDER BY FZR.ID DESC
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+	</select>
+	
+	<!-- 查询储备金月度明细根据(渠道类型 储备金类型  客户代码 客户名称 年月)配件-->
+	<select id="getReserveMonthDeatil" resultType="com.sgm.dms.fol.reserve.dto.ReserveDTO">
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+		
+		SELECT  RE.SAP_CODE AS sapCode,
+				DE.DEALER_NAME AS dealerName,
+				to_char(CGR.LAST_CHANGE_TIME,'yyyy-MM-dd') AS changeTime,
+				CGR.BEFORE_CHANGE_AMOUNT AS beforeAvailAmount,
+        		CGR.CHANGE_AMOUNT AS changeAmount,
+				ST.REFER_TYPE_NAME AS referType,
+				CGR.REFER_CODE AS referCode,
+				CGR.REMARK AS remark				
+		FROM TT_FOL_PT_RESERVE_AMOUNT RE
+		JOIN TT_SGM_PT_RESERVE_CG_RECORD CGR ON RE.SAP_CODE=CGR.SAP_CODE AND CGR.IS_ROLLBACK=0
+		JOIN TM_FOL_DEALER_INFO DE ON RE.SAP_CODE = DE.SAP_CODE 
+		JOIN TM_FOL_SOA_TRANSITION_TYPE ST ON ST.REFER_TYPE_ID=CGR.REFER_TYPE
+		<!-- 渠道类型 -->
+		<if test="dealerType!=null and dealerType>=0">
+			 AND DE.DEALER_TYPE=#{dealerType} 
+		</if>
+		
+		WHERE 1=1 AND NOT EXISTS (
+		  SELECT 1
+		  FROM TT_SGM_PT_RESERVE_CG_RECORD TEMP_CGR
+		  WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR.TS_ID=TEMP_CGR.TS_ID
+		  <!-- 客户代码 -->
+		  <if test="sapCode!=null and ! sapCode.trim().equals('')">
+			  <![CDATA[ AND TEMP_CGR.SAP_CODE =#{sapCode} ]]>
+		  </if> 
+		)
+		<!-- 客户代码 -->
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			<![CDATA[ AND DE.SAP_CODE =#{sapCode} ]]>
+		</if>
+		<!-- 客户名称 -->
+		<if test="dealerName!=null and ! dealerName.trim().equals('')">
+			<![CDATA[ AND DE.DEALER_NAME =#{dealerName} ]]>
+		</if>
+		<!-- 查询年月 -->
+		<if test="changeTime!=null and ! changeTime.trim().equals('')">
+			<![CDATA[ AND to_char(CGR.LAST_CHANGE_TIME,'yyyy-MM') =#{changeTime} ]]>
+		</if>
+		
+		ORDER BY CGR.ID DESC
+		
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+	</select>
+	
+	<!-- 根据时间查询储备金余额（不包括冻结） -->
+	<select id="getReserveAmountByDateTime" resultType="com.sgm.dms.fol.reserve.dto.ReserveDTO">
+		SELECT temp.reserveAmount AS reserveAmount,
+		(CASE WHEN temp.sapCode IS NOT NULL THEN temp.sapCode ELSE RA.SAP_CODE END) AS sapCode,
+		(CASE WHEN temp.dealerName IS NOT NULL THEN temp.dealerName ELSE DI.DEALER_NAME END) AS dealerName,
+		RA.DEALER_TYPE AS dealerType
+		FROM TT_FOL_PT_RESERVE_AMOUNT RA
+		JOIN TM_FOL_DEALER_INFO DI ON RA.SAP_CODE=DI.SAP_CODE
+		LEFT JOIN (SELECT nvl(CGR.AFTER_CHANGE_AMOUNT,0) AS reserveAmount,
+			CGR.SAP_CODE AS sapCode,
+			DI.DEALER_NAME AS dealerName
+			FROM TT_FOL_PT_RESERVE_AMOUNT RA
+			JOIN TT_SGM_PT_RESERVE_CG_RECORD CGR ON RA.SAP_CODE=CGR.SAP_CODE
+			JOIN (SELECT 
+			max(CGR2.ID) CGID,
+			CGR2.SAP_CODE
+			FROM TT_SGM_PT_RESERVE_CG_RECORD CGR2
+			JOIN TT_FOL_SOA_TRANSITION ST ON CGR2.TS_ID=ST.TS_ID
+<!-- 			STT.REFER_TYPE_ID in (30020000,30020800) AND  -->
+			<![CDATA[ JOIN TM_FOL_SOA_TRANSITION_TYPE STT ON ST.REFER_TYPE=STT.REFER_TYPE_ID AND ((
+			 CGR2.POSTING_DATE IS NOT NULL  AND SUBSTR(CGR2.POSTING_DATE,0,6)=REPLACE(#{changeTime},'-','') ) OR (TO_CHAR(CGR2.LAST_CHANGE_TIME,'yyyy-MM')=#{changeTime} AND CGR2.POSTING_DATE IS NULL))]]>
+			WHERE CGR2.IS_ROLLBACK=0 AND NOT EXISTS (
+			  SELECT 1
+			  FROM TT_SGM_PT_RESERVE_CG_RECORD TEMP_CGR
+			  WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR2.TS_ID=TEMP_CGR.TS_ID AND TEMP_CGR.SAP_CODE=CGR2.SAP_CODE
+			)
+			GROUP BY CGR2.SAP_CODE) MAXCGR ON  CGR.SAP_CODE=MAXCGR.SAP_CODE AND MAXCGR.CGID=CGR.ID
+			JOIN TM_FOL_DEALER_INFO DI ON CGR.SAP_CODE=DI.SAP_CODE AND CGR.IS_ROLLBACK=0
+			
+			<!-- 渠道类型 -->
+			<if test="dealerType!=null and dealerType>=0">
+				 AND DI.DEALER_TYPE=#{dealerType} 
+			</if>
+			
+			<if test="startSapCode!=null and ! startSapCode.trim().equals('')">
+				<![CDATA[ AND MAXCGR.SAP_CODE>=#{startSapCode} ]]>
+			</if>
+			<if test="endSapCode!=null and ! endSapCode.trim().equals('')">
+				<![CDATA[ AND MAXCGR.SAP_CODE<=#{endSapCode} ]]>
+			</if>) temp on RA.sap_Code=temp.sapCode
+			
+			WHERE 1=1 
+			<!-- 渠道类型 -->
+			<if test="dealerType!=null and dealerType>=0">
+				 AND DI.DEALER_TYPE=#{dealerType} 
+			</if>
+			
+			<if test="startSapCode!=null and ! startSapCode.trim().equals('')">
+				<![CDATA[ AND RA.SAP_CODE>=#{startSapCode} ]]>
+			</if>
+			<if test="endSapCode!=null and ! endSapCode.trim().equals('')">
+				<![CDATA[ AND RA.SAP_CODE<=#{endSapCode} ]]>
+			</if>
+		ORDER BY SAPCODE		
+	</select>
+	
+	<!-- 根据时间查询当前月之前最新储备金余额（不包括冻结） -->
+<!-- 	<select id="getReserveAmountAccumulateByDateTime" resultType="com.sgm.dms.fol.reserve.dto.ReserveDTO"> -->
+<!-- 		SELECT temp.reserveAmount AS reserveAmount, -->
+<!-- 		(CASE WHEN temp.sapCode IS NOT NULL THEN temp.sapCode ELSE RA.SAP_CODE END) AS sapCode, -->
+<!-- 		(CASE WHEN temp.dealerName IS NOT NULL THEN temp.dealerName ELSE DI.DEALER_NAME END) AS dealerName, -->
+<!-- 		RA.DEALER_TYPE AS dealerType -->
+<!-- 		FROM TT_FOL_PT_RESERVE_AMOUNT RA -->
+<!-- 		JOIN TM_FOL_DEALER_INFO DI ON RA.SAP_CODE=DI.SAP_CODE -->
+<!-- 		LEFT JOIN (SELECT nvl(CGR.AFTER_CHANGE_AMOUNT,0) AS reserveAmount, -->
+<!-- 			CGR.SAP_CODE AS sapCode, -->
+<!-- 			DI.DEALER_NAME AS dealerName -->
+<!-- 			FROM TT_FOL_PT_RESERVE_AMOUNT RA -->
+<!-- 			JOIN TT_SGM_PT_RESERVE_CG_RECORD CGR ON RA.SAP_CODE=CGR.SAP_CODE -->
+<!-- 			JOIN (SELECT  -->
+<!-- 			max(CGR2.ID) CGID, -->
+<!-- 			CGR2.SAP_CODE -->
+<!-- 			FROM TT_SGM_PT_RESERVE_CG_RECORD CGR2 -->
+<!-- 			JOIN TT_FOL_SOA_TRANSITION ST ON CGR2.TS_ID=ST.TS_ID -->
+<!-- 			STT.REFER_TYPE_ID in (30020000,30020800) AND  -->
+<!-- 			<![CDATA[ JOIN TM_FOL_SOA_TRANSITION_TYPE STT ON ST.REFER_TYPE=STT.REFER_TYPE_ID AND (( -->
+<!-- 			CGR2.POSTING_DATE IS NOT NULL  AND  SUBSTR(CGR2.POSTING_DATE,0,6)<=REPLACE(#{changeTime},'-','') ) OR (TO_CHAR(CGR2.LAST_CHANGE_TIME,'yyyy-MM')<=#{changeTime}) AND CGR2.POSTING_DATE IS NULL)]]> -->
+<!-- 			WHERE CGR2.IS_ROLLBACK=0 AND NOT EXISTS ( -->
+<!-- 			  SELECT 1 -->
+<!-- 			  FROM TT_SGM_PT_RESERVE_CG_RECORD TEMP_CGR -->
+<!-- 			  WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR2.TS_ID=TEMP_CGR.TS_ID AND TEMP_CGR.SAP_CODE=CGR2.SAP_CODE -->
+<!-- 			) -->
+<!-- 			GROUP BY CGR2.SAP_CODE) MAXCGR ON  CGR.SAP_CODE=MAXCGR.SAP_CODE AND MAXCGR.CGID=CGR.ID -->
+<!-- 			JOIN TM_FOL_DEALER_INFO DI ON CGR.SAP_CODE=DI.SAP_CODE AND CGR.IS_ROLLBACK=0 -->
+			
+			<!-- 渠道类型 -->
+<!-- 			<if test="dealerType!=null and dealerType>=0"> -->
+<!-- 				 AND DI.DEALER_TYPE=#{dealerType}  -->
+<!-- 			</if> -->
+			
+<!-- 			<if test="startSapCode!=null and ! startSapCode.trim().equals('')"> -->
+<!-- 				<![CDATA[ AND MAXCGR.SAP_CODE>=#{startSapCode} ]]> -->
+<!-- 			</if> -->
+<!-- 			<if test="endSapCode!=null and ! endSapCode.trim().equals('')"> -->
+<!-- 				<![CDATA[ AND MAXCGR.SAP_CODE<=#{endSapCode} ]]> -->
+<!-- 			</if>) temp on RA.sap_Code=temp.sapCode -->
+			
+<!-- 			WHERE 1=1  -->
+<!-- 			<if test="startSapCode!=null and ! startSapCode.trim().equals('')"> -->
+<!-- 				<![CDATA[ AND RA.SAP_CODE>=#{startSapCode} ]]> -->
+<!-- 			</if> -->
+<!-- 			<if test="endSapCode!=null and ! endSapCode.trim().equals('')"> -->
+<!-- 				<![CDATA[ AND RA.SAP_CODE<=#{endSapCode} ]]> -->
+<!-- 			</if> -->
+<!-- 		ORDER BY SAPCODE		 -->
+<!-- 	</select> -->
+	
+	<!-- 根据时间查询当前月之前最新储备金余额（不包括冻结） -->
+	<select id="getReserveAmountAccumulateByDateTime" resultType="com.sgm.dms.fol.reserve.dto.ReserveDTO">
+		SELECT 
+			RA.TOTAL_AMOUNT-nvl(CGR1.reserveChangeAddAmount,0)+ABS(nvl(CGR2.reserveChangeSubtractAmount,0)) AS reserveAmount,
+			DI.sap_code AS sapCode,
+			DI.DEALER_NAME AS dealerName,
+			RA.DEALER_TYPE AS dealerType
+		FROM TM_FOL_DEALER_INFO DI
+		JOIN TT_FOL_PT_RESERVE_AMOUNT RA ON DI.SAP_CODE=RA.SAP_CODE
+		LEFT JOIN (SELECT sum(CGR.CHANGE_AMOUNT) reserveChangeAddAmount,CGR.sap_code,DI.DEALER_NAME
+		FROM TT_SGM_PT_RESERVE_CG_RECORD CGR
+		JOIN TM_FOL_DEALER_INFO DI ON CGR.SAP_CODE=DI.SAP_CODE
+		JOIN TT_FOL_SOA_TRANSITION ST ON CGR.TS_ID=ST.TS_ID
+		JOIN TM_FOL_SOA_TRANSITION_TYPE STT ON ST.REFER_TYPE=STT.REFER_TYPE_ID 
+			AND STT.REFER_TYPE_ID in (30020800,30000000,50000000,30021400) 
+			AND (CGR.POSTING_DATE IS NOT NULL AND SUBSTR(CGR.POSTING_DATE,0,6)>REPLACE(#{changeTime},'-','') 
+			OR (TO_CHAR(CGR.LAST_CHANGE_TIME,'yyyy-MM')>#{changeTime} AND CGR.POSTING_DATE IS NULL))
+		WHERE substr(CGR.CHANGE_AMOUNT,0,1)!='-' AND CGR.IS_ROLLBACK=0 AND NOT EXISTS (
+		  SELECT 1
+		  FROM TT_SGM_PT_RESERVE_CG_RECORD TEMP_CGR
+		  WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR.TS_ID=TEMP_CGR.TS_ID AND TEMP_CGR.SAP_CODE=CGR.SAP_CODE
+		)
+		group by CGR.sap_code,DI.DEALER_NAME) CGR1 ON CGR1.SAP_CODE=DI.SAP_CODE
+		LEFT JOIN (SELECT sum(CGR.CHANGE_AMOUNT) reserveChangeSubtractAmount,CGR.sap_code,DI.DEALER_NAME
+		FROM TT_SGM_PT_RESERVE_CG_RECORD CGR
+		JOIN TM_FOL_DEALER_INFO DI ON CGR.SAP_CODE=DI.SAP_CODE
+		JOIN TT_FOL_SOA_TRANSITION ST ON CGR.TS_ID=ST.TS_ID
+		JOIN TM_FOL_SOA_TRANSITION_TYPE STT ON ST.REFER_TYPE=STT.REFER_TYPE_ID 
+			AND STT.REFER_TYPE_ID in (30020000,30000100,30000101,50000001,30021200) 
+			AND (CGR.POSTING_DATE IS NOT NULL AND SUBSTR(CGR.POSTING_DATE,0,6)>REPLACE(#{changeTime},'-','') 
+			OR (TO_CHAR(CGR.LAST_CHANGE_TIME,'yyyy-MM')>#{changeTime} AND CGR.POSTING_DATE IS NULL))
+		WHERE substr(CGR.CHANGE_AMOUNT,0,1)='-' AND CGR.IS_ROLLBACK=0 AND NOT EXISTS (
+		  SELECT 1
+		  FROM TT_SGM_PT_RESERVE_CG_RECORD TEMP_CGR
+		  WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR.TS_ID=TEMP_CGR.TS_ID AND TEMP_CGR.SAP_CODE=CGR.SAP_CODE
+		)
+		group by CGR.sap_code,DI.DEALER_NAME) CGR2 ON DI.SAP_CODE=CGR2.sap_code
+		
+
+		
+<!-- 		<if test="startSapCode!=null and ! startSapCode.trim().equals('')"> -->
+<!-- 			<![CDATA[ AND MAXCGR.SAP_CODE>=#{startSapCode} ]]> -->
+<!-- 		</if> -->
+<!-- 		<if test="endSapCode!=null and ! endSapCode.trim().equals('')"> -->
+<!-- 			<![CDATA[ AND MAXCGR.SAP_CODE<=#{endSapCode} ]]> -->
+<!-- 		</if>) temp on RA.sap_Code=temp.sapCode -->
+		
+		<where>
+			<if test="dealerType!=null and dealerType>=0"> 
+				  DI.DEALER_TYPE=#{dealerType} 
+			</if>
+			<if test="startSapCode!=null and ! startSapCode.trim().equals('')">
+			<![CDATA[AND RA.SAP_CODE>=#{startSapCode} ]]>
+			</if>
+			<if test="endSapCode!=null and ! endSapCode.trim().equals('')">
+				<![CDATA[ AND RA.SAP_CODE<=#{endSapCode} ]]>
+			</if>	
+		</where>
+		
+		ORDER BY SAPCODE		
+	</select>
+	
+	<!-- 根据时间查询储备金增加和减少（不包括冻结） -->
+	<select id="getReserveChangeAmountByDateTime" resultType="com.sgm.dms.fol.reserve.dto.ReserveDTO">
+		SELECT nvl(CGR1.reserveChangeAddAmount,0) AS reserveChangeAddAmount,
+		nvl(CGR2.reserveChangeSubtractAmount,0) AS reserveChangeSubtractAmount,
+		DI.sap_code AS sapCode,
+		DI.DEALER_NAME AS dealerName
+		FROM TM_FOL_DEALER_INFO DI
+		LEFT JOIN (SELECT sum(CGR.CHANGE_AMOUNT) reserveChangeAddAmount,CGR.sap_code,DI.DEALER_NAME
+		FROM TT_SGM_PT_RESERVE_CG_RECORD CGR
+		JOIN TM_FOL_DEALER_INFO DI ON CGR.SAP_CODE=DI.SAP_CODE
+		JOIN TT_FOL_SOA_TRANSITION ST ON CGR.TS_ID=ST.TS_ID
+		JOIN TM_FOL_SOA_TRANSITION_TYPE STT ON ST.REFER_TYPE=STT.REFER_TYPE_ID 
+			AND STT.REFER_TYPE_ID in (30020800,30000000,50000000,30021400)
+			AND (CGR.POSTING_DATE IS NOT NULL AND SUBSTR(CGR.POSTING_DATE,0,6)=REPLACE(#{changeTime},'-','') 
+			OR (TO_CHAR(CGR.LAST_CHANGE_TIME,'yyyy-MM')=#{changeTime} AND CGR.POSTING_DATE IS NULL))
+		WHERE substr(CGR.CHANGE_AMOUNT,0,1)!='-' AND CGR.IS_ROLLBACK=0 AND NOT EXISTS (
+		  SELECT 1
+		  FROM TT_SGM_PT_RESERVE_CG_RECORD TEMP_CGR
+		  WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR.TS_ID=TEMP_CGR.TS_ID AND TEMP_CGR.SAP_CODE=CGR.SAP_CODE
+		)
+		group by CGR.sap_code,DI.DEALER_NAME) CGR1 ON CGR1.SAP_CODE=DI.SAP_CODE
+		LEFT JOIN (SELECT sum(CGR.CHANGE_AMOUNT) reserveChangeSubtractAmount,CGR.sap_code,DI.DEALER_NAME
+		FROM TT_SGM_PT_RESERVE_CG_RECORD CGR
+		JOIN TM_FOL_DEALER_INFO DI ON CGR.SAP_CODE=DI.SAP_CODE
+		JOIN TT_FOL_SOA_TRANSITION ST ON CGR.TS_ID=ST.TS_ID
+		JOIN TM_FOL_SOA_TRANSITION_TYPE STT ON ST.REFER_TYPE=STT.REFER_TYPE_ID 
+			AND STT.REFER_TYPE_ID in (30020000,30000100,30000101,50000001,30021200) 
+			AND (CGR.POSTING_DATE IS NOT NULL AND SUBSTR(CGR.POSTING_DATE,0,6)=REPLACE(#{changeTime},'-','') 
+			OR (TO_CHAR(CGR.LAST_CHANGE_TIME,'yyyy-MM')=#{changeTime} AND CGR.POSTING_DATE IS NULL))
+		WHERE substr(CGR.CHANGE_AMOUNT,0,1)='-' AND CGR.IS_ROLLBACK=0 AND NOT EXISTS (
+		  SELECT 1
+		  FROM TT_SGM_PT_RESERVE_CG_RECORD TEMP_CGR
+		  WHERE TEMP_CGR.IS_ROLLBACK=1 AND CGR.TS_ID=TEMP_CGR.TS_ID AND TEMP_CGR.SAP_CODE=CGR.SAP_CODE
+		)
+		group by CGR.sap_code,DI.DEALER_NAME) CGR2 ON DI.SAP_CODE=CGR2.sap_code
+		
+		<!-- 渠道类型 -->
+		<if test="dealerType!=null and dealerType>=0">
+			 AND DI.DEALER_TYPE=#{dealerType} 
+		</if>
+		
+		<where>
+			<if test="startSapCode!=null and ! startSapCode.trim().equals('')">
+				<![CDATA[ DI.SAP_CODE>=#{startSapCode} ]]>
+			</if>
+			<if test="endSapCode!=null and ! endSapCode.trim().equals('')">
+				<![CDATA[ AND DI.SAP_CODE<=#{endSapCode} ]]>
+			</if>
+		</where>
+		order by DI.SAP_CODE
+	</select>
+
+	<!-- 根据时间查询储备金月度余额（SAP储备金信息） -->
+	<select id="getMonthReserveAmountByDateTime" resultType="com.sgm.dms.fol.reserve.dto.ReserveDTO">
+		SELECT nvl(PMR.SAP_RESERVE_AMOUNT,0) AS sapReserveAmount,
+			nvl(PMR.SAP_BONUS_AMOUNT,0) AS sapBonusAmount,     
+			PMR.SAP_CODE AS sapCode
+		FROM TT_FOL_PT_MONTH_AMOUNT PMR    
+		WHERE PMR.CHANGE_MONTH=#{month,jdbcType=VARCHAR} and PMR.CHANGE_YEAR=#{year,jdbcType=VARCHAR}                     
+		
+		
+		<!-- 渠道类型 -->
+		<if test="dealerType!=null and dealerType>=0">
+			 AND PMR.DEALER_TYPE=#{dealerType} 
+		</if>
+		
+		<if test="startSapCode!=null and ! startSapCode.trim().equals('')">
+			<![CDATA[ AND PMR.SAP_CODE>=#{startSapCode} ]]>
+		</if>
+		<if test="endSapCode!=null and ! endSapCode.trim().equals('')">
+			<![CDATA[ AND PMR.SAP_CODE<=#{endSapCode} ]]>
+		</if>
+	</select>
+	
+	<!-- 查询储备金信息根据(客户代码 )配件-->
+ 	<select id="findReserveRecordBySapCode"  resultType="com.sgm.dms.fol.reserve.dto.ReserveDTO">	
+		SELECT 
+		    RE.SAP_CODE AS sapCode,
+			DI.DEALER_NAME AS dealerName,
+			RE.TOTAL_AMOUNT AS totalAmount,
+			RE.FROZEN_AMOUNT AS frozenAmount,
+			(RE.TOTAL_AMOUNT-RE.FROZEN_AMOUNT) AS availAmount
+		FROM TT_FOL_PT_RESERVE_AMOUNT RE
+		JOIN TM_FOL_DEALER_INFO DI ON RE.SAP_CODE=DI.SAP_CODE
+		WHERE 1=1	
+		<!-- 客户代码 -->
+		<if test="sapCode!=null and sapCode!=''">
+			<![CDATA[ AND RE.SAP_CODE =#{sapCode} ]]>
+		</if>
+	</select>
+	
+	<!-- 查出所有有效的储备金RECORD-->
+ 	<select id="findReserveRecord" resultType="com.sgm.dms.fol.reserve.dto.ReserveDTO" parameterType="com.sgm.dms.fol.common.api.domain.DealerInfoDTO">	
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+		SELECT 
+		    RE.SAP_CODE AS sapCode,
+			DI.DEALER_NAME AS dealerName,
+			RE.TOTAL_AMOUNT AS totalAmount,
+			RE.FROZEN_AMOUNT AS frozenAmount,
+			(RE.TOTAL_AMOUNT-RE.FROZEN_AMOUNT) AS availAmount
+		FROM TT_FOL_PT_RESERVE_AMOUNT RE
+		JOIN TM_FOL_DEALER_INFO DI ON RE.SAP_CODE=DI.SAP_CODE
+		WHERE 1=1	
+		<!-- 客户代码 -->
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			<![CDATA[ AND RE.SAP_CODE =#{sapCode} ]]>
+		</if>
+		ORDER BY RE.SAP_CODE
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+		
+	</select>
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sgm.dms.fol.common.service.repository.ExceptionHandingDao">
+
+ 	<insert id="addAmountExceptionHanding" parameterType="com.sgm.dms.fol.common.service.domains.ExceptionHandingPo">
+ 		<selectKey resultType="Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_AMOUNT_EX_HANDING_ID.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+ 		INSERT INTO TT_FOL_PT_AMOUNT_EX_HANDING(
+ 			ID,
+			TS_ID,
+			SAP_CODE,
+			DEALER_NAME,
+			AMOUNT,
+			DISPOSE_NO,
+			DISPOSE_DESC,
+			DISPOSE_USER,
+			REFER_TYPE,
+			REFER_CODE,
+			STATUS，
+			REMARK,
+			CREATE_BY,
+			CREATE_DATE,
+			UPDATE_BY,
+			UPDATE_DATE
+			) VALUES(
+			#{id},
+ 			#{tsId},
+			#{sapCode},
+			(SELECT DEALER_NAME FROM TM_FOL_DEALER_INFO WHERE SAP_CODE=#{sapCode}),
+			#{amount},
+			#{disposeNo},
+			#{disposeDesc},
+			#{disposeUser},
+			#{referType},
+			#{referCode},
+			1，
+			#{remark,jdbcType=VARCHAR},
+			#{createBy},
+			SYSDATE,
+			#{updateBy},
+			SYSDATE
+ 		)
+ 	</insert>
+ 	
+ 	<select id="getCurrentTsId" resultType="java.lang.Long">
+ 		SELECT SEQ_AMOUNT_EX_HANDING_TS_ID.NEXTVAL FROM DUAL
+ 	</select>
+</mapper>

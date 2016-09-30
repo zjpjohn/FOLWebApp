@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<mapper namespace="com.sgm.dms.fol.bankTicket.repository.BankTicketInterestDao">
+	<!-- 用户银票贴息信息 -->
+	<resultMap id="bankTicketInterestRecord" type="com.sgm.dms.fol.bankTicket.dto.BankTicketInterestDTO">
+		<id 	property="id" 		        column="EVENT_ID"          javaType="java.lang.Long" 	    jdbcType="NUMERIC"/>
+		<result property="acceptanceNumber" column="ACCEPTANCE_NUMBER" javaType="java.lang.String" 	    jdbcType="VARCHAR"/>
+		<result property="referenceCode" 	column="REFERENCE_CODE"	   javaType="java.lang.String" 	    jdbcType="VARCHAR"/>
+		<result property="dealerName" 	    column="DEALER_NAME"	   javaType="java.lang.String" 	    jdbcType="VARCHAR"/>
+		<result property="corpCode" 	    column="CORP_CODE"	   	   javaType="java.lang.String" 	    jdbcType="VARCHAR"/>
+		<result property="sapCode" 	      	column="SAP_CODE"		   javaType="java.lang.String" 	    jdbcType="VARCHAR"/>
+		<result property="amount" 			column="AMOUNT"   		   javaType="java.math.BigDecimal" 	jdbcType="NUMERIC"/>
+		<result property="bankId" 	  		column="BANK_ID"	 	   javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="bankName"   		column="BANK_CH_NAME"	   javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="issueDate" 	    column="ISSUE_DATE"	       javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="expirationDate" 	column="EXPIRATION_DATE"   javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="bankMismatch"     column="BANK_MISMATCH"     javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="status" 	        column="STATUS"		       javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="folResult" 	    column="FOL_RESULT"		   javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="saicResult" 	    column="SAIC_RESULT"	   javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="errorMsg" 	    column="ERROR_MSG"		   javaType="java.lang.String"		jdbcType="VARCHAR"/>
+ 	    <result property="valid" 	        column="VALID"             javaType="java.lang.Integer"	    jdbcType="NUMERIC"/>
+ 	    <result property="remark" 		    column="REMARK"            javaType="java.lang.String"	    jdbcType="VARCHAR"/>
+		<result property="signInDate" 	    column="SIGN_IN_DATE"      javaType="java.lang.String"		jdbcType="VARCHAR"/>
+ 	
+	</resultMap>
+	
+	<!-- 根据条件查询票据贴息信息 -->
+	<select id="findBankTicketInterestList" resultMap="bankTicketInterestRecord" parameterType="com.sgm.dms.fol.bankTicket.dto.BankTicketInterestDTO">
+		SELECT  N.*   FROM (
+	 			SELECT  T.*,ROWNUM AS RN FROM 
+		 			(SELECT BTA.*,FDI.DEALER_NAME AS dealerName,BI.BANK_CH_NAME
+						FROM TT_FOL_PT_BANK_TI_AMOUNT BTA
+						LEFT JOIN TM_FOL_DEALER_INFO FDI ON BTA.SAP_CODE=FDI.SAP_CODE
+						LEFT JOIN TT_FOL_BANK_INFO BI ON UPPER(BI.BANK_ABBR)=UPPER(BTA.BANK_ID) AND BI.STATUS=1
+						WHERE BTA.VALID=1
+						
+						<if test="bankId!=null and bankId!='-1'">
+							AND BTA.BANK_ID=#{bankId}
+						</if>
+						<if test="sapCode!=null and sapCode!=''">
+							AND BTA.SAP_CODE=#{sapCode}
+						</if>
+						<if test="acceptanceNumber!=null and acceptanceNumber>0">
+							AND BTA.ACCEPTANCE_NUMBER=#{acceptanceNumber}
+						</if>
+						<if test="startIssueDate!=null and startIssueDate!=''">
+							<![CDATA[AND BTA.ISSUE_DATE>=#{startIssueDate}]]>
+						</if>
+						<if test="endIssueDate!=null and endIssueDate!=''">
+							<![CDATA[AND BTA.ISSUE_DATE<=#{endIssueDate}]]>
+						</if>
+						<if test="documentNumberExists!=null and documentNumberExists==0">
+							AND BTA.DOCUMENT_NUMBER IS NULL
+						</if>
+						<if test="documentNumberExists!=null and documentNumberExists==1">
+							AND BTA.DOCUMENT_NUMBER IS NOT NULL
+						</if>
+						) T 
+			     <![CDATA[ WHERE ROWNUM <=#{endNo} ]]>	
+		    ) N
+    	<![CDATA[ WHERE N.RN>#{beginNo}]]>
+	</select>
+	
+	<select id="findBankTicketInterestCount" resultType="java.lang.Integer" parameterType="com.sgm.dms.fol.bankTicket.dto.BankTicketInterestDTO">
+		SELECT count(1)
+			FROM TT_FOL_PT_BANK_TI_AMOUNT BTA
+			WHERE BTA.VALID=1
+						
+			<if test="bankId!=null and bankId!='-1'">
+				AND BTA.BANK_ID=#{bankId}
+			</if>
+			<if test="sapCode!=null and sapCode!=''">
+				AND BTA.SAP_CODE=#{sapCode}
+			</if>
+			<if test="acceptanceNumber!=null and acceptanceNumber>0">
+				AND BTA.ACCEPTANCE_NUMBER=#{acceptanceNumber}
+			</if>
+			<if test="startIssueDate!=null and startIssueDate!=''">
+				<![CDATA[AND BTA.ISSUE_DATE>=#{startIssueDate}]]>
+			</if>
+			<if test="endIssueDate!=null and endIssueDate!=''">
+				<![CDATA[AND BTA.ISSUE_DATE<=#{endIssueDate}]]>
+			</if>
+			<if test="documentNumberExists!=null and documentNumberExists==0">
+				AND BTA.DOCUMENT_NUMBER IS NULL
+			</if>
+			<if test="documentNumberExists!=null and documentNumberExists==1">
+				AND BTA.DOCUMENT_NUMBER IS NOT NULL
+			</if>			
+	</select>
+</mapper>

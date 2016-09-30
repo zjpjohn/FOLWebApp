@@ -1,0 +1,23 @@
+ <div ae-panel title="银行银票额度审核" ng-controller="BankBankTicketLimitVerifyControllor" style="padding-bottom:20px">
+	<div class="row-fluid">
+			<table id="datagrid" style="width:100%" ae-Datagrid title="银行银票审核列表" data-options="rownumbers:true,pagination:true,pageSize:10,autoRowHeight:false,toolbar:'#updateToolBar'">
+				<thead>
+					<tr>
+					    <th data-options="field:'isChecked',align:'left',checkbox:'true'" width="4%">序号</th>
+						<th data-options="field:'dealerTypeName',align:'center'" width="12%"><strong>渠道类型</strong></th>
+						<th data-options="field:'bankAbbr',align:'center'" width="12%"><strong>银行缩写</strong></th>
+						<th data-options="field:'bankChName',align:'center'" width="12%"><strong>中文名称</strong></th>
+						<th data-options="field:'bankEnName',align:'center'" width="12%"><strong>英文名称</strong></th>
+						<th data-options="field:'amount',align:'center'" width="12%"><strong>总额</strong></th>
+						<th data-options="field:'auditStatusName',align:'center'" width="12%"><strong>状态</strong></th>
+						<th data-options="field:'auditMsg',align:'center',editor:'text'" width="12%"><strong>审核意见</strong></th>
+					</tr>
+				</thead>
+			</table>	
+			<div id="updateToolBar">
+				<a ae-Linkbutton href="#" on-click-function="auditSuccess" data-options="iconCls:'icon-edit',plain:true">审批通过</a>
+				<a ae-Linkbutton href="#" on-click-function="reject" data-options="iconCls:'icon-cancel',plain:true">驳回</a>
+			</div>
+	</div>
+</div>
+

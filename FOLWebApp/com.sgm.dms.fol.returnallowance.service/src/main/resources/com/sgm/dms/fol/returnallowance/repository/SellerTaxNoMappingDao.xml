@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sgm.dms.fol.returnallowance.repository.SellerTaxNoMappingDao" >
+  <resultMap id="BaseResultMap" type="com.sgm.dms.fol.returnallowance.domain.SellerTaxNoMapping" >
+    <id column="ID" property="id" jdbcType="DECIMAL" />
+    <result column="BILLING_ORIGIN" property="billingOrigin" jdbcType="VARCHAR" />
+    <result column="SELLER_TAX_NO" property="sellerTaxNo" jdbcType="VARCHAR" />
+    <result column="SELLER_NAME" property="sellerName" jdbcType="VARCHAR" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+    <result column="VALID" property="valid" jdbcType="DECIMAL" />
+    <result column="CREATE_BY" property="createBy" jdbcType="DECIMAL" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="UPDATE_BY" property="updateBy" jdbcType="DECIMAL" />
+    <result column="UPDATE_DATE" property="updateDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    ID, BILLING_ORIGIN, SELLER_TAX_NO, SELLER_NAME, REMARK, VALID, CREATE_BY, CREATE_DATE, 
+    UPDATE_BY, UPDATE_DATE
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.sgm.dms.fol.returnallowance.domain.SellerTaxNoMappingExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from TT_FOL_SELLER_TAX_NO_MAPPING
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from TT_FOL_SELLER_TAX_NO_MAPPING
+    where ID = #{id,jdbcType=DECIMAL}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from TT_FOL_SELLER_TAX_NO_MAPPING
+    where ID = #{id,jdbcType=DECIMAL}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.sgm.dms.fol.returnallowance.domain.SellerTaxNoMappingExample" >
+    delete from TT_FOL_SELLER_TAX_NO_MAPPING
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.sgm.dms.fol.returnallowance.domain.SellerTaxNoMapping" >
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="BEFORE" >
+      SELECT SEQ_SELLER_TAX_NO_MAPPING.NEXTVAL AS id FROM DUAL
+    </selectKey>
+    insert into TT_FOL_SELLER_TAX_NO_MAPPING (ID, BILLING_ORIGIN, SELLER_TAX_NO, 
+      SELLER_NAME, REMARK, VALID, 
+      CREATE_BY, CREATE_DATE, UPDATE_BY, 
+      UPDATE_DATE)
+    values (#{id,jdbcType=DECIMAL}, #{billingOrigin,jdbcType=VARCHAR}, #{sellerTaxNo,jdbcType=VARCHAR}, 
+      #{sellerName,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, #{valid,jdbcType=DECIMAL}, 
+      #{createBy,jdbcType=DECIMAL}, #{createDate,jdbcType=TIMESTAMP}, #{updateBy,jdbcType=DECIMAL}, 
+      #{updateDate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.sgm.dms.fol.returnallowance.domain.SellerTaxNoMapping" >
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="BEFORE" >
+      SELECT SEQ_SELLER_TAX_NO_MAPPING.NEXTVAL AS id FROM DUAL
+    </selectKey>
+    insert into TT_FOL_SELLER_TAX_NO_MAPPING
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      ID,
+      <if test="billingOrigin != null" >
+        BILLING_ORIGIN,
+      </if>
+      <if test="sellerTaxNo != null" >
+        SELLER_TAX_NO,
+      </if>
+      <if test="sellerName != null" >
+        SELLER_NAME,
+      </if>
+      <if test="remark != null" >
+        REMARK,
+      </if>
+      <if test="valid != null" >
+        VALID,
+      </if>
+      <if test="createBy != null" >
+        CREATE_BY,
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE,
+      </if>
+      <if test="updateBy != null" >
+        UPDATE_BY,
+      </if>
+      <if test="updateDate != null" >
+        UPDATE_DATE,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      #{id,jdbcType=DECIMAL},
+      <if test="billingOrigin != null" >
+        #{billingOrigin,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerTaxNo != null" >
+        #{sellerTaxNo,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerName != null" >
+        #{sellerName,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="valid != null" >
+        #{valid,jdbcType=DECIMAL},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=DECIMAL},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateBy != null" >
+        #{updateBy,jdbcType=DECIMAL},
+      </if>
+      <if test="updateDate != null" >
+        #{updateDate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.sgm.dms.fol.returnallowance.domain.SellerTaxNoMappingExample" resultType="java.lang.Integer" >
+    select count(*) from TT_FOL_SELLER_TAX_NO_MAPPING
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update TT_FOL_SELLER_TAX_NO_MAPPING
+    <set >
+      <if test="record.id != null" >
+        ID = #{record.id,jdbcType=DECIMAL},
+      </if>
+      <if test="record.billingOrigin != null" >
+        BILLING_ORIGIN = #{record.billingOrigin,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sellerTaxNo != null" >
+        SELLER_TAX_NO = #{record.sellerTaxNo,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sellerName != null" >
+        SELLER_NAME = #{record.sellerName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.remark != null" >
+        REMARK = #{record.remark,jdbcType=VARCHAR},
+      </if>
+      <if test="record.valid != null" >
+        VALID = #{record.valid,jdbcType=DECIMAL},
+      </if>
+      <if test="record.createBy != null" >
+        CREATE_BY = #{record.createBy,jdbcType=DECIMAL},
+      </if>
+      <if test="record.createDate != null" >
+        CREATE_DATE = #{record.createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.updateBy != null" >
+        UPDATE_BY = #{record.updateBy,jdbcType=DECIMAL},
+      </if>
+      <if test="record.updateDate != null" >
+        UPDATE_DATE = #{record.updateDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update TT_FOL_SELLER_TAX_NO_MAPPING
+    set ID = #{record.id,jdbcType=DECIMAL},
+      BILLING_ORIGIN = #{record.billingOrigin,jdbcType=VARCHAR},
+      SELLER_TAX_NO = #{record.sellerTaxNo,jdbcType=VARCHAR},
+      SELLER_NAME = #{record.sellerName,jdbcType=VARCHAR},
+      REMARK = #{record.remark,jdbcType=VARCHAR},
+      VALID = #{record.valid,jdbcType=DECIMAL},
+      CREATE_BY = #{record.createBy,jdbcType=DECIMAL},
+      CREATE_DATE = #{record.createDate,jdbcType=TIMESTAMP},
+      UPDATE_BY = #{record.updateBy,jdbcType=DECIMAL},
+      UPDATE_DATE = #{record.updateDate,jdbcType=TIMESTAMP}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.sgm.dms.fol.returnallowance.domain.SellerTaxNoMapping" >
+    update TT_FOL_SELLER_TAX_NO_MAPPING
+    <set >
+      <if test="billingOrigin != null" >
+        BILLING_ORIGIN = #{billingOrigin,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerTaxNo != null" >
+        SELLER_TAX_NO = #{sellerTaxNo,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerName != null" >
+        SELLER_NAME = #{sellerName,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        REMARK = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="valid != null" >
+        VALID = #{valid,jdbcType=DECIMAL},
+      </if>
+      <if test="createBy != null" >
+        CREATE_BY = #{createBy,jdbcType=DECIMAL},
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateBy != null" >
+        UPDATE_BY = #{updateBy,jdbcType=DECIMAL},
+      </if>
+      <if test="updateDate != null" >
+        UPDATE_DATE = #{updateDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.sgm.dms.fol.returnallowance.domain.SellerTaxNoMapping" >
+    update TT_FOL_SELLER_TAX_NO_MAPPING
+    set BILLING_ORIGIN = #{billingOrigin,jdbcType=VARCHAR},
+      SELLER_TAX_NO = #{sellerTaxNo,jdbcType=VARCHAR},
+      SELLER_NAME = #{sellerName,jdbcType=VARCHAR},
+      REMARK = #{remark,jdbcType=VARCHAR},
+      VALID = #{valid,jdbcType=DECIMAL},
+      CREATE_BY = #{createBy,jdbcType=DECIMAL},
+      CREATE_DATE = #{createDate,jdbcType=TIMESTAMP},
+      UPDATE_BY = #{updateBy,jdbcType=DECIMAL},
+      UPDATE_DATE = #{updateDate,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+</mapper>

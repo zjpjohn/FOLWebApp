@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sgm.dms.fol.common.service.repository.CommonDao">
+	<resultMap id="UserResult" type="com.sgm.dms.fol.common.service.domains.UserPo">
+		<id 	property="userId" 		column="USER_ID" 		javaType="long" 				jdbcType="NUMERIC"/>
+		<result property="dealerId" 	column="DEALER_ID" 	javaType="string" 				jdbcType="VARCHAR"/>
+		<result property="orgCode" 		column="ORG_CODE" 	javaType="string" 				jdbcType="VARCHAR"/>
+		<result property="userName" 	column="USER_NAME" 		javaType="string" 				jdbcType="VARCHAR"/>
+		<result property="password" 	column="PASSWORD" 		javaType="string" 				jdbcType="VARCHAR"/>
+		<result property="userStatus" 	column="USER_STATUS" 	javaType="java.lang.Integer" 	jdbcType="INTEGER"/>
+		<result property="userAccount" 	column="USER_ACCOUNT" 	javaType="string" 				jdbcType="VARCHAR"/>
+		<result property="userType" 	column="USER_TYPE" 	    javaType="java.lang.Integer" 	jdbcType="INTEGER"/>
+ 	</resultMap>
+ 	<resultMap id="RoleResult" type="com.sgm.dms.fol.common.service.domains.RolePo">
+		<id 	property="roleId" 		column="ROLE_ID" 		javaType="long" 	jdbcType="NUMERIC"/>
+		<result property="roleName" 	column="ROLE_NAME" 		javaType="string" 	jdbcType="VARCHAR"/>
+		<result property="roleDesc" 	column="ROLE_DESC" 		javaType="string" 	jdbcType="VARCHAR"/>
+		<result property="roleStatus" 	column="ROLE_STATUS" 	javaType="int" 		jdbcType="NUMERIC"/>
+		<result property="roleType" 	column="ROLE_TYPE" 		javaType="int" 		jdbcType="NUMERIC"/>
+ 	</resultMap>
+ 	<resultMap id="RoleEditResult" type="com.sgm.dms.fol.common.api.domain.RoleDTO">
+		<id 	property="roleId" 		column="ROLE_ID" 		javaType="long" 	jdbcType="NUMERIC"/>
+		<result property="roleName" 	column="ROLE_NAME" 		javaType="string" 	jdbcType="VARCHAR"/>
+		<result property="roleDesc" 	column="ROLE_DESC" 		javaType="string" 	jdbcType="VARCHAR"/>
+		<result property="roleStatus" 	column="ROLE_STATUS" 	javaType="java.lang.Integer" 		jdbcType="INTEGER"/>
+		<result property="roleType" 	column="TYPE" 		    javaType="java.lang.Integer" 		jdbcType="INTEGER"/>
+ 	</resultMap>
+	<resultMap id="MenuRoleResult" type="com.sgm.dms.fol.common.service.domains.MenuRolePo" >
+		<result	property="menuId" 		column="MENU_ID" 		javaType="long" 	jdbcType="NUMERIC"/>
+		<result property="menuName" 	column="MENU_NAME" 		javaType="string" 	jdbcType="VARCHAR"/>
+		<result property="menuUrl" 		column="MENU_URL" 		javaType="string" 	jdbcType="VARCHAR"/>
+		<result	property="parentId" 	column="PARENT_ID" 		javaType="long" 	jdbcType="NUMERIC"/>
+		<result property="roleName" 	column="ROLE_NAME" 		javaType="string" 	jdbcType="VARCHAR"/>
+ 	</resultMap>
+ 	
+ 	<select id="getMenuRolesByType" parameterType="long"  resultMap="MenuRoleResult">
+		select m.MENU_ID, m.MENU_NAME, m.MENU_URL, m.PARENT_ID, m.MENU_NAME as ROLE_NAME 
+		  from TS_FOL_MENU m
+		 where m.MENU_TYPE =#{type} and m.MENU_STATUS=1
+		 order by m.PARENT_ID desc, m.MENU_ID asc
+    </select>
+    <select id="getRolesByMenu" resultMap="RoleResult">
+		select r.* from TS_FOL_ROLE r, TR_ROLE_MENU mr, TS_FOL_MENU m  
+		where r.ROLE_ID=mr.ROLE_ID and mr.MENU_ID = m.MENU_ID and 
+		      m.MENU_ID=#{menuId}
+	</select>
+<!-- 	<select id="getRolesByUserId" parameterType="long" resultMap="RoleResult"> -->
+<!-- 		select r.* from TS_FOL_ROLE r, TR_POSITION_ROLE pr, TS_FOL_POSITION p, TR_USER_POSITION up, TS_FOL_USER u  -->
+<!-- 		where r.ROLE_ID=pr.ROLE_ID and pr.POSITION_ID = p.POSITION_ID and  -->
+<!-- 		      p.POSITION_ID=up.POSITION_ID and up.USER_ID=u.USER_ID and  -->
+<!-- 		      u.USER_ID=#{userId} -->
+<!-- 	</select> -->
+	<select id="getRolesByUserId" parameterType="long" resultMap="RoleResult">
+		select r.* from TS_FOL_ROLE r, TR_POSITION_ROLE pr, TS_FOL_POSITION p, TS_COMMON_USER_LOGON u 
+		where r.ROLE_ID=pr.ROLE_ID and pr.POSITION_ID = p.POSITION_ID and 
+		      p.POSITION_ID=u.POSITION_ID and u.LOGON_ID=#{userId}
+	</select>
+	<select id="getRoleById" resultMap="RoleEditResult" parameterType="long" >
+		select * from TS_FOL_ROLE  where  ROLE_ID=#{id}
+	</select>
+	<select id="getUserById" parameterType="long" resultMap="UserResult">
+		 select * from TS_FOL_USER where USER_ID=#{userId}
+	</select>
+	<select id="getUserByAccount" resultMap="UserResult" parameterType="java.lang.String">
+		 SELECT UL.LOGON_ID,
+			 UL.ORG_ID,
+			 UL.USER_NAME,
+			 UL.LOGON_STATUS,
+			 UL.SSO_ACCOUNT,
+			 UL.ORG_NAME,			 
+  		 	 UA.USER_TYPE
+		 FROM TS_COMMON_USER_LOGON UL
+		 JOIN TS_COMMON_USER_ACCOUNT UA ON UL.SSO_ACCOUNT=UA.SSO_ACCOUNT
+		 WHERE UL.LOGON_STATUS=1 AND UA.SSO_ACCOUNT_STATUS=1
+		 <if test="_parameter!=null and _parameter!=''">
+			 AND UA.USER_ACCOUNT=#{_parameter}
+		 </if>
+	</select>
+<!-- 	<select id="getMenuRoles" parameterType="string"  resultMap="MenuRoleResult"> -->
+<!-- 		select distinct m.MENU_ID, m.MENU_NAME, m.MENU_URL, m.PARENT_ID, r.ROLE_NAME,m.MENU_TYPE  -->
+<!--         from TS_FOL_USER u,TR_USER_POSITION up,TR_POSITION_ROLE pr,TS_FOL_ROLE r ,TR_MENU_ROLE mr, TS_FOL_MENU m -->
+<!--         where u.USER_ID=up.USER_ID and up.POSITION_ID=pr.POSITION_ID and pr.ROLE_ID=r.ROLE_ID and pr.ROLE_ID=mr.ROLE_ID and mr.MENU_ID=m.MENU_ID -->
+<!-- 		and m.MENU_STATUS=10011001 and r.ROLE_STATUS=10011001 and u.USER_ID=#{param1} -->
+<!-- 		 <if test="param2 != null and param2 != '' "> -->
+<!--                AND trim(up.POSITION_ID)=#{param2}  -->
+<!--          </if> -->
+<!-- 		 order by m.PARENT_ID desc, m.MENU_ID asc -->
+<!--     </select> -->
+	<select id="getMenuRoles" parameterType="string"  resultMap="MenuRoleResult">
+		select distinct m.MENU_ID, m.MENU_NAME, m.MENU_URL, m.PARENT_ID, r.ROLE_NAME,m.MENU_TYPE 
+        from TS_COMMON_USER_LOGON u,TR_POSITION_ROLE pr,TS_FOL_ROLE r ,TR_MENU_ROLE mr, TS_FOL_MENU m
+        where u.POSITION_ID=pr.POSITION_ID and pr.ROLE_ID=r.ROLE_ID and pr.ROLE_ID=mr.ROLE_ID and mr.MENU_ID=m.MENU_ID
+		and m.MENU_STATUS=1 and r.ROLE_STATUS=1 and pr.STATUS=1 and u.LOGON_ID=#{param1}
+		 <if test="param2 != null and param2 != '' ">
+            AND trim(u.POSITION_ID)=#{param2} 
+         </if>
+         <if test="param2 != null">
+         	AND m.MENU_TYPE=#{param3}
+         </if>
+		 order by m.PARENT_ID desc, m.MENU_NAME, m.MENU_ID asc
+    </select>
+    
+    <select id='getUserAuthorityUrl' parameterType="java.lang.String" resultType="java.lang.String">
+    	SELECT DISTINCT TAM.URL
+		FROM TS_COMMON_USER_LOGON UL
+		JOIN TR_POSITION_ROLE PR ON UL.POSITION_ID=PR.POSITION_ID AND PR.STATUS=1 AND UL.LOGON_STATUS=1
+		JOIN TR_ROLE_AUTHOR_METHOD RAM ON RAM.ROLE_ID=PR.ROLE_ID AND RAM.STATUS=1
+		JOIN TC_AUTHOR_METHOD TAM ON RAM.METHOD_ID=TAM.METHOD_ID AND TAM.STATUS=1
+		WHERE SSO_ACCOUNT=#{param1} AND RAM.IS_VALID=1 AND TAM.NEED_CHECK=1
+		ORDER BY TAM.URL 
+<!-- 		GROUP BY SSO_ACCOUNT -->
+    </select>
+</mapper>

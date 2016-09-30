@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<mapper namespace="com.sgm.dms.fol.bonus.repository.BonusIssueFileFlowDao">
+	
+	<!-- 添加记录 -->
+	<insert id="saveBonusIssueFileFlow"  parameterType="com.sgm.dms.fol.bonus.dto.BonusIssueFileFlowDTO">
+		INSERT INTO TT_FOL_PT_BONUS_FILE_FLOW
+			(
+			FLOW_ID,
+			BATCH_NO,
+			OPERATOR_DATE,
+			OPERATOR_MSG,
+			OPERATOR_STATUS,
+			REMARK,
+			CREATE_BY,
+			CREATE_DATE,
+			UPDATE_BY,
+			UPDATE_DATE      
+			)
+		VALUES
+			(
+			SEQ_FOL_PT_BONUS_FILE_FLOW_ID.NEXTVAL,
+			#{batchNo,jdbcType=VARCHAR},
+			SYSDATE,
+			#{operatorMsg,jdbcType=VARCHAR},
+			#{operatorStatus,jdbcType=NUMERIC},
+			#{remark,jdbcType=VARCHAR},
+			#{createBy,jdbcType=NUMERIC},
+		 	SYSDATE,
+		 	#{updateBy,jdbcType=NUMERIC},
+		 	#{updateDate,jdbcType=DATE}
+			)
+	</insert>
+	
+	<!-- 查询文件是否是退回文件 -->
+	<select id="findBonusCurrentStatus" resultType="com.sgm.dms.fol.bonus.dto.BonusIssueFileFlowDTO">
+		SELECT TN.* FROM 
+			(
+				SELECT    
+				TT.*,
+				RANK()OVER(PARTITION BY TT.BATCH_NO ORDER BY TT.OPERATOR_DATE ASC) AS RN
+				FROM 
+				TT_FOL_PT_BONUS_FILE_FLOW 
+				TT 
+				WHERE TT.BATCH_NO=#{param1}
+			) TN
+		WHERE TN.RN=1
+	</select>
+</mapper>
+ 

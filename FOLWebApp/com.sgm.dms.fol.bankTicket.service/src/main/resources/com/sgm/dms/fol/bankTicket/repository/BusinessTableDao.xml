@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<!-- 银行维护 -->
+<mapper namespace="com.sgm.dms.fol.bankTicket.repository.BusinessTableDao">
+ 	
+ 	<select id="findBusinessTableRecordByBusinessCode" resultType="com.sgm.dms.fol.bankTicket.domain.BusinessTablePo">
+		SELECT ID AS id,
+			BUSINESS_TABLE_NAME AS businessTableName,
+			BUSINESS_CODE AS businessCode,
+			BUSINESS_EN_DESC AS businessEnDesc,
+			BUSINESS_CN_DESC AS businessCnDesc,
+			STATUS AS status,
+			REMARK AS remark,
+			CREATE_BY AS createBy,
+			CREATE_DATE AS createDate,
+			UPDATE_BY AS updateBy,
+			UPDATE_DATE AS updateDate
+		FROM TT_FOL_BUSINESS_TABLE 
+		WHERE BUSINESS_CODE=#{businessCode}
+	</select>
+	
+</mapper>

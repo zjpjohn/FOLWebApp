@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<!-- 银行维护 -->
+<mapper namespace="com.sgm.dms.fol.bankTicket.repository.BankInfoDao">
+
+ 	<!-- 保存银行银票额度信息 -->
+ 	<insert id="saveBankInfo" parameterType="com.sgm.dms.fol.bankTicket.dto.BankInfoDTO">
+ 		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_TT_FOL_BANK_INFO_ID.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+ 		INSERT INTO TT_FOL_BANK_INFO(
+ 			ID,
+			BANK_ABBR,
+			BANK_CH_NAME,
+			BANK_EN_NAME,
+			STATUS,
+			REMARK,
+			CREATE_BY,
+			CREATE_DATE,
+			UPDATE_BY,
+			UPDATE_DATE
+			)
+        VALUES
+           (#{id}, 
+            #{bankAbbr}, 
+            #{bankChName},
+            #{bankEnName,jdbcType=VARCHAR}, 
+            1, 
+            #{remark,jdbcType=VARCHAR}, 
+            #{createBy}, 
+            SYSDATE, 
+            #{updateBy}, 
+            SYSDATE
+           )
+ 	</insert>
+ 	
+ 	<select id="findBankinfoWithDealer" resultType="com.sgm.dms.fol.bankTicket.dto.BankInfoDTO">
+		SELECT BI.ID AS id,
+			BI.BANK_ABBR AS bankAbbr,
+			BI.BANK_CH_NAME AS bankChName,
+			BI.BANK_EN_NAME AS bankEnName
+		FROM TT_FOL_BANK_INFO BI
+		JOIN TT_FOL_BANK_BANK_TICKET BT ON BI.ID=BT.BANK_ID
+		WHERE BI.BANK_ABBR=#{bankAbbr} AND BI.STATUS=1 AND BT.STATUS=1
+		<if test="dealerType!=null and dealerType>=0">
+			AND BT.DEALER_TYPE=#{dealerType}
+		</if>
+	</select>
+	
+	<select id="findBankinfo" resultType="com.sgm.dms.fol.bankTicket.dto.BankInfoDTO">
+		SELECT BI.ID AS id,
+			BI.BANK_ABBR AS bankAbbr,
+			BI.BANK_CH_NAME AS bankChName,
+			BI.BANK_EN_NAME AS bankEnName
+		FROM TT_FOL_BANK_INFO BI
+		WHERE BI.BANK_ABBR=#{bankAbbr} AND BI.STATUS=1
+	</select>
+	
+	<update id="updateBankInfo" parameterType="com.sgm.dms.fol.bankTicket.dto.BankInfoDTO">
+		UPDATE TT_FOL_BANK_INFO 
+		SET BANK_ABBR=#{bankAbbr},
+			BANK_CH_NAME=#{bankChName},
+			BANK_EN_NAME=#{bankEnName},
+			UPDATE_BY=#{updateBy},
+			UPDATE_DATE=SYSDATE
+		WHERE ID=#{id}
+	</update>
+	
+	<select id="getBankInfoAllList" resultType="com.sgm.dms.fol.bankTicket.dto.BankInfoDTO">
+		SELECT
+			BI."ID" AS id,
+			BI.BANK_ABBR AS bankAbbr,
+			BI.BANK_CH_NAME AS bankChName,
+			BI.BANK_EN_NAME AS bankEnName
+		FROM TT_FOL_BANK_INFO BI
+		WHERE BI.STATUS=1
+	</select>
+	
+</mapper>

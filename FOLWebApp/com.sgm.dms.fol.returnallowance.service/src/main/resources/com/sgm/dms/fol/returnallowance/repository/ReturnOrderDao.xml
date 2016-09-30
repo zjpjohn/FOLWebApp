@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sgm.dms.fol.returnallowance.repository.ReturnOrderDao" >
+   <!-- ==========================================自动生成Dao======start======================================== -->
+  <resultMap id="BaseResultMap" type="com.sgm.dms.fol.returnallowance.domain.ReturnOrder" >
+    <id column="ID" property="id" jdbcType="DECIMAL" />
+    <result column="RETURN_ORDER_NO" property="returnOrderNo" jdbcType="VARCHAR" />
+    <result column="SAP_CODE" property="sapCode" jdbcType="VARCHAR" />
+    <result column="COMPANY_NAME" property="companyName" jdbcType="VARCHAR" />
+    <result column="TAX_BUREAU_NAME" property="taxBureauName" jdbcType="VARCHAR" />
+    <result column="INVOICE_CODE" property="invoiceCode" jdbcType="VARCHAR" />
+    <result column="INVOICE_NUMBER" property="invoiceNumber" jdbcType="VARCHAR" />
+    <result column="GROSS" property="gross" jdbcType="DECIMAL" />
+    <result column="TAX" property="tax" jdbcType="DECIMAL" />
+    <result column="NET_AMOUNT" property="netAmount" jdbcType="DECIMAL" />
+    <result column="REPORT_DATE" property="reportDate" jdbcType="VARCHAR" />
+    <result column="REPORTER" property="reporter" jdbcType="VARCHAR" />
+    <result column="ACCEPT_DATE" property="acceptDate" jdbcType="VARCHAR" />
+    <result column="SGM_REMARK" property="sgmRemark" jdbcType="VARCHAR" />
+    <result column="PROPOSER" property="proposer" jdbcType="VARCHAR" />
+    <result column="APPLY_DATE" property="applyDate" jdbcType="VARCHAR" />
+    <result column="DISCOUNT_ORDER_STATUS" property="discountOrderStatus" jdbcType="DECIMAL" />
+    <result column="VALID" property="valid" jdbcType="DECIMAL" />
+    <result column="CREATE_BY" property="createBy" jdbcType="DECIMAL" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="UPDATE_BY" property="updateBy" jdbcType="DECIMAL" />
+    <result column="UPDATE_DATE" property="updateDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    ID, RETURN_ORDER_NO, SAP_CODE, COMPANY_NAME, TAX_BUREAU_NAME, INVOICE_CODE, INVOICE_NUMBER, 
+    GROSS, TAX, NET_AMOUNT, REPORT_DATE, REPORTER, ACCEPT_DATE, SGM_REMARK, PROPOSER, 
+    APPLY_DATE, DISCOUNT_ORDER_STATUS, VALID, CREATE_BY, CREATE_DATE, UPDATE_BY, UPDATE_DATE
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.sgm.dms.fol.returnallowance.domain.ReturnOrderExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from TT_FOL_CLAIM_RETURN_ORDER
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from TT_FOL_CLAIM_RETURN_ORDER
+    where ID = #{id,jdbcType=DECIMAL}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from TT_FOL_CLAIM_RETURN_ORDER
+    where ID = #{id,jdbcType=DECIMAL}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.sgm.dms.fol.returnallowance.domain.ReturnOrderExample" >
+    delete from TT_FOL_CLAIM_RETURN_ORDER
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.sgm.dms.fol.returnallowance.domain.ReturnOrder" >
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="BEFORE" >
+      SELECT SEQ_RETURN_ORDER.NEXTVAL AS id FROM DUAL
+    </selectKey>
+    insert into TT_FOL_CLAIM_RETURN_ORDER (ID, RETURN_ORDER_NO, SAP_CODE, 
+      COMPANY_NAME, TAX_BUREAU_NAME, INVOICE_CODE, 
+      INVOICE_NUMBER, GROSS, TAX, 
+      NET_AMOUNT, REPORT_DATE, REPORTER, 
+      ACCEPT_DATE, SGM_REMARK, PROPOSER, 
+      APPLY_DATE, DISCOUNT_ORDER_STATUS, VALID, 
+      CREATE_BY, CREATE_DATE, UPDATE_BY, 
+      UPDATE_DATE)
+    values (#{id,jdbcType=DECIMAL}, #{returnOrderNo,jdbcType=VARCHAR}, #{sapCode,jdbcType=VARCHAR}, 
+      #{companyName,jdbcType=VARCHAR}, #{taxBureauName,jdbcType=VARCHAR}, #{invoiceCode,jdbcType=VARCHAR}, 
+      #{invoiceNumber,jdbcType=VARCHAR}, #{gross,jdbcType=DECIMAL}, #{tax,jdbcType=DECIMAL}, 
+      #{netAmount,jdbcType=DECIMAL}, #{reportDate,jdbcType=VARCHAR}, #{reporter,jdbcType=VARCHAR}, 
+      #{acceptDate,jdbcType=VARCHAR}, #{sgmRemark,jdbcType=VARCHAR}, #{proposer,jdbcType=VARCHAR}, 
+      #{applyDate,jdbcType=VARCHAR}, #{discountOrderStatus,jdbcType=DECIMAL}, #{valid,jdbcType=DECIMAL}, 
+      #{createBy,jdbcType=DECIMAL}, SYSDATE, #{updateBy,jdbcType=DECIMAL}, 
+      SYSDATE)
+  </insert>
+  <insert id="insertSelective" parameterType="com.sgm.dms.fol.returnallowance.domain.ReturnOrder" >
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="BEFORE" >
+      SELECT SEQ_RETURN_ORDER.NEXTVAL AS id FROM DUAL
+    </selectKey>
+    insert into TT_FOL_CLAIM_RETURN_ORDER
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      ID,
+      <if test="returnOrderNo != null" >
+        RETURN_ORDER_NO,
+      </if>
+      <if test="sapCode != null" >
+        SAP_CODE,
+      </if>
+      <if test="companyName != null" >
+        COMPANY_NAME,
+      </if>
+      <if test="taxBureauName != null" >
+        TAX_BUREAU_NAME,
+      </if>
+      <if test="invoiceCode != null" >
+        INVOICE_CODE,
+      </if>
+      <if test="invoiceNumber != null" >
+        INVOICE_NUMBER,
+      </if>
+      <if test="gross != null" >
+        GROSS,
+      </if>
+      <if test="tax != null" >
+        TAX,
+      </if>
+      <if test="netAmount != null" >
+        NET_AMOUNT,
+      </if>
+      <if test="reportDate != null" >
+        REPORT_DATE,
+      </if>
+      <if test="reporter != null" >
+        REPORTER,
+      </if>
+      <if test="acceptDate != null" >
+        ACCEPT_DATE,
+      </if>
+      <if test="sgmRemark != null" >
+        SGM_REMARK,
+      </if>
+      <if test="proposer != null" >
+        PROPOSER,
+      </if>
+      <if test="applyDate != null" >
+        APPLY_DATE,
+      </if>
+      <if test="discountOrderStatus != null" >
+        DISCOUNT_ORDER_STATUS,
+      </if>
+      <if test="valid != null" >
+        VALID,
+      </if>
+      <if test="createBy != null" >
+        CREATE_BY,
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE,
+      </if>
+      <if test="updateBy != null" >
+        UPDATE_BY,
+      </if>
+      <if test="updateDate != null" >
+        UPDATE_DATE,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      #{id,jdbcType=DECIMAL},
+      <if test="returnOrderNo != null" >
+        #{returnOrderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="sapCode != null" >
+        #{sapCode,jdbcType=VARCHAR},
+      </if>
+      <if test="companyName != null" >
+        #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="taxBureauName != null" >
+        #{taxBureauName,jdbcType=VARCHAR},
+      </if>
+      <if test="invoiceCode != null" >
+        #{invoiceCode,jdbcType=VARCHAR},
+      </if>
+      <if test="invoiceNumber != null" >
+        #{invoiceNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="gross != null" >
+        #{gross,jdbcType=DECIMAL},
+      </if>
+      <if test="tax != null" >
+        #{tax,jdbcType=DECIMAL},
+      </if>
+      <if test="netAmount != null" >
+        #{netAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="reportDate != null" >
+        #{reportDate,jdbcType=VARCHAR},
+      </if>
+      <if test="reporter != null" >
+        #{reporter,jdbcType=VARCHAR},
+      </if>
+      <if test="acceptDate != null" >
+        #{acceptDate,jdbcType=VARCHAR},
+      </if>
+      <if test="sgmRemark != null" >
+        #{sgmRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="proposer != null" >
+        #{proposer,jdbcType=VARCHAR},
+      </if>
+      <if test="applyDate != null" >
+        #{applyDate,jdbcType=VARCHAR},
+      </if>
+      <if test="discountOrderStatus != null" >
+        #{discountOrderStatus,jdbcType=DECIMAL},
+      </if>
+      <if test="valid != null" >
+        #{valid,jdbcType=DECIMAL},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=DECIMAL},
+      </if>
+        SYSDATE,
+      <if test="updateBy != null" >
+        #{updateBy,jdbcType=DECIMAL},
+      </if>
+        SYSDATE
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.sgm.dms.fol.returnallowance.domain.ReturnOrderExample" resultType="java.lang.Integer" >
+    select count(*) from TT_FOL_CLAIM_RETURN_ORDER
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update TT_FOL_CLAIM_RETURN_ORDER
+    <set >
+      <if test="record.id != null" >
+        ID = #{record.id,jdbcType=DECIMAL},
+      </if>
+      <if test="record.returnOrderNo != null" >
+        RETURN_ORDER_NO = #{record.returnOrderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sapCode != null" >
+        SAP_CODE = #{record.sapCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.companyName != null" >
+        COMPANY_NAME = #{record.companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.taxBureauName != null" >
+        TAX_BUREAU_NAME = #{record.taxBureauName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.invoiceCode != null" >
+        INVOICE_CODE = #{record.invoiceCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.invoiceNumber != null" >
+        INVOICE_NUMBER = #{record.invoiceNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="record.gross != null" >
+        GROSS = #{record.gross,jdbcType=DECIMAL},
+      </if>
+      <if test="record.tax != null" >
+        TAX = #{record.tax,jdbcType=DECIMAL},
+      </if>
+      <if test="record.netAmount != null" >
+        NET_AMOUNT = #{record.netAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="record.reportDate != null" >
+        REPORT_DATE = #{record.reportDate,jdbcType=VARCHAR},
+      </if>
+      <if test="record.reporter != null" >
+        REPORTER = #{record.reporter,jdbcType=VARCHAR},
+      </if>
+      <if test="record.acceptDate != null" >
+        ACCEPT_DATE = #{record.acceptDate,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sgmRemark != null" >
+        SGM_REMARK = #{record.sgmRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="record.proposer != null" >
+        PROPOSER = #{record.proposer,jdbcType=VARCHAR},
+      </if>
+      <if test="record.applyDate != null" >
+        APPLY_DATE = #{record.applyDate,jdbcType=VARCHAR},
+      </if>
+      <if test="record.discountOrderStatus != null" >
+        DISCOUNT_ORDER_STATUS = #{record.discountOrderStatus,jdbcType=DECIMAL},
+      </if>
+      <if test="record.valid != null" >
+        VALID = #{record.valid,jdbcType=DECIMAL},
+      </if>
+      <if test="record.createBy != null" >
+        CREATE_BY = #{record.createBy,jdbcType=DECIMAL},
+      </if>
+      <if test="record.createDate != null" >
+        CREATE_DATE = #{record.createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.updateBy != null" >
+        UPDATE_BY = #{record.updateBy,jdbcType=DECIMAL},
+      </if>
+        UPDATE_DATE = SYSDATE
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update TT_FOL_CLAIM_RETURN_ORDER
+    set ID = #{record.id,jdbcType=DECIMAL},
+      RETURN_ORDER_NO = #{record.returnOrderNo,jdbcType=VARCHAR},
+      SAP_CODE = #{record.sapCode,jdbcType=VARCHAR},
+      COMPANY_NAME = #{record.companyName,jdbcType=VARCHAR},
+      TAX_BUREAU_NAME = #{record.taxBureauName,jdbcType=VARCHAR},
+      INVOICE_CODE = #{record.invoiceCode,jdbcType=VARCHAR},
+      INVOICE_NUMBER = #{record.invoiceNumber,jdbcType=VARCHAR},
+      GROSS = #{record.gross,jdbcType=DECIMAL},
+      TAX = #{record.tax,jdbcType=DECIMAL},
+      NET_AMOUNT = #{record.netAmount,jdbcType=DECIMAL},
+      REPORT_DATE = #{record.reportDate,jdbcType=VARCHAR},
+      REPORTER = #{record.reporter,jdbcType=VARCHAR},
+      ACCEPT_DATE = #{record.acceptDate,jdbcType=VARCHAR},
+      SGM_REMARK = #{record.sgmRemark,jdbcType=VARCHAR},
+      PROPOSER = #{record.proposer,jdbcType=VARCHAR},
+      APPLY_DATE = #{record.applyDate,jdbcType=VARCHAR},
+      DISCOUNT_ORDER_STATUS = #{record.discountOrderStatus,jdbcType=DECIMAL},
+      VALID = #{record.valid,jdbcType=DECIMAL},
+      CREATE_BY = #{record.createBy,jdbcType=DECIMAL},
+      CREATE_DATE = #{record.createDate,jdbcType=TIMESTAMP},
+      UPDATE_BY = #{record.updateBy,jdbcType=DECIMAL},
+      UPDATE_DATE = SYSDATE
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.sgm.dms.fol.returnallowance.domain.ReturnOrder" >
+    update TT_FOL_CLAIM_RETURN_ORDER
+    <set >
+      <if test="returnOrderNo != null" >
+        RETURN_ORDER_NO = #{returnOrderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="sapCode != null" >
+        SAP_CODE = #{sapCode,jdbcType=VARCHAR},
+      </if>
+      <if test="companyName != null" >
+        COMPANY_NAME = #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="taxBureauName != null" >
+        TAX_BUREAU_NAME = #{taxBureauName,jdbcType=VARCHAR},
+      </if>
+      <if test="invoiceCode != null" >
+        INVOICE_CODE = #{invoiceCode,jdbcType=VARCHAR},
+      </if>
+      <if test="invoiceNumber != null" >
+        INVOICE_NUMBER = #{invoiceNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="gross != null" >
+        GROSS = #{gross,jdbcType=DECIMAL},
+      </if>
+      <if test="tax != null" >
+        TAX = #{tax,jdbcType=DECIMAL},
+      </if>
+      <if test="netAmount != null" >
+        NET_AMOUNT = #{netAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="reportDate != null" >
+        REPORT_DATE = #{reportDate,jdbcType=VARCHAR},
+      </if>
+      <if test="reporter != null" >
+        REPORTER = #{reporter,jdbcType=VARCHAR},
+      </if>
+      <if test="acceptDate != null" >
+        ACCEPT_DATE = #{acceptDate,jdbcType=VARCHAR},
+      </if>
+      <if test="sgmRemark != null" >
+        SGM_REMARK = #{sgmRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="proposer != null" >
+        PROPOSER = #{proposer,jdbcType=VARCHAR},
+      </if>
+      <if test="applyDate != null" >
+        APPLY_DATE = #{applyDate,jdbcType=VARCHAR},
+      </if>
+      <if test="discountOrderStatus != null" >
+        DISCOUNT_ORDER_STATUS = #{discountOrderStatus,jdbcType=DECIMAL},
+      </if>
+      <if test="valid != null" >
+        VALID = #{valid,jdbcType=DECIMAL},
+      </if>
+      <if test="createBy != null" >
+        CREATE_BY = #{createBy,jdbcType=DECIMAL},
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateBy != null" >
+        UPDATE_BY = #{updateBy,jdbcType=DECIMAL},
+      </if>
+        UPDATE_DATE = SYSDATE
+    </set>
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.sgm.dms.fol.returnallowance.domain.ReturnOrder" >
+    update TT_FOL_CLAIM_RETURN_ORDER
+    set RETURN_ORDER_NO = #{returnOrderNo,jdbcType=VARCHAR},
+      SAP_CODE = #{sapCode,jdbcType=VARCHAR},
+      COMPANY_NAME = #{companyName,jdbcType=VARCHAR},
+      TAX_BUREAU_NAME = #{taxBureauName,jdbcType=VARCHAR},
+      INVOICE_CODE = #{invoiceCode,jdbcType=VARCHAR},
+      INVOICE_NUMBER = #{invoiceNumber,jdbcType=VARCHAR},
+      GROSS = #{gross,jdbcType=DECIMAL},
+      TAX = #{tax,jdbcType=DECIMAL},
+      NET_AMOUNT = #{netAmount,jdbcType=DECIMAL},
+      REPORT_DATE = #{reportDate,jdbcType=VARCHAR},
+      REPORTER = #{reporter,jdbcType=VARCHAR},
+      ACCEPT_DATE = #{acceptDate,jdbcType=VARCHAR},
+      SGM_REMARK = #{sgmRemark,jdbcType=VARCHAR},
+      PROPOSER = #{proposer,jdbcType=VARCHAR},
+      APPLY_DATE = #{applyDate,jdbcType=VARCHAR},
+      DISCOUNT_ORDER_STATUS = #{discountOrderStatus,jdbcType=DECIMAL},
+      VALID = #{valid,jdbcType=DECIMAL},
+      CREATE_BY = #{createBy,jdbcType=DECIMAL},
+      CREATE_DATE = #{createDate,jdbcType=TIMESTAMP},
+      UPDATE_BY = #{updateBy,jdbcType=DECIMAL},
+      UPDATE_DATE = SYSDATE
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+  <!-- ==========================================自动生成Dao======end======================================== -->
+</mapper>

@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.sgm.dms.fol</groupId>
+    <artifactId>fol-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../com.sgm.dms.fol.pom/pom.xml</relativePath>
+  </parent>
+  <artifactId>invoice.service</artifactId>
+  <name>fol.invoice.service</name>
+  <url>http://maven.apache.org</url>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <dependencies>
+  	<dependency>
+  		<groupId>com.sgm.dms.fol</groupId>
+  		<artifactId>invoice.api</artifactId>
+  		<version>${project.version}</version>
+  	</dependency>
+    <dependency>
+  		<groupId>com.sgm.dms.fol</groupId>
+  		<artifactId>common.api</artifactId>
+  		<version>${project.version}</version>
+  	</dependency>
+  	  	<dependency>
+  		<groupId>com.sgm.dms.fol</groupId>
+  		<artifactId>reserve.service</artifactId>
+  		<version>${project.version}</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>com.sgm.dms.fol</groupId>
+  		<artifactId>common.service</artifactId>
+  		<version>${project.version}</version>
+  	</dependency>
+  	<!-- apache cxf -->
+  	<dependency>
+		<groupId>org.apache.cxf</groupId>
+		<artifactId>cxf-rt-frontend-jaxws</artifactId>
+	</dependency>
+  	</dependencies>
+</project>

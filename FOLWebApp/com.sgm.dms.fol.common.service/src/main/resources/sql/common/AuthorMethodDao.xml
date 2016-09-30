@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sgm.dms.fol.common.service.repository.AuthorMethodDao" >
+  <resultMap id="BaseResultMap" type="com.sgm.dms.fol.common.api.domain.AuthorMethodDTO" >
+    <id column="METHOD_ID" property="methodId" jdbcType="DECIMAL" />
+    <result column="CLASS" property="clazz" jdbcType="VARCHAR" />
+    <result column="METHOD" property="method" jdbcType="VARCHAR" />
+    <result column="STATUS" property="status" jdbcType="DECIMAL" />
+    <result column="CREATE_BY" property="createBy" jdbcType="DECIMAL" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="DATE" />
+    <result column="UPDATE_BY" property="updateBy" jdbcType="DECIMAL" />
+    <result column="UPDATE_DATE" property="updateDate" jdbcType="DATE" />
+    <result column="SAP_MAPPING" property="sapMapping" jdbcType="VARCHAR" />
+    <result column="NEED_CHECK" property="needCheck" jdbcType="VARCHAR" />
+    <result column="URL" property="url" jdbcType="VARCHAR" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <insert id="insert" parameterType="com.sgm.dms.fol.common.api.domain.AuthorMethodDTO" >
+    insert into TC_AUTHOR_METHOD (METHOD_ID, CLASS, METHOD, 
+      STATUS, CREATE_BY, CREATE_DATE, 
+      UPDATE_BY, UPDATE_DATE, SAP_MAPPING, 
+      NEED_CHECK, URL)
+    values (SEQ_AUTHOR_METHOD_ID.NEXTVAL, #{clazz,jdbcType=VARCHAR}, #{method,jdbcType=VARCHAR}, 
+      1, #{createBy,jdbcType=DECIMAL}, SYSDATE, 
+      #{updateBy,jdbcType=DECIMAL}, #{updateDate,jdbcType=DATE}, #{sapMapping,jdbcType=VARCHAR}, 
+      1, #{url,jdbcType=VARCHAR})
+  </insert>
+  <update id="update" parameterType="com.sgm.dms.fol.common.api.domain.AuthorMethodDTO"> 
+		update TC_AUTHOR_METHOD
+    <set >
+      <if test="clazz != null" >
+        CLASS = #{clazz,jdbcType=VARCHAR},
+      </if>
+      <if test="method != null" >
+        METHOD = #{method,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        STATUS = #{status,jdbcType=DECIMAL},
+      </if>
+      <if test="createBy != null" >
+        CREATE_BY = #{createBy,jdbcType=DECIMAL},
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE = #{createDate,jdbcType=DATE},
+      </if>
+      <if test="updateBy != null" >
+        UPDATE_BY = #{updateBy,jdbcType=DECIMAL},
+      </if>
+        UPDATE_DATE = SYSDATE,
+      <if test="sapMapping != null" >
+        SAP_MAPPING = #{sapMapping,jdbcType=VARCHAR},
+      </if>
+      <if test="needCheck != null" >
+        NEED_CHECK = #{needCheck,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null" >
+        URL = #{url,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where METHOD_ID = #{methodId}
+  </update>
+  <select id="selectAuthorMethodPageList" resultMap="BaseResultMap" parameterType="com.sgm.dms.fol.common.api.domain.AuthorMethodDTO" >
+    SELECT * FROM (
+		SELECT T1.*, ROWNUM AS RN FROM (
+		SELECT *
+		FROM TC_AUTHOR_METHOD
+		<where>
+			<if test="clazz != null and !clazz.trim().equals('')">
+				and CLASS = #{clazz,jdbcType=VARCHAR}
+			</if>
+			<if test="clazzLike != null and !clazzLike.trim().equals('')">
+				and CLASS like #{clazzLike,jdbcType=VARCHAR}
+			</if>
+			<if test="method != null and !method.trim().equals('')">
+				and METHOD = #{method,jdbcType=VARCHAR}
+			</if>
+				and STATUS = 1
+			<if test="createBy != null">
+				and CREATE_BY = #{createBy,jdbcType=DECIMAL}
+			</if>
+			<if test="createDate != null">
+				and CREATE_DATE = #{createDate,jdbcType=DATE}
+			</if>
+			<if test="updateBy != null">
+				and UPDATE_BY = #{updateBy,jdbcType=DECIMAL}
+			</if>
+			<if test="updateDate != null">
+				and UPDATE_DATE = #{updateDate,jdbcType=DATE}
+			</if>
+			<if test="sapMapping != null">
+				and SAP_MAPPING = #{sapMapping,jdbcType=VARCHAR}
+			</if>
+			<if test="needCheck != null">
+				and NEED_CHECK = #{needCheck,jdbcType=VARCHAR}
+			</if>
+			<if test="url != null">
+				and URL = #{url,jdbcType=VARCHAR}
+			</if>
+		</where>
+		order by CLASS,URL
+		) T1 ) T2
+	<![CDATA[
+		 WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo}
+	]]>
+  </select>
+  <select id="selectAuthorMethodListCount" resultType="Long" parameterType="com.sgm.dms.fol.common.api.domain.AuthorMethodDTO" >
+        SELECT count(1)
+	    FROM TC_AUTHOR_METHOD
+		<where>
+			<if test="clazz != null and !clazz.trim().equals('')">
+				and CLASS = #{clazz,jdbcType=VARCHAR}
+			</if>
+			<if test="clazzLike != null and !clazzLike.trim().equals('')">
+				and CLASS like #{clazzLike,jdbcType=VARCHAR}
+			</if>
+			<if test="method != null and !method.trim().equals('')">
+				and METHOD = #{method,jdbcType=VARCHAR}
+			</if>
+				and STATUS = 1
+			<if test="createBy != null">
+				and CREATE_BY = #{createBy,jdbcType=DECIMAL}
+			</if>
+			<if test="createDate != null">
+				and CREATE_DATE = #{createDate,jdbcType=DATE}
+			</if>
+			<if test="updateBy != null">
+				and UPDATE_BY = #{updateBy,jdbcType=DECIMAL}
+			</if>
+			<if test="updateDate != null">
+				and UPDATE_DATE = #{updateDate,jdbcType=DATE}
+			</if>
+			<if test="sapMapping != null">
+				and SAP_MAPPING = #{sapMapping,jdbcType=VARCHAR}
+			</if>
+			<if test="needCheck != null">
+				and NEED_CHECK = #{needCheck,jdbcType=VARCHAR}
+			</if>
+			<if test="url != null">
+				and URL = #{url,jdbcType=VARCHAR}
+			</if>
+		</where>
+  </select>
+<!-- 根据菜单类型查询方法权限列表 -->
+	<select id="findMethodByMenuTypeRoleId" resultType="com.sgm.dms.fol.common.api.domain.RoleMenuDTO">
+		SELECT
+			am.METHOD_ID methodId,
+			am.URL url,
+			(
+				SELECT
+					1
+				FROM
+					TR_ROLE_AUTHOR_METHOD ram
+				WHERE
+					ram.METHOD_ID = am.METHOD_ID
+				AND ram.ROLE_ID = #{roleId}
+				AND ram.STATUS = 1
+			) AS isChecked
+		FROM
+			TC_AUTHOR_METHOD am
+		WHERE
+			 am.STATUS = 1
+		ORDER BY am.CLASS,am.URL
+	</select>
+</mapper>

@@ -1,0 +1,875 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sgm.dms.fol.invoice.repository.InvoiceDao" >
+  <resultMap id="BaseResultMap" type="com.sgm.dms.fol.invoice.dto.InvoiceDto" >
+    <id column="INVOICE_NO" property="invoiceNo" jdbcType="VARCHAR" />
+    <result column="EXPRESS_NO" property="expressNo" jdbcType="VARCHAR" />
+    <result column="FLOW_NO" property="flowNo" jdbcType="VARCHAR" />
+    <result column="INVOICE_TITLE" property="invoiceTitle" jdbcType="VARCHAR" />
+    <result column="GROSS" property="gross" jdbcType="DECIMAL" />
+    <result column="LINETOTAL" property="linetotal" jdbcType="DECIMAL" />
+    <result column="PART_COST" property="partCost" jdbcType="DECIMAL" />
+    <result column="LABOUR_COST" property="labourCost" jdbcType="DECIMAL" />
+    <result column="TAX" property="tax" jdbcType="DECIMAL" />
+    <result column="SAP_CODE" property="sapCode" jdbcType="VARCHAR" />
+    <result column="PROPOSER" property="proposer" jdbcType="VARCHAR" />
+    <result column="APPLY_DATE" property="applyDate" jdbcType="DATE" />
+    <result column="REPORTER" property="reporter" jdbcType="VARCHAR" />
+    <result column="REPORT_DATE" property="reportDate" jdbcType="DATE" />
+    <result column="YEAR" property="year" jdbcType="VARCHAR" />
+    <result column="MONTH" property="month" jdbcType="VARCHAR" />
+    <result column="INVOICE_CERTIFICATE" property="invoiceCertificate" jdbcType="VARCHAR" />
+    <result column="STATUS" property="status" jdbcType="DECIMAL" />
+    <result column="OTHER_COST" property="otherCost" jdbcType="DECIMAL" />
+    <result column="APPROVE_MAN" property="approveMan" jdbcType="VARCHAR" />
+    <result column="OLD_INVOICE_NUM" property="oldInvoiceNum" jdbcType="VARCHAR" />
+    <result column="VALID" property="valid" jdbcType="DECIMAL" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+    <result column="APPROVE_MSG" property="approveMsg" jdbcType="VARCHAR" />
+    <result column="CREATE_BY" property="createBy" jdbcType="DECIMAL" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="DATE" />
+    <result column="UPDATE_BY" property="updateBy" jdbcType="DECIMAL" />
+    <result column="UPDATE_DATE" property="updateDate" jdbcType="DATE" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    INVOICE_NO, EXPRESS_NO, FLOW_NO, INVOICE_TITLE, GROSS, LINETOTAL, PART_COST, LABOUR_COST, 
+    TAX, SAP_CODE, PROPOSER, APPLY_DATE, REPORTER, REPORT_DATE, YEAR, MONTH, INVOICE_CERTIFICATE, 
+    STATUS, OTHER_COST, APPROVE_MAN, OLD_INVOICE_NUM, VALID, REMARK, CREATE_BY, CREATE_DATE, 
+    UPDATE_BY, UPDATE_DATE,APPROVE_MSG
+  </sql>
+  
+  <insert id="insert" parameterType="com.sgm.dms.fol.invoice.domain.Invoice" >
+    insert into TT_FOL_INVOICE (INVOICE_NO, EXPRESS_NO, FLOW_NO, 
+      INVOICE_TITLE, GROSS, LINETOTAL, 
+      PART_COST, LABOUR_COST, TAX, 
+      SAP_CODE, PROPOSER, APPLY_DATE, 
+      REPORTER, REPORT_DATE, YEAR, 
+      MONTH, INVOICE_CERTIFICATE, STATUS, 
+      OTHER_COST, APPROVE_MAN, OLD_INVOICE_NUM, 
+      VALID, REMARK, CREATE_BY, 
+      CREATE_DATE, UPDATE_BY, UPDATE_DATE
+      )
+    values (#{invoiceNo,jdbcType=VARCHAR}, #{expressNo,jdbcType=VARCHAR}, #{flowNo,jdbcType=VARCHAR}, 
+      #{invoiceTitle,jdbcType=VARCHAR}, #{gross,jdbcType=DECIMAL}, #{linetotal,jdbcType=DECIMAL}, 
+      #{partCost,jdbcType=DECIMAL}, #{labourCost,jdbcType=DECIMAL}, #{tax,jdbcType=DECIMAL}, 
+      #{sapCode,jdbcType=VARCHAR}, #{proposer,jdbcType=VARCHAR}, #{applyDate,jdbcType=DATE}, 
+      #{reporter,jdbcType=VARCHAR}, #{reportDate,jdbcType=DATE}, #{year,jdbcType=VARCHAR}, 
+      #{month,jdbcType=VARCHAR}, #{invoiceCertificate,jdbcType=VARCHAR}, #{status,jdbcType=DECIMAL}, 
+      #{otherCost,jdbcType=DECIMAL}, #{approveMan,jdbcType=VARCHAR}, #{oldInvoiceNum,jdbcType=VARCHAR}, 
+      #{valid,jdbcType=DECIMAL}, #{remark,jdbcType=VARCHAR}, #{createBy,jdbcType=DECIMAL}, 
+      #{createDate,jdbcType=DATE}, #{updateBy,jdbcType=DECIMAL}, #{updateDate,jdbcType=DATE}
+      )
+  </insert>
+  	<!-- 获取索赔发票信息 -->
+    <select id="getInvoiceFollow" resultType="com.sgm.dms.fol.invoice.dto.InvoiceFollowDTO" >
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+	SELECT FI.INVOICE_NO AS invoiceNo,
+		  FI.EXPRESS_NO AS expressNo,
+		  FI.FLOW_NO AS flowNo,
+		  FI.INVOICE_TITLE AS invoiceTitle,
+		  FI.GROSS AS gross,
+		  FI.LINETOTAL AS linetotal,
+		  FI.PART_COST AS partCost,
+		  FI.LABOUR_COST AS labourCost,
+		  FI.TAX AS tax,
+		  FI.SAP_CODE AS sapCode,
+		  FI.PROPOSER AS proposer,
+		  FI.APPLY_DATE AS applyDate,
+		  FI.REPORTER AS reporter,
+		  to_char(FI.REPORT_DATE,'SYYYY-MM-DD HH24:MI:SS') AS reportDate ,
+		  FI.YEAR AS year,
+		  FI.MONTH AS month,
+		  FI.INVOICE_CERTIFICATE AS invoiceCertificate,
+		  FI.STATUS AS status,
+		  TC.CODE_CN_DESC AS statusName,	
+		  to_char(FI.POST_SAP_DATE,'SYYYY-MM-DD HH24:MI:SS') AS postSapDate,
+		  FI.OTHER_COST AS otherCost,
+		  FI.APPROVE_MAN AS approveMan,
+		  FI.OLD_INVOICE_NUM AS oldInvoiceNum,
+		  FI.VALID AS valid,
+		  FI.REMARK AS remark,
+		  FI.CREATE_BY AS createBy,
+		  FI.CREATE_DATE AS createDate,
+		  FI.UPDATE_BY AS updateBy,
+		  FI.UPDATE_DATE AS updateDate
+	FROM TT_FOL_INVOICE FI
+    LEFT JOIN TC_FOL_CODE TC ON TC.CODE=FI.STATUS AND TC.TYPE_NAME='SGM受理状态' AND TC.STATUS=10011001 
+	WHERE VALID=1
+		<if test="invoiceNo!=null and ! invoiceNo.trim().equals('')">
+			AND FI.INVOICE_NO=#{invoiceNo}
+		</if>
+		<if test="expressNo!=null and ! expressNo.trim().equals('')">
+			AND FI.EXPRESS_NO=#{expressNo}
+		</if>
+		<!-- 受理状态 -->
+		<if test="status!=null and status!='-1'">
+			AND FI.STATUS=#{status}
+		</if>
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			AND FI.SAP_CODE=#{sapCode}
+		</if>
+		<if test="approveMan!=null and ! approveMan.trim().equals('')">
+			AND FI.APPROVE_MAN=#{approveMan}
+		</if>
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+  </select>
+  <!-- 作废 -->
+      <update id="cancelInvoice" parameterType="java.lang.Short" >
+		update TT_FOL_INVOICE
+		 SET
+		   UPDATE_DATE = SYSDATE,
+		   VALID = 0
+		 WHERE STATUS = 3 AND INVOICE_NO = #{invoiceNo,jdbcType=VARCHAR}
+  </update>
+  <!-- 重做 -->
+  	<update id="anewInvoice" parameterType="com.sgm.dms.fol.invoice.dto.InvoiceFollowDTO">
+	  UPDATE TT_FOL_INVOICE SET VALID = 0,
+	  UPDATE_DATE=SYSDATE
+	  WHERE STATUS = 3 AND INVOICE_NO = #{invoiceNo,jdbcType=VARCHAR} AND SAP_CODE = #{sapCode}
+  </update>
+  <!-- 查询明细 -->
+    <select id="getInvoiceDeatil" resultType="com.sgm.dms.fol.invoice.dto.InvoiceFollowDTO" >
+    	SELECT FI.INVOICE_NO AS invoiceNo,
+		  FI.EXPRESS_NO AS expressNo,
+		  WC.TS_ID AS tsId,
+      	  WO.WR_TYPE AS wrType,
+		  FI.FLOW_NO AS flowNo,
+		  FI.INVOICE_TITLE AS invoiceTitle,
+		  WO.GROSS AS gross,
+		  WO.LINETOTAL AS linetotal,
+		  WO.PART_COST AS partCost,
+		  WO.LABOUR_COST AS labourCost,
+		  WO.TAX AS tax,
+		  WO.SAP_CODE AS sapCode,
+		  FI.PROPOSER AS proposer,
+		  FI.APPLY_DATE AS applyDate,
+		  FI.REPORTER AS reporter,
+		  to_char(FI.REPORT_DATE,'SYYYY-MM-DD HH24:MI:SS') AS reportDate ,
+		  FI.YEAR AS year,
+		  FI.MONTH AS month,
+		  FI.INVOICE_CERTIFICATE AS invoiceCertificate,
+		  FI.STATUS AS status,
+		  TC.CODE_CN_DESC AS statusName,	
+		  to_char(FI.POST_SAP_DATE,'SYYYY-MM-DD HH24:MI:SS') AS postSapDate,
+		  WO.OTHER_COST AS otherCost,
+		  FI.APPROVE_MAN AS approveMan,
+		  FI.OLD_INVOICE_NUM AS oldInvoiceNum,
+		  FI.VALID AS valid,
+		  FI.REMARK AS remark,
+		  FI.CREATE_BY AS createBy,
+		  FI.CREATE_DATE AS createDate,
+		  FI.UPDATE_BY AS updateBy,
+		  FI.UPDATE_DATE AS updateDate
+	FROM TT_FOL_INVOICE FI
+    LEFT JOIN TC_FOL_CODE TC ON TC.CODE=FI.STATUS AND TC.TYPE_NAME='SGM受理状态' AND TC.STATUS=10011001 
+    JOIN TT_FOL_WR_COLLECT  WC ON WC.INVOICE_NO = FI.INVOICE_NO AND WC.VALID=1
+    JOIN TT_FOL_WR_ORDER WO ON WO.WR_ID = WC.WR_ID AND WO.SAP_CODE = FI.SAP_CODE AND WO.VAILD=1
+    AND  FI.VALID =WC.VALID 
+	WHERE FI.VALID=1 AND FI.INVOICE_NO=#{invoiceNo,jdbcType=VARCHAR} and FI.SAP_CODE = #{sapCode}
+  </select>
+
+    <select id="getFOLtoSAPInterfaceStatus" resultType="com.sgm.dms.fol.invoice.dto.SapReturnItemsDTO" >
+    		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+		SELECT
+			  INVOICE.FINANCE_WARRANTY AS financeWarranty,
+			  INVOICE.INVOICE_NO AS invoiceNo,
+			  INVOICE.ASC_CODE AS ascCode,
+			  INVOICE.PROCESS_STATUS AS process_status,
+			  TC.CODE_CN_DESC AS processStatusName,
+			  INVOICE.CO_CODE AS co_code,
+			  INVOICE.REMARK AS remark,
+			  INVOICE.SAP_RESOLVE_DATE AS sapResolveDate,
+			  INVOICE.VALID AS valid
+		FROM TI_INPUTCLAIM_INVOICE INVOICE
+		    LEFT JOIN TC_FOL_CODE TC ON TC.CODE=INVOICE.PROCESS_STATUS AND TC.TYPE_NAME='SGM受理状态' AND TC.STATUS=10011001 
+			WHERE VALID=1
+		<if test="invoiceNo!=null and ! invoiceNo.trim().equals('')">
+			AND INVOICE.INVOICE_NO=#{invoiceNo}
+		</if> 
+		<!-- 受理状态 -->
+		<if test="process_status!=null and process_status!= '-1'">
+			AND INVOICE.PROCESS_STATUS=#{process_status}
+		</if>
+		<if test="ascCode!=null and ! ascCode.trim().equals('')">
+			AND INVOICE.ASC_CODE=#{ascCode}
+		</if>
+		<if test="startTime!=null and ! startTime.trim().equals('')">
+			<![CDATA[ AND to_char(INVOICE.SAP_RESOLVE_DATE,'YYYY-MM-DD')>=#{startTime}]]>
+		</if>
+		<if test="endTime!=null and ! endTime.trim().equals('')">
+			<![CDATA[ AND  to_char(INVOICE.SAP_RESOLVE_DATE,'YYYY-MM-DD') <= #{endTime}]]>
+		</if>
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+
+  </select>
+      <select id="getSAPFinancialCertificate" resultType="com.sgm.dms.fol.invoice.dto.InvoiceFollowDTO" >
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>  
+	SELECT FI.INVOICE_NO AS invoiceNo,
+		  FI.EXPRESS_NO AS expressNo,
+		  FI.FLOW_NO AS flowNo,
+		  FI.INVOICE_TITLE AS invoiceTitle,
+		  FI.GROSS AS gross,
+		  FI.LINETOTAL AS linetotal,
+		  FI.PART_COST AS partCost,
+		  FI.LABOUR_COST AS labourCost,
+		  FI.TAX AS tax,
+		  FI.SAP_CODE AS sapCode,
+		  FI.PROPOSER AS proposer,
+		  FI.APPLY_DATE AS applyDate,
+		  FI.REPORTER AS reporter,
+		  to_char(FI.REPORT_DATE,'SYYYY-MM-DD HH24:MI:SS') AS reportDate ,
+		  FI.YEAR AS year,
+		  FI.MONTH AS month,
+		  FI.INVOICE_CERTIFICATE AS invoiceCertificate,
+		  FI.STATUS AS status,
+		  TC.CODE_CN_DESC AS statusName,	
+		  to_char(FI.POST_SAP_DATE,'SYYYY-MM-DD HH24:MI:SS') AS postSapDate,
+		  FI.OTHER_COST AS otherCost,
+		  FI.APPROVE_MAN AS approveMan,
+		  FI.OLD_INVOICE_NUM AS oldInvoiceNum,
+		  FI.VALID AS valid,
+		  FI.REMARK AS remark,
+		  FI.CREATE_BY AS createBy,
+		  FI.CREATE_DATE AS createDate,
+		  FI.UPDATE_BY AS updateBy,
+		  FI.UPDATE_DATE AS updateDate
+	FROM TT_FOL_INVOICE FI
+    LEFT JOIN TC_FOL_CODE TC ON TC.CODE=FI.STATUS AND TC.TYPE_NAME='SGM受理状态' AND TC.STATUS=10011001 
+	WHERE FI.INVOICE_CERTIFICATE IS NOT NULL AND VALID=1 
+		<if test="invoiceNo!=null and ! invoiceNo.trim().equals('')">
+			AND FI.INVOICE_NO=#{invoiceNo}
+		</if>
+		<if test="expressNo!=null and ! expressNo.trim().equals('')">
+			AND FI.EXPRESS_NO=#{expressNo}
+		</if>
+		<!-- 受理状态 -->
+		<if test="status!=null and status!='-1'">
+			AND FI.STATUS=#{status}
+		</if>
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			AND FI.SAP_CODE=#{sapCode}
+		</if>
+		<if test="approveMan!=null and ! approveMan.trim().equals('')">
+			AND FI.APPROVE_MAN=#{approveMan}
+		</if>
+		<if test="startTime!=null and ! startTime.trim().equals('')">
+			<![CDATA[ AND to_char(FI.CREATE_DATE,'YYYY-MM-DD')>=#{startTime}]]>
+		</if>
+		<if test="endTime!=null and ! endTime.trim().equals('')">
+			<![CDATA[ AND  to_char(FI.CREATE_DATE,'YYYY-MM-DD') <= #{endTime}]]>
+		</if>
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+  </select>
+      <select id="getOvertimeUnDealInvoice" resultType="com.sgm.dms.fol.invoice.dto.InvoiceFollowDTO" >
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+	SELECT FI.INVOICE_NO AS invoiceNo,
+		  FI.EXPRESS_NO AS expressNo,
+		  FI.FLOW_NO AS flowNo,
+		  FI.INVOICE_TITLE AS invoiceTitle,
+		  FI.GROSS AS gross,
+		  FI.LINETOTAL AS linetotal,
+		  FI.PART_COST AS partCost,
+		  FI.LABOUR_COST AS labourCost,
+		  FI.TAX AS tax,
+		  FI.SAP_CODE AS sapCode,
+		  FI.PROPOSER AS proposer,
+		  FI.APPLY_DATE AS applyDate,
+		  FI.REPORTER AS reporter,
+		  to_char(FI.REPORT_DATE,'SYYYY-MM-DD HH24:MI:SS') AS reportDate ,
+		  FI.YEAR AS year,
+		  FI.MONTH AS month,
+		  FI.INVOICE_CERTIFICATE AS invoiceCertificate,
+		  FI.STATUS AS status,
+		  TC.CODE_CN_DESC AS statusName,	
+		  to_char(FI.POST_SAP_DATE,'SYYYY-MM-DD HH24:MI:SS') AS postSapDate,
+		  FI.OTHER_COST AS otherCost,
+		  FI.APPROVE_MAN AS approveMan,
+		  FI.OLD_INVOICE_NUM AS oldInvoiceNum,
+		  FI.VALID AS valid,
+		  FI.REMARK AS remark,
+		  FI.CREATE_BY AS createBy,
+		  FI.CREATE_DATE AS createDate,
+		  FI.UPDATE_BY AS updateBy,
+		  FI.UPDATE_DATE AS updateDate
+	FROM TT_FOL_INVOICE FI
+    LEFT JOIN TC_FOL_CODE TC ON TC.CODE=FI.STATUS AND TC.TYPE_NAME='SGM受理状态' AND TC.STATUS=10011001 
+	WHERE VALID=1
+		<if test="invoiceNo!=null and ! invoiceNo.trim().equals('')">
+			AND FI.INVOICE_NO=#{invoiceNo}
+		</if>
+		<if test="expressNo!=null and ! expressNo.trim().equals('')">
+			AND FI.EXPRESS_NO=#{expressNo}
+		</if>
+		<!-- 受理状态 -->
+		<!-- <if test="status!=null and status!='-1'"> -->
+			AND FI.STATUS=2
+		<!-- </if> -->
+		<if test="sapCode!=null and ! sapCode.trim().equals('')">
+			AND FI.SAP_CODE=#{sapCode}
+		</if>
+		<if test="startTime!=null and ! startTime.trim().equals('')">
+			<![CDATA[ AND TRUNC(SYSDATE-FI.REPORT_DATE) >= TO_NUMBER(#{startTime})]]>
+		</if>
+		<if test="endTime!=null and ! endTime.trim().equals('')">
+			<![CDATA[ AND  TRUNC(SYSDATE-FI.REPORT_DATE) <= TO_NUMBER(#{endTime})]]>
+		</if>
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+  </select>
+  
+  <select id="getInvoiceByTsId" resultMap="BaseResultMap">
+	  SELECT
+			*
+		FROM
+			TT_FOL_INVOICE
+		WHERE
+			<!-- VALID = 1
+	    AND  -->
+	        SAP_CODE = #{sapCode}
+		AND INVOICE_NO = (
+			SELECT
+				MAX (wc.INVOICE_NO)
+			FROM
+				TT_FOL_WR_COLLECT wc
+			WHERE
+			     wc.VALID = 1
+			  AND 
+			    wc.TS_ID = #{tsId}
+		)
+  </select>
+  <select id="getInvoiceByInvoiceNo" resultMap="BaseResultMap">
+	  SELECT
+			*
+		FROM
+			TT_FOL_INVOICE
+		WHERE
+	        SAP_CODE = #{sapCode}
+		AND INVOICE_NO = #{invoiceNo}
+  </select>
+  <insert id="insertInvoiceListInReport" parameterType="java.util.List" >
+  INSERT INTO TT_FOL_INVOICE (
+		FLOW_NO,
+		INVOICE_TITLE,
+		REPORTER,
+		REPORT_DATE,
+		INVOICE_CERTIFICATE,
+		STATUS,
+		APPROVE_MAN,
+		VALID,
+		REMARK,
+		CREATE_BY,
+		CREATE_DATE,
+		UPDATE_BY,
+		UPDATE_DATE,
+		INVOICE_NO,
+		EXPRESS_NO,
+		GROSS,
+		LINETOTAL,
+		PART_COST,
+		LABOUR_COST,
+		TAX,
+		SAP_CODE,
+		APPLY_DATE,
+		YEAR,
+		MONTH,
+		OTHER_COST,
+		PROPOSER,
+		OLD_INVOICE_NUM
+	) SELECT
+		#{dto.flowNo},
+		#{dto.invoiceTitle},
+		(
+			SELECT
+				USER_NAME
+			FROM
+				TS_COMMON_USER_LOGON
+			WHERE
+				LOGON_ID = #{dto.createBy}
+		),
+		SYSDATE,
+		NULL,
+		2,
+		NULL,
+		1,
+		NULL,
+		#{dto.createBy},
+		SYSDATE,
+		#{dto.updateBy},
+		SYSDATE,
+		temp.*
+	FROM
+		(
+		<foreach collection="tsIdArray" item="tsId" separator="UNION ALL" > 
+			SELECT
+				TEMP.invoiceNo,
+				TEMP.expressNo,
+				TEMP.gross,
+				TEMP.linetotal,
+				TEMP.partCost,
+				TEMP.labourCost,
+				TEMP.tax,
+				TEMP.sapCode,
+				TEMP.createDate,
+				TEMP. YEAR,
+				TEMP. MONTH,
+				TEMP.otherCost,
+				CUL.USER_NAME userName,
+				temp2.invoice oldInvoiceNo
+			FROM
+				(
+					SELECT
+						WC.TS_ID tsId,
+						MAX (WC.INVOICE_NO) invoiceNo,
+						MAX (WC.EXPRESS_NO) expressNo,
+						SUM (WO.GROSS) gross,
+						SUM (Wo.LINETOTAL) linetotal,
+						SUM (Wo.PART_COST) partCost,
+						SUM (Wo.LABOUR_COST) labourCost,
+					    SUM(Wo.TAX) tax,
+						MAX (WO.SAP_CODE) sapCode,
+						MAX (WC.CREATE_DATE) createDate,
+						MAX (SUBSTR(Wo.WR_DATE, 0, 4)) YEAR,
+						MAX (SUBSTR(Wo.WR_DATE, 6, 7)) MONTH,
+						SUM (Wo.OTHER_COST) otherCost,
+						MAX (WC.CREATE_BY) createBy
+					FROM
+						TT_FOL_WR_COLLECT WC
+					JOIN TT_FOL_WR_ORDER WO ON WO.WR_ID = WC.WR_ID
+					WHERE
+						WC.VALID = 1
+					AND WO.VAILD = 1
+					AND WC.TS_ID = #{tsId}
+					AND (
+						SELECT
+							INVOICE_NO
+						FROM
+							TT_FOL_INVOICE
+						WHERE
+							VALID = 1
+						AND INVOICE_NO = WC.INVOICE_NO AND SAP_CODE=WO.SAP_CODE
+					) IS NULL
+					GROUP BY
+						WC.TS_ID
+				) temp
+			LEFT JOIN (
+				SELECT
+					wc.ts_id tsId,
+					MAX (wc.INVOICE_NO) invoice
+				FROM
+					TT_FOL_WR_COLLECT wc
+				JOIN (
+					SELECT
+						ts_id tsId,
+						MAX (create_date) createDate
+					FROM
+						TT_FOL_WR_COLLECT
+					WHERE
+						valid = 0
+					GROUP BY
+						ts_id
+				) temp ON temp.tsId = WC.ts_id
+				AND TEMP.createDate = WC.create_date
+				WHERE
+					WC.VALID = 0
+				GROUP BY
+					wc.ts_id
+			) temp2 ON temp.tsId = temp2.tsId
+			LEFT JOIN TS_COMMON_USER_LOGON CUL ON CUL.LOGON_ID = TEMP.createBy
+		</foreach>) temp
+  </insert>
+  <select id="findPageList" resultType="com.sgm.dms.fol.invoice.dto.InvoiceDto">
+	SELECT
+		*
+	FROM
+		(SELECT
+			T1.*, ROWNUM row_num
+		FROM
+			  (SELECT
+					invoice.INVOICE_NO invoiceNo,
+					invoice.EXPRESS_NO expressNo,
+					invoice.SAP_CODE sapCode,
+					INVOICE.LINETOTAL linetotal,
+					INVOICE.TAX tax,
+					INVOICE.GROSS gross,
+					INVOICE. YEAR || INVOICE. MONTH month,
+					invoice.APPROVE_MAN approveMan,
+					invoice.REMARK remark,
+					invoice.APPROVE_MSG approveMsg,
+					INVOICE. STATUS status,
+					(
+						CASE INVOICE.STATUS
+						WHEN 1 THEN
+							'草稿'
+						WHEN 2 THEN
+							'已上报'
+						WHEN 3 THEN
+							'发票已退回'
+						WHEN 4 THEN
+							'SAP处理成功'
+						WHEN 5 THEN
+							'SAP处理失败'
+						WHEN 6 THEN
+							'SGM处理成功'
+						WHEN 7 THEN
+							'SGM处理失败'
+						END
+					) statusName,(select SUM (GROSS)
+				FROM
+					TT_FOL_WR_ORDER WO,
+					TT_FOL_WR_COLLECT WC
+				WHERE
+					WO.VAILD = 1
+				AND WC.VALID = 1
+				AND WO.WR_ID = WC.WR_ID
+				AND wo.WR_TYPE IN (
+					SELECT
+						folCode.CODE_CN_DESC
+					FROM
+						TT_FOL_WR_SUBJECT_TYPE wst,
+						TC_FOL_CODE folCode
+					WHERE
+						FOLCODE.STATUS = '10011001'
+					AND WST.VALID = 1
+					AND FOLCODE. TYPE = '1020'
+					AND WST.WR_TYPE_CODE = FOLCODE.CODE
+					AND wst.SUBJECT_CODE = '1'
+				)
+				AND WC.INVOICE_NO = invoice.INVOICE_NO) generalWr,
+				 (select SUM (GROSS)
+				FROM
+					TT_FOL_WR_ORDER WO,
+					TT_FOL_WR_COLLECT WC
+				WHERE
+					WO.VAILD = 1
+				AND WC.VALID = 1
+				AND WO.WR_ID = WC.WR_ID
+				AND wo.WR_TYPE IN (
+					SELECT
+						folCode.CODE_CN_DESC
+					FROM
+						TT_FOL_WR_SUBJECT_TYPE wst,
+						TC_FOL_CODE folCode
+					WHERE
+						FOLCODE.STATUS = '10011001'
+					AND WST.VALID = 1
+					AND FOLCODE. TYPE = '1020'
+					AND WST.WR_TYPE_CODE = FOLCODE.CODE
+					AND wst.SUBJECT_CODE = '2'
+				)
+				AND WC.INVOICE_NO = invoice.INVOICE_NO) marketWr,
+				 (select SUM (GROSS)
+				FROM
+					TT_FOL_WR_ORDER WO,
+					TT_FOL_WR_COLLECT WC
+				WHERE
+					WO.VAILD = 1
+				AND WC.VALID = 1
+				AND WO.WR_ID = WC.WR_ID
+				AND wo.WR_TYPE IN (
+					SELECT
+						folCode.CODE_CN_DESC
+					FROM
+						TT_FOL_WR_SUBJECT_TYPE wst,
+						TC_FOL_CODE folCode
+					WHERE
+						FOLCODE.STATUS = '10011001'
+					AND WST.VALID = 1
+					AND FOLCODE. TYPE = '1020'
+					AND WST.WR_TYPE_CODE = FOLCODE.CODE
+					AND wst.SUBJECT_CODE = '3'
+				)
+				AND WC.INVOICE_NO = invoice.INVOICE_NO) usedCarWr
+				FROM
+						TT_FOL_INVOICE invoice LEFT JOIN TM_FOL_DEALER_INFO di 
+				ON INVOICE.SAP_CODE=di.SAP_CODE AND DI.STATUS_CODE=1001
+				WHERE
+					INVOICE.VALID = 1 AND invoice.status IN (2,4,5,6,7)
+					<if test="sapCode!=null and !sapCode.trim().equals('')">
+						AND invoice.SAP_CODE=#{sapCode}
+					</if>
+					<if test="invoiceNo != null and !invoiceNo.trim().equals('')">
+						AND invoice.INVOICE_NO=#{invoiceNo}
+					</if>
+					<if test="expressNo!=null and !expressNo.trim().equals('')">
+						AND invoice.EXPRESS_NO=#{expressNo}
+					</if>
+					<if test="dealerName!=null and !dealerName.trim().equals('')">
+						AND di.DEALER_NAME=#{dealerName}
+					</if>
+					<if test="status != null and status != 0 and status!='-1'">
+						AND invoice.status=#{status}
+					</if>
+					<if test="approveMan != null and !approveMan.trim().equals('')">
+						AND invoice.APPROVE_MAN=#{approveMan}
+					</if>
+					ORDER BY invoice.create_date desc
+					) T1
+					WHERE
+					<![CDATA[ROWNUM <= #{endNo}]]>) T2
+					WHERE
+			           T2.row_num >= #{beginNo}
+  </select>
+  <select id="findExpressPageList" resultType="com.sgm.dms.fol.invoice.dto.InvoiceDto">
+	SELECT
+		*
+	FROM
+		(SELECT
+			T1.*, ROWNUM row_num
+		FROM
+			  (SELECT
+					invoice.INVOICE_NO invoiceNo,
+					invoice.EXPRESS_NO expressNo,
+					invoice.SAP_CODE sapCode,
+					INVOICE.LINETOTAL linetotal,
+					INVOICE.TAX tax,
+					INVOICE.GROSS gross,
+					INVOICE. YEAR || INVOICE. MONTH month,
+					invoice.APPROVE_MAN approveMan,
+					invoice.REMARK remark,
+					invoice.APPROVE_MSG approveMsg,
+					INVOICE. STATUS status,
+					(
+						CASE INVOICE.STATUS
+						WHEN 1 THEN
+							'草稿'
+						WHEN 2 THEN
+							'已上报'
+						WHEN 3 THEN
+							'发票已退回'
+						WHEN 4 THEN
+							'SAP处理成功'
+						WHEN 5 THEN
+							'SAP处理失败'
+						WHEN 6 THEN
+							'SGM处理成功'
+						WHEN 7 THEN
+							'SGM处理失败'
+						END
+					) statusName,(select SUM (GROSS)
+				FROM
+					TT_FOL_WR_ORDER WO,
+					TT_FOL_WR_COLLECT WC
+				WHERE
+					WO.VAILD = 1
+				AND WC.VALID = 1
+				AND WO.WR_ID = WC.WR_ID
+				AND wo.WR_TYPE IN (
+					SELECT
+						folCode.CODE_CN_DESC
+					FROM
+						TT_FOL_WR_SUBJECT_TYPE wst,
+						TC_FOL_CODE folCode
+					WHERE
+						FOLCODE.STATUS = '10011001'
+					AND WST.VALID = 1
+					AND FOLCODE. TYPE = '1020'
+					AND WST.WR_TYPE_CODE = FOLCODE.CODE
+					AND wst.SUBJECT_CODE = '1'
+				)
+				AND WC.INVOICE_NO = invoice.INVOICE_NO) generalWr,
+				 (select SUM (GROSS)
+				FROM
+					TT_FOL_WR_ORDER WO,
+					TT_FOL_WR_COLLECT WC
+				WHERE
+					WO.VAILD = 1
+				AND WC.VALID = 1
+				AND WO.WR_ID = WC.WR_ID
+				AND wo.WR_TYPE IN (
+					SELECT
+						folCode.CODE_CN_DESC
+					FROM
+						TT_FOL_WR_SUBJECT_TYPE wst,
+						TC_FOL_CODE folCode
+					WHERE
+						FOLCODE.STATUS = '10011001'
+					AND WST.VALID = 1
+					AND FOLCODE. TYPE = '1020'
+					AND WST.WR_TYPE_CODE = FOLCODE.CODE
+					AND wst.SUBJECT_CODE = '2'
+				)
+				AND WC.INVOICE_NO = invoice.INVOICE_NO) marketWr,
+				 (select SUM (GROSS)
+				FROM
+					TT_FOL_WR_ORDER WO,
+					TT_FOL_WR_COLLECT WC
+				WHERE
+					WO.VAILD = 1
+				AND WC.VALID = 1
+				AND WO.WR_ID = WC.WR_ID
+				AND wo.WR_TYPE IN (
+					SELECT
+						folCode.CODE_CN_DESC
+					FROM
+						TT_FOL_WR_SUBJECT_TYPE wst,
+						TC_FOL_CODE folCode
+					WHERE
+						FOLCODE.STATUS = '10011001'
+					AND WST.VALID = 1
+					AND FOLCODE. TYPE = '1020'
+					AND WST.WR_TYPE_CODE = FOLCODE.CODE
+					AND wst.SUBJECT_CODE = '3'
+				)
+				AND WC.INVOICE_NO = invoice.INVOICE_NO) usedCarWr
+				FROM
+						TT_FOL_INVOICE invoice LEFT JOIN TM_FOL_DEALER_INFO di 
+				ON INVOICE.SAP_CODE=di.SAP_CODE AND DI.STATUS_CODE=1001
+				WHERE
+					INVOICE.VALID = 1 AND invoice.status IN (2)
+					<if test="sapCode!=null and !sapCode.trim().equals('')">
+						AND invoice.SAP_CODE=#{sapCode}
+					</if>
+					<if test="invoiceNo != null and !invoiceNo.trim().equals('')">
+						AND invoice.INVOICE_NO=#{invoiceNo}
+					</if>
+					<if test="expressNo!=null and !expressNo.trim().equals('')">
+						AND invoice.EXPRESS_NO=#{expressNo}
+					</if>
+					<if test="dealerName!=null and !dealerName.trim().equals('')">
+						AND di.DEALER_NAME=#{dealerName}
+					</if>
+					<if test="status != null and status != 0 and status!='-1'">
+						AND invoice.status=#{status}
+					</if>
+					<if test="approveMan != null and !approveMan.trim().equals('')">
+						AND invoice.APPROVE_MAN=#{approveMan}
+					</if>
+					ORDER BY invoice.create_date desc
+					) T1
+					WHERE
+					<![CDATA[ROWNUM <= #{endNo}]]>) T2
+					WHERE
+			           T2.row_num >= #{beginNo}
+  </select>
+  <select id="findListTotalNum" resultType="java.lang.Integer">
+	        SELECT
+					count(1)
+				FROM
+						TT_FOL_INVOICE invoice LEFT JOIN TM_FOL_DEALER_INFO di 
+				ON INVOICE.SAP_CODE=di.SAP_CODE AND DI.STATUS_CODE=1001
+				WHERE
+					INVOICE.VALID = 1 AND invoice.status IN (2,4,5,6,7)
+					<if test="sapCode!=null and !sapCode.trim().equals('')">
+						AND invoice.SAP_CODE=#{sapCode}
+					</if>
+					<if test="invoiceNo != null and !invoiceNo.trim().equals('')">
+						AND invoice.INVOICE_NO=#{invoiceNo}
+					</if>
+					<if test="expressNo!=null and !expressNo.trim().equals('')">
+						AND invoice.EXPRESS_NO=#{expressNo}
+					</if>
+					<if test="dealerName!=null and !dealerName.trim().equals('')">
+						AND di.DEALER_NAME=#{dealerName}
+					</if>
+					<if test="status != null and status != 0 and status != -1">
+						AND invoice.status=#{status}
+					</if>
+					<if test="approveMan != null and !approveMan.trim().equals('')">
+						AND invoice.APPROVE_MAN=#{approveMan}
+					</if>
+  </select>
+  
+  <select id="findExpressListTotalNum" resultType="java.lang.Integer">
+	        SELECT
+					count(1)
+				FROM
+						TT_FOL_INVOICE invoice LEFT JOIN TM_FOL_DEALER_INFO di 
+				ON INVOICE.SAP_CODE=di.SAP_CODE AND DI.STATUS_CODE=1001
+				WHERE
+					INVOICE.VALID = 1 AND invoice.status IN (2)
+					<if test="sapCode!=null and !sapCode.trim().equals('')">
+						AND invoice.SAP_CODE=#{sapCode}
+					</if>
+					<if test="invoiceNo != null and !invoiceNo.trim().equals('')">
+						AND invoice.INVOICE_NO=#{invoiceNo}
+					</if>
+					<if test="expressNo!=null and !expressNo.trim().equals('')">
+						AND invoice.EXPRESS_NO=#{expressNo}
+					</if>
+					<if test="dealerName!=null and !dealerName.trim().equals('')">
+						AND di.DEALER_NAME=#{dealerName}
+					</if>
+					<if test="status != null and status != 0 and status != -1">
+						AND invoice.status=#{status}
+					</if>
+					<if test="approveMan != null and !approveMan.trim().equals('')">
+						AND invoice.APPROVE_MAN=#{approveMan}
+					</if>
+  </select>
+  <update id="updateInvoiceStatus">
+     UPDATE TT_FOL_INVOICE
+		SET STATUS = #{status},
+		 POST_SAP_DATE = SYSDATE,
+		 APPROVE_MAN = (SELECT USER_NAME FROM TS_COMMON_USER_LOGON WHERE LOGON_ID=#{approveMan}),
+		 <if test="approveMsg != null and !approveMsg.trim().equals('')">
+		  APPROVE_MSG = #{approveMsg}, 
+		</if>
+		 UPDATE_BY = #{approveMan},
+		 UPDATE_DATE = SYSDATE
+		WHERE
+			INVOICE_NO = #{invoiceNo}
+		AND SAP_CODE=#{sapCode}
+		AND VALID = 1
+  </update>
+  <update id="saveInvoiceRemark">
+     UPDATE TT_FOL_INVOICE
+		SET 
+		 REMARK = #{remark},
+		 UPDATE_BY = #{logonId},
+		 UPDATE_DATE = SYSDATE
+		WHERE
+			INVOICE_NO = #{invoiceNo}
+		AND	SAP_CODE = #{sapCode}
+		AND VALID = 1
+  </update>
+  <select id="findInvoiceDetailList" resultType="com.sgm.dms.fol.invoice.dto.WrOrderDTO">
+    SELECT
+		WO.WR_TYPE wrType,
+		WO.OTHER_COST otherCost,
+		WO.LABOUR_COST labourCost,
+		WO.PART_COST partCost,
+		WO.TAX tax,
+		WO.LINETOTAL linetotal,
+		WO.GROSS gross,
+		invoice.SAP_CODE sapCode,
+		invoice.INVOICE_NO invoiceNo,
+		invoice.EXPRESS_NO expressNo
+	FROM
+		TT_FOL_INVOICE invoice,
+		TT_FOL_WR_COLLECT wc,
+		TT_FOL_WR_ORDER wo
+	WHERE
+		invoice.valid = 1
+	AND wc.valid = 1
+	AND wo.VAILD = 1
+	AND WC.WR_ID = wo.WR_ID
+	AND invoice.INVOICE_NO = WC.INVOICE_NO
+	AND invoice.INVOICE_NO = #{invoiceNo}
+	AND invoice.SAP_CODE = #{sapCode}
+	AND wo.SAP_CODE = #{sapCode}
+  </select>
+</mapper>

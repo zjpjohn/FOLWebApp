@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, user-scalable=no" />
+
+<title>登入页面</title>
+<script type="text/javascript">
+	function doLogin() {
+		var pathName = document.location.pathname;
+		var index = pathName.substr(1).indexOf("/");
+		var contextPath = pathName.substr(0, index + 1);
+		document.loginform.action = contextPath + "/common/login";
+		document.loginform.submit();
+	}
+</script>
+</head>
+<body onload="doLogin()">
+	<form name="loginform" action="" method="get" novalidate>
+	 <!-- <input type="hidden" id="userAccount" name="userAccount" value="{{userAccount}}"> -->
+	</form>
+
+</body>
+</html>

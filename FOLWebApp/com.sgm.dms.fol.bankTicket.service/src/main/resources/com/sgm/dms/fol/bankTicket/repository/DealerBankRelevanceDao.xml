@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<!-- 银行维护 -->
+<mapper namespace="com.sgm.dms.fol.bankTicket.repository.DealerBankRelevanceDao">
+
+	<resultMap id="DealerBankRelevanceRecord" type="com.sgm.dms.fol.bankTicket.dto.DealerBankRelevanceDTO">
+		<id 	property="id" 		    column="ID" 		        javaType="java.lang.Long" 		jdbcType="NUMERIC"/>
+		<result property="dealerType" 	column="DEALER_TYPE" 		javaType="java.lang.Integer" 	jdbcType="NUMERIC"/>
+		<result property="bankId" 		column="BANK_ID" 			javaType="java.lang.Long" 		jdbcType="NUMERIC"/>
+<!-- 		<result property="dealerName" 	column="DEALER_NAME" 		javaType="java.lang.String"		jdbcType="VARCHAR"/> -->
+		<result property="sapCode" 		column="SAP_CODE" 			javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="auditStatus" 	column="AUDIT_STATUS" 		javaType="java.lang.Integer"	jdbcType="NUMERIC"/>
+		<result property="auditMsg" 	column="AUDIT_MSG" 			javaType="java.lang.String"		jdbcType="VARCHAR"/>
+ 	</resultMap>
+ 	
+ 	<!-- 保存银行银票额度信息 -->
+ 	<insert id="addDealerBankRelevance" parameterType="com.sgm.dms.fol.bankTicket.dto.DealerBankRelevanceDTO">
+ 		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_TT_FOL_DEALER_BANK_R_ID.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+ 		INSERT INTO TT_FOL_DEALER_BANK_RELEVANCE(
+ 			ID,
+    		DEALER_TYPE,
+			SAP_CODE,
+			DEALER_NAME,
+			BANK_ID,
+			AUDIT_STATUS,
+			STATUS,
+			REMARK,
+			CREATE_BY,
+			CREATE_DATE,
+			UPDATE_BY,
+			UPDATE_DATE)
+        VALUES
+           (#{id}, 
+            #{dealerType}, 
+            #{sapCode},
+            (SELECT DEALER_NAME FROM TM_FOL_DEALER_INFO WHERE SAP_CODE=#{sapCode}), 
+            #{bankId},
+            1,
+            1, 
+            #{remark,jdbcType=VARCHAR}, 
+            #{createBy}, 
+            SYSDATE, 
+            #{updateBy}, 
+            SYSDATE
+           )
+ 	</insert>
+ 	
+ 	<select id="findDealerBankRelevanceByWhere" parameterType="com.sgm.dms.fol.bankTicket.dto.DealerBankRelevanceDTO" resultMap="DealerBankRelevanceRecord">
+		SELECT  N.*   FROM (
+	 			SELECT  T.*,ROWNUM AS RN  FROM 
+		 			(
+		 				SELECT BR.*,
+			 				T1.CODE_CN_DESC AS dealerTypeName,
+			 				T2.CODE_CN_DESC AS auditStatusName,
+			 				BI.BANK_CH_NAME AS bankChName,
+			 				BI.BANK_ABBR AS bankAbbr,
+			 				AF.AUDIT_MSG AS auditMsg,
+							FC.CODE_CN_DESC AS brandName,
+							DI.DEALER_NAME AS dealerName
+						FROM TT_FOL_DEALER_BANK_RELEVANCE BR
+						JOIN TM_FOL_DEALER_INFO DI ON BR.SAP_CODE=DI.SAP_CODE
+            			LEFT JOIN TC_FOL_CODE FC ON
+          				SUBSTR((BR.SAP_CODE),0,2)=CAST(FC.CODE AS VARCHAR2(10))
+						JOIN TT_FOL_BANK_INFO BI ON BR.BANK_ID=BI.ID
+						JOIN TT_FOL_BANK_TICKET_AUDIT_FLOW AF ON AF.REFER_TABLE_ID=BR.ID
+						JOIN (SELECT MAX(TT_FOL_BANK_TICKET_AUDIT_FLOW.ID) AS ID 
+						FROM TT_FOL_BANK_TICKET_AUDIT_FLOW
+						JOIN TT_FOL_BUSINESS_TABLE ON TT_FOL_BANK_TICKET_AUDIT_FLOW.BUSINESS_CODE=TT_FOL_BUSINESS_TABLE.BUSINESS_CODE AND TT_FOL_BUSINESS_TABLE.BUSINESS_TABLE_NAME='TT_FOL_DEALER_BANK_RELEVANCE'
+						GROUP BY TT_FOL_BANK_TICKET_AUDIT_FLOW.REFER_TABLE_ID) TAF2 ON AF.ID=TAF2.ID
+						LEFT JOIN TC_FOL_CODE T1 ON BR.DEALER_TYPE=T1.CODE AND T1.TYPE_NAME='渠道类型' 
+						LEFT JOIN TC_FOL_CODE T2 ON BR.AUDIT_STATUS=T2.CODE AND T2.TYPE_NAME='银票审核状态'
+						WHERE BR.STATUS=1
+						
+						<if test="dealerType!=null and dealerType>=0">
+							AND BR.DEALER_TYPE=#{dealerType}
+						</if>
+						
+						<if test="dealerName!=null and dealerName!=''">
+							AND DI.DEALER_NAME like concat(concat('%',#{dealerName}),'%')
+						</if>
+						
+						<if test="sapCode!=null and sapCode!=''">
+							AND BR.SAP_CODE=#{sapCode}
+						</if>
+						
+						<if test="auditStatus!=null and auditStatus>=0">
+							AND BR.AUDIT_STATUS=#{auditStatus}
+						</if>
+						<if test="auditStatus!=null and auditStatus==-1">
+							AND BR.AUDIT_STATUS NOT IN (2,5)
+						</if> 
+						<if test="brand!=null and brand>=0">
+							AND SUBSTR(BR.SAP_CODE,0,2)=#{brand}
+						</if>
+						<if test="auditStatusList != null">
+								AND BR.AUDIT_STATUS IN 
+								<foreach item="item" index="index" collection="auditStatusList" open="(" separator="," close=")">
+										#{item}
+								</foreach>
+						</if>
+						) T 
+		 			 <![CDATA[ WHERE ROWNUM <=#{endNo} ]]>
+			    	
+		    	) N
+    	<![CDATA[ WHERE N.RN>#{beginNo}]]>
+	</select>
+	
+	<select id="findDealerBankRelevanceCountByWhere" parameterType="com.sgm.dms.fol.bankTicket.dto.DealerBankRelevanceDTO" resultType="java.lang.Integer">
+		 				SELECT count(1)
+						FROM TT_FOL_DEALER_BANK_RELEVANCE BR
+						JOIN TM_FOL_DEALER_INFO DI ON BR.SAP_CODE=DI.SAP_CODE
+            			LEFT JOIN TC_FOL_CODE FC ON
+          				SUBSTR((BR.SAP_CODE),0,2)=CAST(FC.CODE AS VARCHAR2(10))
+						JOIN TT_FOL_BANK_INFO BI ON BR.BANK_ID=BI.ID
+						JOIN TT_FOL_BANK_TICKET_AUDIT_FLOW AF ON AF.REFER_TABLE_ID=BR.ID
+						JOIN (SELECT MAX(TT_FOL_BANK_TICKET_AUDIT_FLOW.ID) AS ID 
+						FROM TT_FOL_BANK_TICKET_AUDIT_FLOW
+						JOIN TT_FOL_BUSINESS_TABLE ON TT_FOL_BANK_TICKET_AUDIT_FLOW.BUSINESS_CODE=TT_FOL_BUSINESS_TABLE.BUSINESS_CODE AND TT_FOL_BUSINESS_TABLE.BUSINESS_TABLE_NAME='TT_FOL_DEALER_BANK_RELEVANCE'
+						GROUP BY TT_FOL_BANK_TICKET_AUDIT_FLOW.REFER_TABLE_ID) TAF2 ON AF.ID=TAF2.ID
+						LEFT JOIN TC_FOL_CODE T1 ON BR.DEALER_TYPE=T1.CODE AND T1.TYPE_NAME='渠道类型' 
+						LEFT JOIN TC_FOL_CODE T2 ON BR.AUDIT_STATUS=T2.CODE AND T2.TYPE_NAME='银票审核状态'
+						WHERE BR.STATUS=1
+						
+						<if test="dealerType!=null and dealerType>=0">
+							AND BR.DEALER_TYPE=#{dealerType}
+						</if>
+						
+						<if test="dealerName!=null and dealerName!=''">
+							AND DI.DEALER_NAME like concat(concat('%',#{dealerName}),'%')
+						</if>
+						
+						<if test="sapCode!=null and sapCode!=''">
+							AND BR.SAP_CODE=#{sapCode}
+						</if>
+						
+						<if test="auditStatus!=null and auditStatus>=0">
+							AND BR.AUDIT_STATUS=#{auditStatus}
+						</if>
+						<if test="auditStatus!=null and auditStatus==-1">
+							AND BR.AUDIT_STATUS NOT IN (2,5)
+						</if> 
+						<if test="brand!=null and brand>=0">
+							AND SUBSTR(BR.SAP_CODE,0,2)=#{brand}
+						</if>
+						<if test="auditStatusList != null">
+								AND BR.AUDIT_STATUS IN 
+								<foreach item="item" index="index" collection="auditStatusList" open="(" separator="," close=")">
+										#{item}
+								</foreach>
+						</if>
+	</select>
+	
+	<update id="deleteDealerBankRelevance" parameterType="com.sgm.dms.fol.bankTicket.dto.DealerBankRelevanceDTO">
+		UPDATE TT_FOL_DEALER_BANK_RELEVANCE 
+		SET STATUS=2
+		WHERE ID=#{id}
+	</update>
+	<!--更新特殊经销商信息  -->
+	<update id="updateDealerBankRelevance" parameterType="com.sgm.dms.fol.bankTicket.domain.DealerBankRelevancePo">
+	 	UPDATE TT_FOL_DEALER_BANK_RELEVANCE SET
+			AUDIT_STATUS=#{auditStatus},
+			<if test="remark!=null and remark>=0">
+			    REMARK=#{remark,jdbcType=VARCHAR}, 
+			</if>
+			UPDATE_BY=#{updateBy}, 
+			UPDATE_DATE=SYSDATE
+		WHERE ID=#{id}
+	</update>
+</mapper>

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<mapper namespace="com.sgm.dms.fol.bankTicket.repository.BankTicketInterestMonthDao">
+	<!-- 用户月度贴息信息 -->
+	<resultMap id="bankTicketInterestRecord" type="com.sgm.dms.fol.bankTicket.dto.BankTicketInterestMonthDTO">
+		<id 	property="id" 		      column="ID"                javaType="java.lang.Long" 	        jdbcType="NUMERIC"/>
+		<result property="sapCode" 	      column="SAP_CODE"		     javaType="java.lang.String" 	    jdbcType="VARCHAR"/>
+		<result property="dealerName"	  column="DEALER_NAME"   	 javaType="java.lang.String" 		jdbcType="VARCHAR"/>
+		<result property="interestAmount" column="INTEREST_AMOUNT"   javaType="java.math.BigDecimal" 	jdbcType="NUMERIC"/>
+		<result property="unTaxAmount" 	  column="UN_TAX_AMOUNT"	 javaType="java.math.BigDecimal"	jdbcType="NUMERIC"/>
+		<result property="addTaxAmount"   column="ADD_TAX_AMOUNT"	 javaType="java.math.BigDecimal"	jdbcType="NUMERIC"/>
+		<result property="year" 	      column="YEAR"	             javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="month" 	      column="MONTH"		     javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="certificateNo"  column="CERTIFICATE_NO"    javaType="java.lang.String"		jdbcType="VARCHAR"/>
+		<result property="issueStatus" 	  column="ISSUE_STATUS"		 javaType="java.lang.Integer"		jdbcType="VARCHAR"/>
+		<result property="flag" 	      column="FLAG"		         javaType="java.lang.String"		jdbcType="VARCHAR"/>
+ 	    <result property="valid" 	      column="VALID"             javaType="java.lang.Integer"	    jdbcType="NUMERIC"/>
+ 	    <result property="remark" 		  column="REMARK"            javaType="java.lang.String"	    jdbcType="VARCHAR"/>
+ 	    <result property="createBy" 	  column="CREATE_BY"         javaType="java.lang.Long"	    	jdbcType="NUMERIC"/>
+ 	    <result property="createDate"     column="CREATE_DATE"       javaType="java.util.Date"			jdbcType="DATE"/>
+ 	    <result property="updateBy" 	  column="UPDATE_BY"         javaType="java.lang.Long"			jdbcType="NUMERIC"/>
+ 	    <result property="updateDate" 	  column="UPDATE_DATE"       javaType="java.util.Date"			jdbcType="DATE"/>
+ 	    <result property="invoiceNumber"  column="INVOICE_NUMBER"    javaType="java.lang.String"		jdbcType="VARCHAR"/>
+ 	    <result property="trackNumber"    column="TRACK_NUMBER"      javaType="java.lang.String"		jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	<!-- 根据sapcode year month 查询月度贴息信息 -->
+	<select id="findBankTicketIsHasInvoiceNumberBySapCodeAndTime" resultType="java.lang.Integer">
+		SELECT  
+			COUNT(1) 
+		FROM 
+		TT_FOL_BANK_TI_INTEREST_MONTH 
+		WHERE VALID=1
+		<if test="param1!=null and param1!=''">
+			AND SAP_CODE=#{param1}
+		</if>
+		AND YEAR=#{param2}
+		AND MONTH=#{param3} AND CERTIFICATE_NO IS NOT NULL AND FLAG='S'
+	</select>
+	
+	<!-- 保存月度贴息信息 -->
+	<insert id="saveBankTicketInterestMonth"  parameterType="com.sgm.dms.fol.bankTicket.dto.BankTicketInterestMonthDTO">
+		 <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id" >
+			SELECT SEQ_BANK_TI_INTEREST_MONTH_ID.NEXTVAL AS id FROM DUAL
+	    </selectKey> 
+		
+		INSERT INTO TT_FOL_BANK_TI_INTEREST_MONTH
+			(ID, 
+			 SAP_CODE, 
+			 INTEREST_AMOUNT, 
+			 UN_TAX_AMOUNT, 
+			 ADD_TAX_AMOUNT, 
+			 YEAR, 
+			 MONTH, 
+			 CERTIFICATE_NO, 
+			 FLAG, VALID, 
+			 REMARK, 
+			 CREATE_BY, 
+			 CREATE_DATE, 
+			 UPDATE_BY, 
+			 UPDATE_DATE)
+		VALUES
+			(#{id}, 
+			 #{sapCode}, 
+			 #{interestAmount}, 
+			 #{unTaxAmount}, 
+			 #{addTaxAmount}, 
+			 #{year}, 
+			 #{month}, 
+			 #{certificateNo,jdbcType=VARCHAR}, 
+			 #{flag,jdbcType=VARCHAR}, 
+			 1, 
+			 #{remark,jdbcType=VARCHAR}, 
+			 #{createBy}, 
+			 #{createDate}, 
+			 #{updateBy}, 
+			 #{updateDate}
+			 )
+	</insert>
+	
+	<!-- 更新月度贴息信息 -->
+	<update id="updateBankTicketInterestMonth" parameterType="com.sgm.dms.fol.bankTicket.dto.BankTicketInterestMonthDTO">
+		UPDATE TT_FOL_BANK_TI_INTEREST_MONTH
+		  SET  
+		  	   CERTIFICATE_NO=#{certificateNo,jdbcType=VARCHAR}, 
+			   FLAG=#{flag}, 
+			   REMARK=#{remark,jdbcType=VARCHAR}, 
+		       UPDATE_BY=#{updateBy}, 
+		       UPDATE_DATE=#{updateDate}
+		WHERE ID=#{id}
+	</update>
+	
+	<!-- 根据sapcode 年月  更新发票号码和快递单号 -->
+	<update id="updateBankTicketInterestMonthBySapCodeAndTime"  parameterType="com.sgm.dms.fol.bankTicket.dto.BankTicketInterestMonthDTO">
+		UPDATE TT_FOL_BANK_TI_INTEREST_MONTH
+		  SET  
+		  	   INVOICE_NUMBER=#{invoiceNumber,jdbcType=VARCHAR},
+		  	   TRACK_NUMBER=#{trackNumber,jdbcType=VARCHAR},
+		       UPDATE_BY=#{updateBy}, 
+		       UPDATE_DATE=#{updateDate}
+		WHERE SAP_CODE=#{sapCode}
+			  AND YEAR=#{year}
+			  AND MONTH=#{month}
+	
+	</update>
+	
+	<update id="updateBankTicketInterestIssueStatusOrConfirmStatusById" parameterType="com.sgm.dms.fol.bankTicket.dto.BankTicketInterestIssueAndConfirmDTO">
+		UPDATE TT_FOL_BANK_TI_INTEREST_MONTH SET UPDATE_BY=#{updateBy},UPDATE_DATE=SYSDATE
+		<if test="issueStatus!=null and issueStatus!=''">
+			,ISSUE_STATUS=#{issueStatus}
+		</if>
+		<if test="confirmStatus!=null and confirmStatus!=''">
+			,CONFIRM_STATUS=#{confirmStatus}
+		</if>
+		WHERE VALID=1 AND ID=#{id}
+	</update>
+	
+	<select id="findBankTicketInterestMonthByWhere" resultType="com.sgm.dms.fol.bankTicket.dto.BankTicketInterestMonthDTO">
+		<if test="endNo!=null and endNo>0">
+			SELECT t2.*
+			FROM (SELECT t1.*,ROWNUM AS RN FROM (
+		</if>
+		SELECT TIM.ID AS id,
+			TIM.SAP_CODE AS sapCode,
+			TIM.INTEREST_AMOUNT AS interestAmount,
+			TIM.UN_TAX_AMOUNT AS unTaxAmount,
+			TIM.ADD_TAX_AMOUNT AS addTaxAmount,
+			TIM.YEAR AS year,
+			TIM.MONTH AS month,
+			TIM.CERTIFICATE_NO AS certificateNo,
+			TIM.ISSUE_STATUS AS issueStatus,
+			TIM.FLAG AS flag,
+			TIM.VALID AS valid,
+			TIM.REMARK AS remark,
+			TIM.CREATE_BY AS createBy,
+			TIM.CREATE_DATE AS createDate,
+			TIM.UPDATE_BY AS updateBy, 
+			TIM.UPDATE_DATE AS updateDate,
+			TIM.INVOICE_NUMBER AS invoiceNumber,
+			TIM.TRACK_NUMBER AS trackNumber,
+			DI.DEALER_NAME AS dealerName,
+			(CASE WHEN TIM.ISSUE_STATUS=1 THEN '已发放' ELSE '未发放' END) AS issueStatusName,
+			(CASE WHEN TIM.CONFIRM_STATUS=1 THEN '已确认' ELSE '未确认' END) AS confirmStatusName
+		FROM TT_FOL_BANK_TI_INTEREST_MONTH TIM
+		LEFT JOIN TM_FOL_DEALER_INFO DI ON TIM.SAP_CODE=DI.SAP_CODE
+		<if test="sapCode!=null and sapCode!=''">
+			AND TIM.SAP_CODE=#{sapCode}
+		</if>
+		
+		WHERE TIM.VALID=1
+		<if test="year!=null and year!=''">
+			AND TIM.YEAR=#{year}
+		</if>
+		<if test="month!=null and month!=''">
+		 	AND TIM.MONTH=#{month}
+		</if>
+		 AND TIM.CERTIFICATE_NO IS NOT NULL 
+		 AND TIM.FLAG='S'
+		<if test="endNo!=null and endNo>0">
+			) t1) t2
+			<![CDATA[ WHERE T2.RN>=#{beginNo} and T2.RN<=#{endNo} ]]>
+		</if>
+	</select>
+	
+	<select id="findBankTicketInterestMonthTotalNumWhere" resultType="java.lang.Integer">
+		SELECT count(1)
+			FROM TT_FOL_BANK_TI_INTEREST_MONTH TIM
+			WHERE TIM.VALID=1
+						
+		<if test="sapCode!=null and sapCode!=''">
+			AND TIM.SAP_CODE=#{sapCode}
+		</if>
+		<if test="year!=null and year!=''">
+			AND TIM.YEAR=#{year}
+		</if>
+		<if test="month!=null and month!=''">
+		 	AND TIM.MONTH=#{month}
+		</if>
+		 AND TIM.CERTIFICATE_NO IS NOT NULL 
+		 AND TIM.FLAG='S'
+	</select>
+	
+</mapper>

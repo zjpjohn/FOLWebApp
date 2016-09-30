@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:ns1="http://ws.agent.service.dms.sgm.com/" name="ClaimOperationWebService" targetNamespace="http://ws.agent.service.dms.sgm.com/">
+  <wsdl:types>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://ws.agent.service.dms.sgm.com/" elementFormDefault="unqualified" targetNamespace="http://ws.agent.service.dms.sgm.com/" version="1.0">
+
+  <xs:element name="changeInvoiceToPayment" type="tns:changeInvoiceToPayment"/>
+
+  <xs:element name="changeInvoiceToPaymentCompensation" type="tns:changeInvoiceToPaymentCompensation"/>
+
+  <xs:element name="changeInvoiceToPaymentCompensationResponse" type="tns:changeInvoiceToPaymentCompensationResponse"/>
+
+  <xs:element name="changeInvoiceToPaymentResponse" type="tns:changeInvoiceToPaymentResponse"/>
+
+  <xs:element name="changePaymentToInvoice" type="tns:changePaymentToInvoice"/>
+
+  <xs:element name="changePaymentToInvoiceCompensation" type="tns:changePaymentToInvoiceCompensation"/>
+
+  <xs:element name="changePaymentToInvoiceCompensationResponse" type="tns:changePaymentToInvoiceCompensationResponse"/>
+
+  <xs:element name="changePaymentToInvoiceResponse" type="tns:changePaymentToInvoiceResponse"/>
+
+  <xs:element name="changeSubmitToDeny" type="tns:changeSubmitToDeny"/>
+
+  <xs:element name="changeSubmitToDenyCompensation" type="tns:changeSubmitToDenyCompensation"/>
+
+  <xs:element name="changeSubmitToDenyCompensationResponse" type="tns:changeSubmitToDenyCompensationResponse"/>
+
+  <xs:element name="changeSubmitToDenyResponse" type="tns:changeSubmitToDenyResponse"/>
+
+  <xs:element name="changeSubmitToPayment" type="tns:changeSubmitToPayment"/>
+
+  <xs:element name="changeSubmitToPaymentCompensation" type="tns:changeSubmitToPaymentCompensation"/>
+
+  <xs:element name="changeSubmitToPaymentCompensationResponse" type="tns:changeSubmitToPaymentCompensationResponse"/>
+
+  <xs:element name="changeSubmitToPaymentResponse" type="tns:changeSubmitToPaymentResponse"/>
+
+  <xs:element name="changeSubmitToReject" type="tns:changeSubmitToReject"/>
+
+  <xs:element name="changeSubmitToRejectCompensation" type="tns:changeSubmitToRejectCompensation"/>
+
+  <xs:element name="changeSubmitToRejectCompensationResponse" type="tns:changeSubmitToRejectCompensationResponse"/>
+
+  <xs:element name="changeSubmitToRejectResponse" type="tns:changeSubmitToRejectResponse"/>
+
+  <xs:complexType name="changeSubmitToReject">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="tns:claimOperationRequestVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="claimOperationRequestVO">
+    <xs:sequence>
+      <xs:element name="crosscheck_amount" type="xs:int"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="simpleClaimOrder" nillable="true" type="tns:simpleClaimOrderVO"/>
+      <xs:element minOccurs="0" name="ts_id" type="xs:string"/>
+      <xs:element name="ts_time" type="xs:long"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="simpleClaimOrderVO">
+    <xs:sequence>
+      <xs:element name="change_time" type="xs:long"/>
+      <xs:element minOccurs="0" name="claim_no" type="xs:string"/>
+      <xs:element name="crosscheck_after_status" type="xs:int"/>
+      <xs:element name="crosscheck_before_status" type="xs:int"/>
+      <xs:element name="line_no" type="xs:int"/>
+      <xs:element minOccurs="0" name="reason_code" type="xs:string"/>
+      <xs:element minOccurs="0" name="refer_code" type="xs:string"/>
+      <xs:element name="refer_type" type="xs:long"/>
+      <xs:element minOccurs="0" name="remark" type="xs:string"/>
+      <xs:element minOccurs="0" name="warranty_code" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeSubmitToRejectResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="tns:claimOperationResultVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="claimOperationResultVO">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="error" type="xs:string"/>
+      <xs:element minOccurs="0" name="refer_code" type="xs:string"/>
+      <xs:element name="result_code" type="xs:int"/>
+      <xs:element minOccurs="0" name="ts_id" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeSubmitToDenyCompensation">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="tns:claimOperationCompensationRequestVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="claimOperationCompensationRequestVO">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ts_id" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeSubmitToDenyCompensationResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="tns:claimOperationCompensationResultVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="claimOperationCompensationResultVO">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="error" type="xs:string"/>
+      <xs:element name="result_code" type="xs:int"/>
+      <xs:element minOccurs="0" name="ts_id" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeInvoiceToPaymentCompensation">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="tns:claimOperationCompensationRequestVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeInvoiceToPaymentCompensationResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="tns:claimOperationCompensationResultVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeInvoiceToPayment">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="tns:claimOperationRequestVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeInvoiceToPaymentResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="tns:claimOperationResultVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeSubmitToRejectCompensation">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="tns:claimOperationCompensationRequestVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeSubmitToRejectCompensationResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="tns:claimOperationCompensationResultVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changePaymentToInvoice">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="tns:claimOperationRequestVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changePaymentToInvoiceResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="tns:claimOperationResultVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeSubmitToPaymentCompensation">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="tns:claimOperationCompensationRequestVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeSubmitToPaymentCompensationResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="tns:claimOperationCompensationResultVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeSubmitToPayment">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="tns:claimPaymentOperationRequestVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="claimPaymentOperationRequestVO">
+    <xs:sequence>
+      <xs:element name="approved_amount_tax" type="xs:double"/>
+      <xs:element name="approved_amount_total" type="xs:double"/>
+      <xs:element name="crosscheck_amount" type="xs:int"/>
+      <xs:element name="labor_amount" type="xs:double"/>
+      <xs:element name="labor_amount_tax" type="xs:double"/>
+      <xs:element name="other_amount" type="xs:double"/>
+      <xs:element name="other_amount_tax" type="xs:double"/>
+      <xs:element name="paid_amount" type="xs:double"/>
+      <xs:element name="part_handling_amount" type="xs:double"/>
+      <xs:element name="parts_amount" type="xs:double"/>
+      <xs:element name="parts_amount_tax" type="xs:double"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="paymentClaimOrderVO" nillable="true" type="tns:paymentClaimOrderVO"/>
+      <xs:element minOccurs="0" name="ts_id" type="xs:string"/>
+      <xs:element name="ts_time" type="xs:long"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="paymentClaimOrderVO">
+    <xs:sequence>
+      <xs:element name="change_time" type="xs:long"/>
+      <xs:element minOccurs="0" name="claim_no" type="xs:string"/>
+      <xs:element name="crosscheck_after_status" type="xs:int"/>
+      <xs:element name="crosscheck_before_status" type="xs:int"/>
+      <xs:element name="line_no" type="xs:int"/>
+      <xs:element minOccurs="0" name="reason_code" type="xs:string"/>
+      <xs:element minOccurs="0" name="refer_code" type="xs:string"/>
+      <xs:element name="refer_type" type="xs:long"/>
+      <xs:element minOccurs="0" name="remark" type="xs:string"/>
+      <xs:element minOccurs="0" name="warranty_code" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeSubmitToPaymentResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="tns:claimOperationResultVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeSubmitToDeny">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="tns:claimOperationRequestVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changeSubmitToDenyResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="tns:claimOperationResultVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changePaymentToInvoiceCompensation">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="tns:claimOperationCompensationRequestVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="changePaymentToInvoiceCompensationResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="tns:claimOperationCompensationResultVO"/>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="changeSubmitToPaymentCompensationResponse">
+    <wsdl:part element="ns1:changeSubmitToPaymentCompensationResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeSubmitToReject">
+    <wsdl:part element="ns1:changeSubmitToReject" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeSubmitToDenyCompensationResponse">
+    <wsdl:part element="ns1:changeSubmitToDenyCompensationResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changePaymentToInvoice">
+    <wsdl:part element="ns1:changePaymentToInvoice" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changePaymentToInvoiceResponse">
+    <wsdl:part element="ns1:changePaymentToInvoiceResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeInvoiceToPaymentCompensation">
+    <wsdl:part element="ns1:changeInvoiceToPaymentCompensation" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeSubmitToDeny">
+    <wsdl:part element="ns1:changeSubmitToDeny" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeSubmitToRejectCompensationResponse">
+    <wsdl:part element="ns1:changeSubmitToRejectCompensationResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeInvoiceToPaymentResponse">
+    <wsdl:part element="ns1:changeInvoiceToPaymentResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changePaymentToInvoiceCompensationResponse">
+    <wsdl:part element="ns1:changePaymentToInvoiceCompensationResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeInvoiceToPayment">
+    <wsdl:part element="ns1:changeInvoiceToPayment" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeSubmitToRejectCompensation">
+    <wsdl:part element="ns1:changeSubmitToRejectCompensation" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changePaymentToInvoiceCompensation">
+    <wsdl:part element="ns1:changePaymentToInvoiceCompensation" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeSubmitToRejectResponse">
+    <wsdl:part element="ns1:changeSubmitToRejectResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeInvoiceToPaymentCompensationResponse">
+    <wsdl:part element="ns1:changeInvoiceToPaymentCompensationResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeSubmitToPaymentCompensation">
+    <wsdl:part element="ns1:changeSubmitToPaymentCompensation" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeSubmitToDenyResponse">
+    <wsdl:part element="ns1:changeSubmitToDenyResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeSubmitToPayment">
+    <wsdl:part element="ns1:changeSubmitToPayment" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeSubmitToPaymentResponse">
+    <wsdl:part element="ns1:changeSubmitToPaymentResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeSubmitToDenyCompensation">
+    <wsdl:part element="ns1:changeSubmitToDenyCompensation" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="ClaimOperationWebService">
+    <wsdl:operation name="changeSubmitToReject">
+      <wsdl:input message="ns1:changeSubmitToReject" name="changeSubmitToReject">
+    </wsdl:input>
+      <wsdl:output message="ns1:changeSubmitToRejectResponse" name="changeSubmitToRejectResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeSubmitToDenyCompensation">
+      <wsdl:input message="ns1:changeSubmitToDenyCompensation" name="changeSubmitToDenyCompensation">
+    </wsdl:input>
+      <wsdl:output message="ns1:changeSubmitToDenyCompensationResponse" name="changeSubmitToDenyCompensationResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeInvoiceToPaymentCompensation">
+      <wsdl:input message="ns1:changeInvoiceToPaymentCompensation" name="changeInvoiceToPaymentCompensation">
+    </wsdl:input>
+      <wsdl:output message="ns1:changeInvoiceToPaymentCompensationResponse" name="changeInvoiceToPaymentCompensationResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeInvoiceToPayment">
+      <wsdl:input message="ns1:changeInvoiceToPayment" name="changeInvoiceToPayment">
+    </wsdl:input>
+      <wsdl:output message="ns1:changeInvoiceToPaymentResponse" name="changeInvoiceToPaymentResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeSubmitToRejectCompensation">
+      <wsdl:input message="ns1:changeSubmitToRejectCompensation" name="changeSubmitToRejectCompensation">
+    </wsdl:input>
+      <wsdl:output message="ns1:changeSubmitToRejectCompensationResponse" name="changeSubmitToRejectCompensationResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changePaymentToInvoice">
+      <wsdl:input message="ns1:changePaymentToInvoice" name="changePaymentToInvoice">
+    </wsdl:input>
+      <wsdl:output message="ns1:changePaymentToInvoiceResponse" name="changePaymentToInvoiceResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeSubmitToPaymentCompensation">
+      <wsdl:input message="ns1:changeSubmitToPaymentCompensation" name="changeSubmitToPaymentCompensation">
+    </wsdl:input>
+      <wsdl:output message="ns1:changeSubmitToPaymentCompensationResponse" name="changeSubmitToPaymentCompensationResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeSubmitToPayment">
+      <wsdl:input message="ns1:changeSubmitToPayment" name="changeSubmitToPayment">
+    </wsdl:input>
+      <wsdl:output message="ns1:changeSubmitToPaymentResponse" name="changeSubmitToPaymentResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeSubmitToDeny">
+      <wsdl:input message="ns1:changeSubmitToDeny" name="changeSubmitToDeny">
+    </wsdl:input>
+      <wsdl:output message="ns1:changeSubmitToDenyResponse" name="changeSubmitToDenyResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changePaymentToInvoiceCompensation">
+      <wsdl:input message="ns1:changePaymentToInvoiceCompensation" name="changePaymentToInvoiceCompensation">
+    </wsdl:input>
+      <wsdl:output message="ns1:changePaymentToInvoiceCompensationResponse" name="changePaymentToInvoiceCompensationResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+</wsdl:definitions>

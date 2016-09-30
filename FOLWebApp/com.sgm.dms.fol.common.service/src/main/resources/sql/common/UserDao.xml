@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sgm.dms.fol.common.service.repository.UserDao">
+ 	<!-- 用户信息返回对象映射 -->
+ 	<resultMap id="UserSearchResult" type="com.sgm.dms.fol.common.api.domain.UserDTO" >
+		<id 	property="userId" 			column="USER_ID" 		javaType="long" 		jdbcType="NUMERIC"/>
+		<result property="userName" 		column="USER_NAME" 		javaType="string" 		jdbcType="VARCHAR"/>
+		<result property="userStatus" 		column="USER_STATUS" 	javaType="long" 		jdbcType="NUMERIC"/>
+		<result property="userStatusDesc" 	column="USER_STATUS_DESC" 	javaType="string" 	jdbcType="NUMERIC"/>
+		<result property="userAccount" 		column="USER_ACCOUNT" 	javaType="string" 		jdbcType="VARCHAR"/>
+		<result property="userPosition" 	column="USER_POSITION" 	javaType="string" 		jdbcType="VARCHAR"/>
+		<result property="userType" 		column="USER_TYPE" 	    javaType="long" 		jdbcType="NUMERIC"/>
+		<result property="handPhone" 		column="HAND_PHONE" 	javaType="string" 		jdbcType="VARCHAR"/>
+		<result property="zipCode" 			column="ZIP_CODE" 		javaType="string" 		jdbcType="VARCHAR"/>
+		<result property="email" 			column="EMAIL" 			javaType="string" 		jdbcType="VARCHAR"/>
+		<result property="birthday" 		column="BIRTHDAY" 		javaType="DATE" 		jdbcType="DATE"/>
+		<result property="addr" 			column="ADDR" 			javaType="string" 		jdbcType="VARCHAR"/>
+ 	</resultMap>
+ 	
+ 	<!-- 用户信息代码查询动态SQL -->
+	<sql id="UserSearchSQL">
+		  FROM TS_COMMON_USER_ACCOUNT U
+		  LEFT JOIN TC_FOL_CODE C1 ON C1.CODE_ID=U.SSO_ACCOUNT_STATUS
+		  LEFT JOIN (SELECT WM_CONCAT(DISTINCT P.POSITION_NAME) AS POSITION_NAME,UP.SSO_ACCOUNT
+		  FROM TS_FOL_POSITION P, TS_COMMON_USER_LOGON UP 
+		  WHERE P.POSITION_ID = UP.POSITION_ID AND P.STATUS=1 AND UP.LOGON_STATUS=1
+		  GROUP BY UP.SSO_ACCOUNT) UP ON UP.SSO_ACCOUNT=U.SSO_ACCOUNT
+		  <if test="positionId==null or positionId==''">
+		  	JOIN TS_COMMON_USER_LOGON UL ON U.SSO_ACCOUNT=UL.SSO_ACCOUNT
+		  </if>
+		<where>
+			U.SSO_ACCOUNT_STATUS=1
+			
+			<if test="positionId!=null and positionId!=''">
+				AND EXISTS (SELECT 1 FROM TS_COMMON_USER_LOGON PP WHERE U.SSO_ACCOUNT=PP.SSO_ACCOUNT AND PP.POSITION_ID = #{positionId} AND LOGON_STATUS=1) 
+			</if>
+<!-- 			<if test="positionId==null or positionId==''"> -->
+<!-- 				AND U.SSO_ACCOUNT IN (SELECT DISTINCT U.SSO_ACCOUNT -->
+<!-- 					FROM TS_COMMON_USER_LOGON PP,TS_FOL_POSITION P -->
+<!-- 					WHERE ((U.SSO_ACCOUNT=PP.SSO_ACCOUNT AND PP.POSITION_ID=P.POSITION_ID AND P.STATUS=1)  -->
+<!-- 					OR NOT EXISTS(SELECT 1 FROM TS_COMMON_USER_LOGON UL WHERE U.SSO_ACCOUNT=UL.SSO_ACCOUNT))) -->
+<!-- 			</if> -->
+			
+			<if test="userName!=null and !userName.trim().equals('')">
+				AND U.USER_NAME LIKE '%'||#{userName}||'%'
+			</if>
+			<if test="userAccount!=null and !userAccount.trim().equals('')">
+				AND U.SSO_ACCOUNT LIKE '%'||#{userAccount}||'%'
+			</if>
+			<if test="userStatus!=null and userStatus>0">
+				AND U.SSO_ACCOUNT_STATUS = #{userStatus}
+			</if>
+		</where>
+	</sql>
+
+	<!-- 人员信息查询  -->
+	<select id="countUsers" parameterType="com.sgm.dms.fol.common.api.domain.UserSearchDTO" resultType="long">
+		SELECT COUNT(U.SSO_ACCOUNT)  FROM TS_COMMON_USER_ACCOUNT U
+		<where>
+				U.SSO_ACCOUNT_STATUS=1
+				<if test="positionId != null and positionId != ''">
+					AND EXISTS (SELECT 1 FROM TS_COMMON_USER_LOGON PP WHERE U.SSO_ACCOUNT = PP.SSO_ACCOUNT AND PP.POSITION_ID = #{positionId} AND LOGON_STATUS=1) 
+				</if>
+				<if test="userName != null and userName != ''">
+					AND U.USER_NAME LIKE '%'||#{userName}||'%'
+				</if>
+				<if test="userAccount!=null and userAccount != ''">
+					AND U.SSO_ACCOUNT LIKE '%'||#{userAccount}||'%'
+				</if>
+				<if test="userStatus!=null and userStatus > 0">
+					AND U.SSO_ACCOUNT_STATUS = #{userStatus}
+				</if>
+		</where>
+	</select>
+
+	<!-- 人员信息查询 -->
+	<select id="listUsers" parameterType="com.sgm.dms.fol.common.api.domain.UserSearchDTO" resultMap="UserSearchResult">
+		SELECT T3.*, CAST ((
+					SELECT
+						WM_CONCAT (DISTINCT P .POSITION_NAME) AS POSITION_NAME
+					FROM
+						TS_FOL_POSITION P,
+						TS_COMMON_USER_LOGON UP
+					WHERE
+					    T3.USER_ACCOUNT = UP.SSO_ACCOUNT
+					AND	P.POSITION_ID = UP.POSITION_ID
+					AND P.STATUS = 1
+					AND UP.LOGON_STATUS = 1
+				 ) AS VARCHAR2 (500) ) AS USER_POSITION
+		   FROM	
+			(SELECT * FROM (
+			SELECT T1.*, ROWNUM AS RN FROM (
+			SELECT U.SSO_ACCOUNT AS USER_ACCOUNT,
+			       U.SSO_ACCOUNT_TYPE,
+			       U.SSO_ACCOUNT_STATUS AS USER_STATUS,
+			       U.USER_NAME,
+			       U.USER_TYPE,
+			       U.GENDER,
+			       U.HAND_PHONE,
+			       U.EMAIL,
+			       U.BIRTHDAY,
+			       U.ADDR,
+			       U.ZIP_CODE,
+				   U.CREATE_DATE
+			FROM TS_COMMON_USER_ACCOUNT U
+			<where>
+				U.SSO_ACCOUNT_STATUS=1
+				<if test="positionId != null and positionId != ''">
+					AND EXISTS (SELECT 1 FROM TS_COMMON_USER_LOGON PP WHERE U.SSO_ACCOUNT = PP.SSO_ACCOUNT AND PP.POSITION_ID = #{positionId} AND LOGON_STATUS=1) 
+				</if>
+				<if test="userName != null and userName != ''">
+					AND U.USER_NAME LIKE '%'||#{userName}||'%'
+				</if>
+				<if test="userAccount!=null and userAccount != ''">
+					AND U.SSO_ACCOUNT LIKE '%'||#{userAccount}||'%'
+				</if>
+				<if test="userStatus!=null and userStatus > 0">
+					AND U.SSO_ACCOUNT_STATUS = #{userStatus}
+				</if>
+			</where>
+			ORDER BY U.CREATE_DATE DESC
+			) T1 WHERE USER_STATUS = 1 <![CDATA[AND ROWNUM < #{endNo}]]>) T2
+		   <![CDATA[ WHERE T2.RN>#{beginNo} ]]>) T3
+	</select>
+	
+	<insert id="addUser" parameterType="com.sgm.dms.fol.common.api.domain.UserDTO" >	    
+		INSERT INTO TS_COMMON_USER_ACCOUNT
+		(SSO_ACCOUNT, SSO_ACCOUNT_TYPE, SSO_ACCOUNT_STATUS, USER_TYPE, USER_NAME, GENDER,
+		 HAND_PHONE, EMAIL, BIRTHDAY, ADDR, ZIP_CODE, CREATE_BY, CREATE_DATE)
+		VALUES
+		(#{userAccount}, #{userType}, #{userStatus}, #{userType}, #{userName}, #{gender,jdbcType=NUMERIC},
+		 #{handPhone,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, #{birthday,jdbcType=DATE},
+		 #{addr,jdbcType=VARCHAR}, #{zipCode,jdbcType=VARCHAR}, #{createBy,jdbcType=NUMERIC}, SYSDATE)
+	</insert>
+	
+	<insert id="insertUserPosition" parameterType="com.sgm.dms.fol.common.api.domain.UserPositionDTO">
+		<selectKey resultType="Long" order="BEFORE" keyProperty="loginId" >
+			SELECT SEQ_COMMON_USER_LOGON.NEXTVAL AS loginId FROM DUAL
+	    </selectKey>
+	    
+		INSERT INTO TS_COMMON_USER_LOGON
+		(LOGON_ID, ORG_ID, LOGON_STATUS, POSITION_ID, SSO_ACCOUNT, USER_NAME, OFFICAL_NAME, ORG_NAME, CREATE_BY, CREATE_DATE)
+		VALUES
+		(#{loginId}, #{orgId}, #{logonStatus}, #{positionId,jdbcType=VARCHAR}, #{userAccount}, #{userName}, #{officalName}, #{orgName}, 
+		 #{createBy,jdbcType=NUMERIC}, SYSDATE)
+	</insert>
+	
+	<update id="updateUser" parameterType="com.sgm.dms.fol.common.api.domain.UserDTO">
+		UPDATE TS_COMMON_USER_ACCOUNT
+		   SET SSO_ACCOUNT_TYPE=#{userType},
+		       SSO_ACCOUNT_STATUS=#{userStatus},
+		       USER_TYPE=#{userType},
+		       <if test="userName!=null and !userName.trim().equals('')">
+		         USER_NAME=#{userName},
+		       </if>
+		       GENDER=#{gender,jdbcType=NUMERIC},
+		       <if test="handPhone!=null and !handPhone.trim().equals('')">
+		          HAND_PHONE=#{handPhone,jdbcType=VARCHAR},
+		       </if>
+		       <if test="email!=null and !email.trim().equals('')">
+		          EMAIL=#{email,jdbcType=VARCHAR},
+		       </if>
+		       <if test="birthday!=null">
+		          BIRTHDAY=#{birthday,jdbcType=DATE},
+		       </if>
+		       <if test="addr!=null and !addr.trim().equals('')">
+		          ADDR=#{addr,jdbcType=VARCHAR},
+		       </if>
+		       <if test="zipCode!=null and !zipCode.trim().equals('')">
+		          ZIP_CODE=#{zipCode,jdbcType=VARCHAR},
+		       </if>
+		       <if test="updateBy!=null">
+		          UPDATE_BY=#{updateBy,jdbcType=NUMERIC},
+		       </if>
+		       UPDATE_DATE=SYSDATE
+		 WHERE SSO_ACCOUNT=#{userAccount}
+	</update>
+	
+	<update id="deteteUserPositionByUserAccount" parameterType="com.sgm.dms.fol.common.api.domain.UserDTO">
+		UPDATE TS_COMMON_USER_LOGON
+		   SET LOGON_STATUS=2,
+		       UPDATE_BY=#{updateBy,jdbcType=NUMERIC},
+		       UPDATE_DATE=SYSDATE
+		 WHERE SSO_ACCOUNT=#{userAccount}
+	</update>
+	
+	<update id="updateUserPosition" parameterType="com.sgm.dms.fol.common.api.domain.UserPositionDTO">
+		UPDATE TS_COMMON_USER_LOGON
+		   SET LOGON_STATUS=1,
+		       UPDATE_BY=#{updateBy,jdbcType=NUMERIC},
+		       UPDATE_DATE=SYSDATE
+		 WHERE SSO_ACCOUNT=#{userAccount}
+		   AND ORG_ID=#{orgId}
+		   AND POSITION_ID=#{positionId}
+	</update>
+	
+	<!-- 	 根据Account获取USER -->
+	<select id="getUserByAccount" resultType="com.sgm.dms.fol.common.api.domain.UserSearchDTO" parameterType="com.sgm.dms.fol.common.api.domain.UserDTO">
+		 SELECT DISTINCT TS_COMMON_USER_LOGON.LOGON_ID AS userId,
+			 TS_COMMON_USER_LOGON.ORG_ID AS dealerId,
+			 TM_FOL_DEALER_INFO.SAP_CODE AS sapCode,
+       		 TM_FOL_DEALER_INFO.DEALER_NAME AS dealerName,
+			 TS_COMMON_USER_LOGON.USER_NAME AS userName,
+			 TS_COMMON_USER_LOGON.LOGON_STATUS AS userStatus,
+			 TS_COMMON_USER_LOGON.SSO_ACCOUNT AS userAccount,
+			 TS_COMMON_USER_ACCOUNT.USER_TYPE AS userType,
+			 TS_COMMON_USER_LOGON.POSITION_ID AS positionId,
+             TO_CHAR((SELECT WM_CONCAT(pr.ROLE_ID) FROM TR_POSITION_ROLE pr where TS_COMMON_USER_LOGON.POSITION_ID = pr.POSITION_ID AND  pr.STATUS = 1)) roleIds,
+             TS_FOL_POSITION.DP_POSITION_CODE dPPositionCode
+         FROM TS_COMMON_USER_LOGON 
+     	 JOIN TS_COMMON_USER_ACCOUNT ON TS_COMMON_USER_ACCOUNT.SSO_ACCOUNT=TS_COMMON_USER_LOGON.SSO_ACCOUNT
+     	 LEFT JOIN TS_FOL_POSITION ON TS_FOL_POSITION.POSITION_ID = TS_COMMON_USER_LOGON.POSITION_ID
+     	 JOIN TC_FOL_CODE ON TC_FOL_CODE.CODE=TS_COMMON_USER_ACCOUNT.USER_TYPE 
+     	 LEFT JOIN TM_FOL_DEALER_INFO ON TS_COMMON_USER_LOGON.ORG_ID=TM_FOL_DEALER_INFO.OFFICAL_DEALER_ID
+		 WHERE TS_COMMON_USER_LOGON.LOGON_STATUS=1 
+		 
+		 <if test="userAccount!=null and userAccount!=''">
+			 AND TS_COMMON_USER_LOGON.SSO_ACCOUNT=#{userAccount} 
+		 </if>
+		 
+		 <if test="userType!=null and userType!=''">
+			 AND TS_COMMON_USER_ACCOUNT.USER_TYPE=#{userType}
+		 </if>
+	</select>
+	
+	<select id="getUserCountByAccount" parameterType="java.lang.String" resultType="Integer">
+		SELECT COUNT(SSO_ACCOUNT) FROM TS_COMMON_USER_ACCOUNT WHERE SSO_ACCOUNT=#{account} AND SSO_ACCOUNT_STATUS=1
+	</select>
+	
+	<!-- 	 根据UserId获取USER -->
+	<select id="getUserByUserId" resultType="com.sgm.dms.fol.common.api.domain.UserSearchDTO" parameterType="com.sgm.dms.fol.common.api.domain.UserDTO">
+		 SELECT DISTINCT TS_COMMON_USER_LOGON.LOGON_ID AS userId,
+			 TS_COMMON_USER_LOGON.ORG_ID AS dealerId,
+			 TM_FOL_DEALER_INFO.SAP_CODE AS sapCode,
+       		 TM_FOL_DEALER_INFO.DEALER_NAME AS dealerName,
+			 TS_COMMON_USER_LOGON.USER_NAME AS userName,
+			 TS_COMMON_USER_LOGON.LOGON_STATUS AS userStatus,
+			 TS_COMMON_USER_LOGON.SSO_ACCOUNT AS userAccount,
+			 TS_COMMON_USER_ACCOUNT.USER_TYPE AS userType,
+			 TS_COMMON_USER_LOGON.POSITION_ID AS positionId,
+			 TO_CHAR((SELECT WM_CONCAT(pr.ROLE_ID) FROM TR_POSITION_ROLE pr where TS_COMMON_USER_LOGON.POSITION_ID = pr.POSITION_ID AND  pr.STATUS = 1)) roleIds,
+			 TS_FOL_POSITION.DP_POSITION_CODE dPPositionCode
+		 FROM TS_COMMON_USER_LOGON 
+     	 JOIN TS_COMMON_USER_ACCOUNT ON TS_COMMON_USER_ACCOUNT.SSO_ACCOUNT=TS_COMMON_USER_LOGON.SSO_ACCOUNT
+     	 LEFT JOIN TS_FOL_POSITION ON TS_FOL_POSITION.POSITION_ID = TS_COMMON_USER_LOGON.POSITION_ID
+     	 JOIN TC_FOL_CODE ON TC_FOL_CODE.CODE=TS_COMMON_USER_ACCOUNT.USER_TYPE 
+     	 LEFT JOIN TM_FOL_DEALER_INFO ON TS_COMMON_USER_LOGON.ORG_ID=TM_FOL_DEALER_INFO.OFFICAL_DEALER_ID
+		 WHERE TS_COMMON_USER_LOGON.LOGON_STATUS=1 
+		 
+		 <if test="userId!=null and userId!=''">
+			 AND TS_COMMON_USER_LOGON.LOGON_ID=#{userId} 
+		 </if>
+		 
+	</select>
+	
+</mapper>

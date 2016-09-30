@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Mapper -->
+<!-- 银行维护 -->
+<mapper namespace="com.sgm.dms.fol.bankTicket.repository.BankTicketDeadLineDao">
+
+ 	<!-- 保存银行银票额度信息 -->
+ 	<insert id="addBankTicketDeadLine" parameterType="com.sgm.dms.fol.bankTicket.domain.BankTicketDeadLinePo">
+ 		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+			SELECT SEQ_TT_FOL_BANK_TI_DEADLINE_ID.NEXTVAL AS id FROM DUAL
+	    </selectKey>
+ 		INSERT INTO TT_FOL_BANK_TICKET_DEADLINE(
+ 			ID,
+			DEALER_TYPE,
+			BRAND_ID,
+			DEADLINE_DAY,
+			FREE_PERIOD_DAY,
+			EFFECT_DATE,
+			EXPIRE_DATE,
+			SAP_CODE,
+			DEALER_NAME,
+			TYPE,
+			AUDIT_STATUS,
+			STATUS,
+			REMARK,
+			CREATE_BY,
+			CREATE_DATE,
+			UPDATE_BY,
+			UPDATE_DATE
+			)
+        VALUES
+           (#{id}, 
+            #{dealerType}, 
+            #{brandId},
+            #{deadlineDay}, 
+            #{freePeriodDay}, 
+            #{effectDate}, 
+            #{expireDate,jdbcType=DATE},
+            #{sapCode,jdbcType=VARCHAR},
+            (SELECT DEALER_NAME FROM TM_FOL_DEALER_INFO WHERE SAP_CODE=#{sapCode,jdbcType=VARCHAR}),
+            #{type},
+            1,
+            1, 
+            #{remark,jdbcType=VARCHAR}, 
+            #{createBy}, 
+            SYSDATE, 
+            #{updateBy}, 
+            SYSDATE
+           )
+ 	</insert>
+ 	
+ 	<select id="findBankTicketDeadLine" resultType="com.sgm.dms.fol.bankTicket.dto.BankTicketDeadLineDTO">
+		<if test="endNo!=null and endNo>0">
+		SELECT  N.*   FROM (
+	 			SELECT  T.*,ROWNUM AS RN  FROM 
+		 			(
+		</if>
+						SELECT FC2.CODE_CN_DESC AS dealerTypeName,FC.CODE_CN_DESC AS brandName,DI.DEALER_NAME AS dealerName,
+							BTD.SAP_CODE AS sapCode,BTD.DEADLINE_DAY AS deadlineDay,BTD.FREE_PERIOD_DAY AS freePeriodDay,
+							BTD.EFFECT_DATE AS effectDate,BTD.EXPIRE_DATE AS expireDate,FC3.CODE_CN_DESC AS auditStatusName,
+							TAF.AUDIT_MSG AS auditMsg,BTD.ID AS id,TO_CHAR(EFFECT_DATE,'SYYYY-MM-DD HH24:MI:SS') AS effectDateDisplay,
+							TO_CHAR(EXPIRE_DATE,'SYYYY-MM-DD HH24:MI:SS') AS expireDateDisplay,BTD.TYPE AS type,BTD.AUDIT_STATUS AS auditStatus
+						FROM TT_FOL_BANK_TICKET_DEADLINE BTD
+						LEFT JOIN TM_FOL_DEALER_INFO DI ON BTD.SAP_CODE=DI.SAP_CODE
+						
+						<if test="dealerName!=null and dealerName!=''">
+							AND DI.DEALER_NAME like concat(concat('%',#{dealerName}),'%')
+						</if>
+						
+						JOIN TT_FOL_BANK_TICKET_AUDIT_FLOW TAF ON TAF.REFER_TABLE_ID=BTD.ID
+						JOIN (SELECT MAX(TT_FOL_BANK_TICKET_AUDIT_FLOW.ID) AS ID 
+						FROM TT_FOL_BANK_TICKET_AUDIT_FLOW
+						JOIN TT_FOL_BUSINESS_TABLE ON TT_FOL_BANK_TICKET_AUDIT_FLOW.BUSINESS_CODE=TT_FOL_BUSINESS_TABLE.BUSINESS_CODE AND TT_FOL_BUSINESS_TABLE.BUSINESS_TABLE_NAME='TT_FOL_BANK_TICKET_DEADLINE'
+						GROUP BY TT_FOL_BANK_TICKET_AUDIT_FLOW.REFER_TABLE_ID) TAF2 ON TAF.ID=TAF2.ID
+						LEFT JOIN TC_FOL_CODE FC ON BTD.BRAND_ID=FC.CODE AND FC.TYPE_NAME='品牌' AND FC.STATUS='10011001'
+						LEFT JOIN TC_FOL_CODE FC2 ON BTD.DEALER_TYPE=FC2.CODE AND FC2.TYPE_NAME='渠道类型' AND FC2.STATUS='10011001'
+						LEFT JOIN TC_FOL_CODE FC3 ON BTD.AUDIT_STATUS=FC3.CODE AND FC3.TYPE_NAME='银票审核状态' AND FC3.STATUS='10011001' 
+						WHERE BTD.STATUS=1 AND TAF.STATUS=1 
+						
+						<if test="type!=null and type!=''">
+							AND BTD.TYPE=#{type}
+						</if>
+						
+						<if test="sapCode!=null and sapCode !=''">
+							AND BTD.SAP_CODE=#{sapCode}
+						</if>
+						
+						<if test="dealerType!=null and dealerType>=0">
+							AND BTD.DEALER_TYPE=#{dealerType}
+						</if>
+						
+						<if test="brandId!=null and brandId>=0">
+							AND BTD.BRAND_ID=#{brandId}
+						</if>
+						
+						<if test="auditStatus!=null and auditStatus>0">
+							AND BTD.AUDIT_STATUS=#{auditStatus}
+						</if>
+						
+						<if test="auditStatusStrs != null and auditStatusStrs != ''">
+						    AND BTD.AUDIT_STATUS IN 
+						    <foreach item="item" index="index" collection="auditStatusStrs" open="(" separator="," close=")">
+							    #{item}
+							</foreach>
+						</if>
+
+						<if test="id!=null and id!=''">
+							AND BTD.ID=#{id}
+						</if>
+		<if test="endNo!=null and endNo>0">
+					) T 
+		
+			     <![CDATA[ WHERE ROWNUM <=#{endNo} ]]>	
+		    ) N
+    	<![CDATA[ WHERE N.RN>=#{beginNo}]]>
+    	</if>
+	</select>
+	
+	<update id="deleteBankTicketDeadLine" parameterType="com.sgm.dms.fol.bankTicket.domain.BankTicketDeadLinePo">
+		UPDATE TT_FOL_BANK_TICKET_DEADLINE 
+		SET STATUS=2,
+			UPDATE_BY=#{updateBy},
+			UPDATE_DATE=SYSDATE
+		WHERE ID=#{id}
+	</update>
+	
+	<select id="findBankTicketDeadLineCount" resultType="java.lang.Integer" parameterType="com.sgm.dms.fol.bankTicket.domain.BankTicketDeadLinePo">
+		SELECT count(1)
+		FROM TT_FOL_BANK_TICKET_DEADLINE BTD
+		LEFT JOIN TM_FOL_DEALER_INFO DI ON BTD.SAP_CODE=DI.SAP_CODE
+		<if test="dealerName!=null and dealerName!=''">
+			AND DI.DEALER_NAME like concat(concat('%',#{dealerName}),'%')
+		</if>
+		
+		JOIN TT_FOL_BANK_TICKET_AUDIT_FLOW TAF ON TAF.REFER_TABLE_ID=BTD.ID
+		JOIN (SELECT MAX(TT_FOL_BANK_TICKET_AUDIT_FLOW.ID) AS ID 
+		FROM TT_FOL_BANK_TICKET_AUDIT_FLOW
+		JOIN TT_FOL_BUSINESS_TABLE ON TT_FOL_BANK_TICKET_AUDIT_FLOW.BUSINESS_CODE=TT_FOL_BUSINESS_TABLE.BUSINESS_CODE AND TT_FOL_BUSINESS_TABLE.BUSINESS_TABLE_NAME='TT_FOL_BANK_TICKET_DEADLINE'
+		GROUP BY TT_FOL_BANK_TICKET_AUDIT_FLOW.REFER_TABLE_ID) TAF2 ON TAF.ID=TAF2.ID
+		LEFT JOIN TC_FOL_CODE FC ON BTD.BRAND_ID=FC.CODE AND FC.TYPE_NAME='品牌' AND FC.STATUS='10011001'
+		LEFT JOIN TC_FOL_CODE FC2 ON BTD.DEALER_TYPE=FC2.CODE AND FC2.TYPE_NAME='渠道类型' AND FC2.STATUS='10011001'
+		LEFT JOIN TC_FOL_CODE FC3 ON BTD.AUDIT_STATUS=FC3.CODE AND FC3.TYPE_NAME='银票审核状态' AND FC3.STATUS='10011001'
+		WHERE BTD.STATUS=1 AND TAF.STATUS=1 AND BTD.TYPE=#{type}
+		
+		<if test="sapCode!=null and sapCode !=''">
+			AND BTD.SAP_CODE=#{sapCode}
+		</if>
+		
+		<if test="dealerType!=null and dealerType>=0">
+			AND BTD.DEALER_TYPE=#{dealerType}
+		</if>
+		
+		<if test="brandId!=null and brandId>=0">
+			AND BTD.BRAND_ID=#{brandId}
+		</if>
+		
+		<if test="auditStatus!=null and auditStatus>0">
+			AND BTD.AUDIT_STATUS=#{auditStatus}
+		</if>
+		<if test="auditStatusStrs != null and auditStatusStrs != ''">
+			AND BTD.AUDIT_STATUS IN 
+			<foreach item="item" index="index" collection="auditStatusStrs" open="(" separator="," close=")">
+					#{item}
+			</foreach>
+		</if>
+
+	</select>
+	
+	<update id="updateBankTicketDeadLine" parameterType="com.sgm.dms.fol.bankTicket.domain.BankTicketDeadLinePo">
+		UPDATE TT_FOL_BANK_TICKET_DEADLINE SET UPDATE_DATE=SYSDATE,UPDATE_BY=#{updateBy}
+		<if test="expireDate!=null and expireDate!=''">
+			,EXPIRE_DATE=#{expireDate}
+		</if>
+		<if test="effectDate!=null and effectDate!=''">
+			,EFFECT_DATE=#{effectDate}
+		</if>
+		<if test="deadlineDay!=null and deadlineDay!=''">
+			,DEADLINE_DAY=#{deadlineDay}
+		</if>
+		<if test="freePeriodDay!=null and freePeriodDay!=''">
+			,FREE_PERIOD_DAY=#{freePeriodDay}
+		</if>
+		<if test="auditStatus!=null and auditStatus>=0">
+			,AUDIT_STATUS=#{auditStatus}
+		</if>
+		WHERE ID=#{id}
+	</update>
+	
+	<!-- 查询票据期限根据dealerCode -->
+	<select id="findBankTicketLimitBySapCode" resultType="com.sgm.dms.fol.bankTicket.dto.BankTicketDeadLineDTO">
+		SELECT 
+			DEALER_TYPE AS dealerType,
+			BRAND_ID AS brandId,
+			DEADLINE_DAY AS deadLineDay,
+			FREE_PERIOD_DAY AS freePeriodDay,
+			EFFECT_DATE AS effectDate,
+			EXPIRE_DATE AS expireDate,
+			SAP_CODE AS sapCode,
+			AUDIT_STATUS AS auditStatus,
+			CREATE_BY AS createBy,
+			CREATE_DATE AS createDate,
+			UPDATE_BY AS updateBy,
+			UPDATE_DATE AS updateDate
+		FROM TT_FOL_BANK_TICKET_DEADLINE 
+		WHERE SAP_CODE=#{param1} AND STATUS=1
+	</select>
+	
+	<!-- 查询票据期限根据dealerCode -->
+	<select id="findBankTicketLimitByBrandAndDealerType" resultType="com.sgm.dms.fol.bankTicket.dto.BankTicketDeadLineDTO">
+		SELECT DISTINCT
+			BTD.DEALER_TYPE AS dealerType,
+			BTD.BRAND_ID AS brandId,
+			BTD.DEADLINE_DAY AS deadLineDay,
+			BTD.FREE_PERIOD_DAY AS freePeriodDay,
+			BTD.EFFECT_DATE AS effectDate,
+			BTD.EXPIRE_DATE AS expireDate,
+			BTD.SAP_CODE AS sapCode,
+			BTD.AUDIT_STATUS AS auditStatus,
+			BTD.CREATE_BY AS createBy,
+			BTD.CREATE_DATE AS createDate,
+			BTD.UPDATE_BY AS updateBy,
+			BTD.UPDATE_DATE AS updateDate
+		FROM TT_FOL_BANK_TICKET_DEADLINE BTD
+		JOIN TM_FOL_DEALER_INFO DI ON CAST(BTD.BRAND_ID AS VARCHAR2(10))=SUBSTR(DI.SAP_CODE,0,2)
+		WHERE BTD.BRAND_ID=#{param1} AND DI.DEALER_TYPE=#{param2} AND BTD.STATUS=1
+	</select>
+</mapper>
